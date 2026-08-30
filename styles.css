@@ -77,7 +77,7 @@ a {
   z-index: -1;
   background:
     linear-gradient(rgba(255,253,250,.93), rgba(255,253,250,.93)),
-    url("assets/wallpaper.jpeg") center / cover;
+    url("Eight&Eight-wallpaper.jpeg") center / cover;
   opacity: .55;
   pointer-events: none;
 }
