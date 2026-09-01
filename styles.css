@@ -1,4 +1,4 @@
-:root {
+ :root {
   --white: #fffdfa;
   --rose-white: #f8f1eb;
   --cream: #eee3d5;
@@ -12,10 +12,15 @@
   --muted: #6d665d;
   --line: rgba(128, 99, 47, .42);
   --shadow: 0 18px 60px rgba(70, 54, 35, .10);
+  --wallpaper: url("Eight&Eight-wallpaper.jpeg");
+  --logo: url("Eight&Eight-logo.jpeg");
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
@@ -25,93 +30,103 @@ body {
   line-height: 1.65;
 }
 
+/* The logo is a true CSS background layer: fixed to the viewport,
+   never part of the document flow and therefore always remains behind
+   the page while the content scrolls. White in the JPEG disappears
+   through multiply blending. */
+body::before {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--logo);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: min(42vw, 620px) auto;
+  opacity: .13;
+  mix-blend-mode: multiply;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
 .site-shell {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 0%, rgba(255,255,255,.9), transparent 35%),
-    linear-gradient(180deg, var(--white), var(--rose-white) 55%, var(--cream));
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.88), transparent 35%),
+    linear-gradient(180deg, rgba(255,253,250,.90), rgba(248,241,235,.90) 55%, rgba(238,227,213,.92));
 }
 
+/* TOP BAR
+   The original wallpaper is used at its natural 1254px scale.
+   It is repeated horizontally instead of being cropped into cover. */
 .topbar {
   position: sticky;
   top: 0;
   z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 30px;
+  min-height: 78px;
   padding: 18px 5vw;
   background:
-    linear-gradient(rgba(255,253,250,.82), rgba(255,253,250,.82)),
-    url("Eight&Eight-logo.jpeg") center / cover;
-  backdrop-filter: blur(16px);
-  isolation: isolate;
+    linear-gradient(rgba(255,253,250,.76), rgba(255,253,250,.76)),
+    var(--wallpaper);
+  background-repeat: repeat-x;
+  background-size: auto, 1254px 1254px;
+  background-position: center, center top;
+  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
+  isolation: isolate;
 }
 
 .wordmark {
   display: none;
 }
 
-.topbar-logo {
-  display: block;
-  width: 110px;
-  height: 42px;
-  object-fit: contain;
-  flex: 0 0 auto;
-  position: relative;
-  z-index: 2;
-}
-
-/* Subtle wallpaper + 40% logo layer in the top bar. */
-.topbar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(rgba(255,253,250,.93), rgba(255,253,250,.93)),
-    url("Eight&Eight-wallpaper.jpeg") center / cover;
-  opacity: .55;
-  pointer-events: none;
-}
-
-.topbar::after {
-  content: "";
-  position: absolute;
-  left: 5vw;
-  top: 50%;
-  width: 110px;
-  height: 42px;
-  transform: translateY(-50%);
-  background: url("assets/logo.jpeg") center / contain no-repeat;
-  opacity: .4;
-  z-index: -1;
-  pointer-events: none;
-}
-
 .site-nav {
   display: flex;
+  align-items: center;
   gap: 20px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .site-nav a {
+  position: relative;
+  padding: 5px 0;
   font-size: 10px;
   letter-spacing: .16em;
   color: var(--matte-silver);
   transition: color .2s ease;
 }
 
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: var(--dark-gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+
 .site-nav a:hover {
   color: var(--dark-gold);
+}
+
+.site-nav a:hover::after {
+  transform: scaleX(1);
 }
 
 .menu-toggle {
@@ -119,6 +134,7 @@ a {
   border: 0;
   background: transparent;
   padding: 5px;
+  cursor: pointer;
 }
 
 .menu-toggle span {
@@ -129,6 +145,7 @@ a {
   background: var(--dark-gold);
 }
 
+/* HERO */
 .hero {
   padding: 7vh 5vw 5vh;
 }
@@ -137,38 +154,22 @@ a {
   position: relative;
   min-height: 76vh;
   display: grid;
-  grid-template-columns: 1fr 1fr;
   align-items: center;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   overflow: hidden;
-}
-
-.wallpaper-card {
   background:
-    linear-gradient(rgba(255,253,250,.32), rgba(255,253,250,.32)),
-    url("assets/wallpaper.jpeg") center / cover;
-}
-
-.hero-logo-wrap {
-  display: grid;
-  place-items: center;
-  min-height: 76vh;
-  padding: 8%;
-  background: rgba(255,253,250,.45);
-  border-right: 1px solid rgba(128,99,47,.25);
-}
-
-.hero-logo {
-  width: min(80%, 470px);
-  height: auto;
-  mix-blend-mode: multiply;
-  filter: saturate(.88) contrast(.96);
+    linear-gradient(rgba(255,253,250,.58), rgba(255,253,250,.58));
 }
 
 .hero-copy {
-  padding: clamp(35px, 7vw, 100px);
-  background: rgba(255,253,250,.78);
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: clamp(45px, 7vw, 100px);
+  background: rgba(255,253,250,.70);
   backdrop-filter: blur(3px);
 }
 
@@ -195,6 +196,7 @@ a {
   font-size: 17px;
 }
 
+/* CONTENT PANELS */
 .section {
   width: min(1400px, 90vw);
   margin: 0 auto 5vh;
@@ -348,9 +350,7 @@ p {
 }
 
 .contact-panel {
-  background:
-    linear-gradient(rgba(255,253,250,.62), rgba(255,253,250,.82)),
-    url("assets/wallpaper.jpeg") center / cover;
+  background: rgba(255,253,250,.78);
 }
 
 .contact-box {
@@ -393,6 +393,7 @@ p {
   margin-top: 50px;
 }
 
+/* FOOTER */
 .footer {
   width: min(1400px, 90vw);
   margin: 7vh auto 0;
@@ -400,10 +401,7 @@ p {
   border-top: 1px solid var(--line);
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(rgba(255,253,250,.93), rgba(255,253,250,.93)),
-    url("assets/wallpaper.jpeg") center / cover;
-  isolation: isolate;
+  background: rgba(255,253,250,.88);
   display: flex;
   justify-content: space-between;
   gap: 20px;
@@ -413,29 +411,43 @@ p {
   letter-spacing: .16em;
 }
 
-.footer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: url("assets/wallpaper.jpeg") center / cover;
-  opacity: .07;
-  pointer-events: none;
-}
-
 .footer a {
   color: var(--dark-gold);
 }
 
+/* FINAL WALLPAPER:
+   a separate closing band at the absolute end of the document.
+   The JPEG is kept at its original 1254px x 1254px scale and repeated
+   horizontally, so the ornament is distributed rather than stretched. */
+.wallpaper-end {
+  width: 100%;
+  height: 280px;
+  margin-top: 0;
+  background-image:
+    linear-gradient(rgba(255,253,250,.34), rgba(255,253,250,.34)),
+    var(--wallpaper);
+  background-repeat: repeat-x;
+  background-size: auto, 1254px 1254px;
+  background-position: center, center center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* RESPONSIVE */
 @media (max-width: 900px) {
   .site-nav {
     display: none;
     position: absolute;
-    top: 64px;
+    top: 78px;
     left: 0;
     right: 0;
     padding: 25px 5vw;
-    background: rgba(255,253,250,.97);
+    background:
+      linear-gradient(rgba(255,253,250,.82), rgba(255,253,250,.82)),
+      var(--wallpaper);
+    background-repeat: repeat-x;
+    background-size: auto, 1254px 1254px;
+    background-position: center, center top;
     border-bottom: 1px solid var(--line);
   }
 
@@ -446,16 +458,6 @@ p {
 
   .menu-toggle {
     display: block;
-  }
-
-  .hero-card {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-logo-wrap {
-    min-height: 45vh;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
   }
 
   .section {
@@ -486,30 +488,37 @@ p {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  body::before {
+    background-size: min(58vw, 500px) auto;
+    opacity: .11;
+  }
 }
 
 @media (max-width: 560px) {
   .topbar {
+    justify-content: space-between;
     padding: 16px 5vw;
+    min-height: 68px;
   }
 
-  .topbar-logo {
-    width: 92px;
-    height: 36px;
+  .wordmark {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .16em;
+    color: var(--dark-gold);
   }
 
-  .topbar::after {
-    left: 5vw;
-    width: 92px;
-    height: 36px;
+  .site-nav {
+    top: 68px;
   }
 
   .hero {
     padding-top: 3vh;
   }
 
-  .hero-logo-wrap {
-    min-height: 38vh;
+  .hero-card {
+    min-height: 70vh;
   }
 
   .hero-copy {
@@ -526,5 +535,14 @@ p {
 
   .process {
     justify-content: flex-start;
+  }
+
+  .wallpaper-end {
+    height: 220px;
+  }
+
+  body::before {
+    background-size: min(72vw, 420px) auto;
+    opacity: .10;
   }
 }
