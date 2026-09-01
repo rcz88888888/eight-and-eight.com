@@ -49,7 +49,7 @@ a {
   padding: 18px 5vw;
   background:
     linear-gradient(rgba(255,253,250,.82), rgba(255,253,250,.82)),
-    url("assets/wallpaper.jpeg") center / cover;
+    url("Eight&Eight-logo.jpeg") center / cover;
   backdrop-filter: blur(16px);
   isolation: isolate;
   border-bottom: 1px solid var(--line);
