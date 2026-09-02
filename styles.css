@@ -546,3 +546,190 @@ p {
     opacity: .10;
   }
 }
+
+/* === 2026-09-02 requested visual revision === */
+:root {
+  --page-cream: #f5ecdf;
+  --field-cream: rgba(245, 236, 223, .86);
+  --field-cream-strong: rgba(245, 236, 223, .94);
+  --rose-gold-line: rgba(151, 112, 78, .46);
+  --deep-gold-green: #4f5434;
+  --logo-tinted: url("Eight&Eight-logo-rosegold.png");
+  --logo-shift: 0px;
+}
+
+body {
+  background: var(--page-cream);
+  color: var(--deep-gold-green);
+}
+
+body::before {
+  background-image: var(--logo-tinted);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: min(74vw, 980px) auto;
+  opacity: .34;
+  mix-blend-mode: normal;
+  transform: translate3d(0, var(--logo-shift), 0);
+  will-change: transform;
+}
+
+.site-shell {
+  background: rgba(245, 236, 223, .74);
+}
+
+/* Navigation band: twice the previous desktop height. */
+.topbar {
+  min-height: 156px;
+  padding-top: 36px;
+  padding-bottom: 36px;
+  border-bottom-color: var(--rose-gold-line);
+}
+
+/* Cream-white fields with only soft, rounded outer corners. */
+.hero-card,
+.section,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.contact-box,
+.footer {
+  border-radius: 28px;
+}
+
+.hero-card,
+.section,
+.partner-slot,
+.service-grid article,
+.contact-box,
+.footer,
+.hero-copy {
+  background: var(--field-cream);
+}
+
+.section,
+.hero-card,
+.partner-grid,
+.service-grid,
+.contact-box {
+  border-color: var(--rose-gold-line);
+}
+
+.section,
+.hero-card,
+.partner-grid,
+.service-grid,
+.contact-box,
+.footer {
+  overflow: hidden;
+}
+
+/* Keep inner grid joins tidy while preserving rounded outside corners. */
+.partner-grid,
+.service-grid {
+  gap: 1px;
+  background: var(--rose-gold-line);
+}
+
+.partner-slot,
+.service-grid article {
+  border-radius: 0;
+}
+
+.partner-slot:first-child,
+.service-grid article:first-child {
+  border-top-left-radius: 26px;
+}
+.partner-slot:nth-child(4),
+.service-grid article:nth-child(2) {
+  border-top-right-radius: 26px;
+}
+.partner-slot:last-child,
+.service-grid article:last-child {
+  border-bottom-right-radius: 26px;
+}
+.partner-slot:nth-last-child(4),
+.service-grid article:nth-last-child(2) {
+  border-bottom-left-radius: 26px;
+}
+
+.section-label {
+  background: rgba(234, 215, 184, .34);
+}
+
+/* No black-looking typography: deepest tone stays dark gold-green. */
+body,
+h1, h2, h3,
+p,
+.lead,
+.site-nav a,
+.partner-slot,
+.principles strong,
+.process,
+.contact-box strong,
+.contact-tags,
+.footer,
+.footer a {
+  color: var(--deep-gold-green);
+}
+
+.site-nav a::after,
+.menu-toggle span {
+  background: var(--deep-gold-green);
+}
+
+@media (max-width: 900px) {
+  .site-nav {
+    top: 156px;
+    background:
+      linear-gradient(rgba(245,236,223,.93), rgba(245,236,223,.93)),
+      var(--wallpaper);
+  }
+
+  .partner-slot,
+  .service-grid article {
+    border-radius: 0;
+  }
+
+  .partner-slot:first-child,
+  .service-grid article:first-child {
+    border-radius: 26px 26px 0 0;
+  }
+
+  .partner-slot:last-child,
+  .service-grid article:last-child {
+    border-radius: 0 0 26px 26px;
+  }
+
+  body::before {
+    background-size: min(86vw, 780px) auto;
+    opacity: .30;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    min-height: 136px;
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+
+  .site-nav {
+    top: 136px;
+  }
+
+  .hero-card,
+  .section,
+  .partner-grid,
+  .service-grid,
+  .contact-box,
+  .footer {
+    border-radius: 22px;
+  }
+
+  body::before {
+    background-size: min(94vw, 680px) auto;
+    opacity: .28;
+  }
+}
