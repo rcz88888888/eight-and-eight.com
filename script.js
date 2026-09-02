@@ -20,7 +20,8 @@ document.getElementById("year").textContent = new Date().getFullYear();
 const setLogoParallax = () => {
   const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
   const progress = scrollRange > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollRange)) : 0;
-  document.documentElement.style.setProperty("--logo-shift", `${progress * -37.5}vh`);
+  document.documentElement.style.setProperty("--logo-shift", `${progress * -25}vh`);
+  document.documentElement.style.setProperty("--logo-opacity", String(.20 * (1 - progress)));
 };
 
 setLogoParallax();
