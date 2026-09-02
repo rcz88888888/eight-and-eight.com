@@ -547,6 +547,156 @@ p {
   }
 }
 
+/* === Clean cream / logo / transparent-field layering === */
+:root {
+  --page-cream: #f7f0e5;
+  --dark-gold-line: rgba(128, 99, 47, .68);
+  --logo-shift: 0px;
+}
+
+html,
+body {
+  background: var(--page-cream);
+}
+
+body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background-image: url("Eight&Eight-logo.jpeg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: auto 75vh;
+  opacity: .22;
+  mix-blend-mode: multiply;
+  transform: translate3d(0, var(--logo-shift), 0);
+  will-change: transform;
+}
+
+.site-shell {
+  z-index: 1;
+  overflow: visible;
+  background: transparent;
+}
+
+/* Everything in the content layer scrolls at the browser's normal speed. */
+.topbar {
+  position: relative;
+  top: auto;
+  min-height: 78px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  background: transparent;
+  border-bottom-color: var(--dark-gold-line);
+  backdrop-filter: none;
+}
+
+.hero-card,
+.hero-copy,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.contact-panel,
+.contact-box,
+.footer,
+.site-nav {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-card,
+.section,
+.partner-grid,
+.service-grid,
+.contact-box {
+  border-color: var(--dark-gold-line);
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+/* Grid cells stay transparent and square; only the shared outer frame is rounded. */
+.partner-slot,
+.service-grid article,
+.partner-slot:first-child,
+.partner-slot:nth-child(4),
+.partner-slot:last-child,
+.partner-slot:nth-last-child(4),
+.service-grid article:first-child,
+.service-grid article:nth-child(2),
+.service-grid article:last-child,
+.service-grid article:nth-last-child(2) {
+  border-radius: 0;
+}
+
+.partner-grid,
+.service-grid {
+  gap: 0;
+}
+
+.partner-slot + .partner-slot,
+.service-grid article:nth-child(even) {
+  border-left: 1px solid var(--dark-gold-line);
+}
+
+.service-grid article:nth-child(n + 3) {
+  border-top: 1px solid var(--dark-gold-line);
+}
+
+.section-label,
+.principles,
+.principles div,
+.process,
+.footer {
+  border-color: var(--dark-gold-line);
+}
+
+.wallpaper-end {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .site-nav {
+    top: 78px;
+    background: var(--page-cream);
+  }
+
+  .partner-slot + .partner-slot,
+  .service-grid article:nth-child(even) {
+    border-left: 0;
+  }
+
+  .partner-slot + .partner-slot,
+  .service-grid article:nth-child(n + 2) {
+    border-top: 1px solid var(--dark-gold-line);
+  }
+
+  body::before {
+    background-size: auto 75vh;
+    opacity: .22;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    min-height: 68px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .site-nav {
+    top: 68px;
+  }
+
+  body::before {
+    background-size: auto 75vh;
+    opacity: .22;
+  }
+}
+
 /* === 2026-09-02 requested visual revision === */
 :root {
   --page-cream: #f5ecdf;
@@ -731,5 +881,128 @@ p,
   body::before {
     background-size: min(94vw, 680px) auto;
     opacity: .28;
+  }
+}
+
+/* Final layer order: cream canvas, moving logo, normally scrolling content. */
+html,
+body {
+  background: #f7f0e5;
+}
+
+body::before {
+  background-image: url("Eight&Eight-logo.jpeg");
+  background-position: center center;
+  background-size: auto 75vh;
+  opacity: .22;
+  mix-blend-mode: multiply;
+}
+
+.site-shell {
+  overflow: visible;
+  background: transparent;
+}
+
+.topbar {
+  position: relative;
+  top: auto;
+  min-height: 78px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  background: transparent;
+  border-bottom-color: var(--dark-gold-line);
+  backdrop-filter: none;
+}
+
+.hero-card,
+.hero-copy,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.contact-panel,
+.contact-box,
+.footer {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-card,
+.section,
+.partner-grid,
+.service-grid,
+.contact-box {
+  border-color: var(--dark-gold-line);
+  border-radius: 28px;
+}
+
+.partner-grid,
+.service-grid {
+  gap: 0;
+}
+
+.partner-slot,
+.service-grid article,
+.partner-slot:first-child,
+.partner-slot:nth-child(4),
+.partner-slot:last-child,
+.partner-slot:nth-last-child(4),
+.service-grid article:first-child,
+.service-grid article:nth-child(2),
+.service-grid article:last-child,
+.service-grid article:nth-last-child(2) {
+  border-radius: 0;
+}
+
+.wallpaper-end {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .site-nav {
+    top: 78px;
+    background: transparent;
+  }
+
+  .hero-card,
+  .section,
+  .partner-grid,
+  .service-grid,
+  .contact-box {
+    border-radius: 28px;
+  }
+
+  .partner-slot,
+  .service-grid article,
+  .partner-slot:first-child,
+  .partner-slot:last-child,
+  .service-grid article:first-child,
+  .service-grid article:last-child {
+    border-radius: 0;
+  }
+
+  body::before {
+    background-size: auto 75vh;
+    opacity: .22;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    min-height: 68px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .site-nav {
+    top: 68px;
+  }
+
+  body::before {
+    background-size: auto 75vh;
+    opacity: .22;
   }
 }
