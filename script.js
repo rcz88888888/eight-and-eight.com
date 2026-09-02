@@ -15,12 +15,14 @@ document.querySelectorAll(".site-nav a").forEach(link => {
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
-// Subtle logo parallax: the content scrolls normally while the background logo
-// follows at only a small fraction of the page movement.
+// The content uses native scrolling. Only the second background layer moves:
+// from a fully visible logo at the top to its lower half at the page end.
 const setLogoParallax = () => {
-  const shift = Math.max(-42, Math.min(42, window.scrollY * 0.055));
-  document.documentElement.style.setProperty("--logo-shift", `${shift}px`);
+  const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = scrollRange > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollRange)) : 0;
+  document.documentElement.style.setProperty("--logo-shift", `${progress * -37.5}vh`);
 };
 
 setLogoParallax();
 window.addEventListener("scroll", setLogoParallax, { passive: true });
+window.addEventListener("resize", setLogoParallax, { passive: true });
