@@ -15,12 +15,12 @@ document.querySelectorAll(".site-nav a").forEach(link => {
 
 document.getElementById("year").textContent = new Date().getFullYear();
 
-// The content uses native scrolling. The full background logo keeps one scale
-// and travels only a small distance, creating a slower parallax movement.
+// Move the second logo slowly while the text scrolls normally. Near the end of
+// the page it fades completely, so it is no longer visible at the bottom.
 const setLogoParallax = () => {
   const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
   const progress = scrollRange > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollRange)) : 0;
-  document.documentElement.style.setProperty("--logo-shift", `${progress * -10}vh`);
+  document.documentElement.style.setProperty("--parallax-progress", progress.toFixed(4));
 };
 
 setLogoParallax();
