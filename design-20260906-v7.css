@@ -429,3 +429,23 @@ p,
     transform: translate3d(-50%, 0, 0);
   }
 }
+
+
+/* CLEAN RESET 2026-09-08: all decorative background/image layers and logo removed. */
+body::before, body::after,
+.site-shell::before, .site-shell::after,
+.background-stack, .background-layer, .parallax-logo, .logo-stage, .wallpaper-end {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  background-image: none !important;
+}
+html, body, .site-shell {
+  background-image: none !important;
+}
+.site-shell {
+  background: var(--pearl-white) !important;
+}
+.topbar, .footer {
+  background-image: none !important;
+}
