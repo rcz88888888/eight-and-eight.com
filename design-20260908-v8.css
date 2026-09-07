@@ -1,0 +1,208 @@
+:root {
+  --pearl-white: #fbf8f3;
+  --soft-white: #fffdf8;
+  --champagne: #e7d3b5;
+  --gold-accent: #c79c5a;
+  --deep-taupe: #9d735c;
+  --silver: #8a8f97;
+  --slate: #2f3a43;
+  --dark-gold-line: rgba(157, 115, 92, .40);
+  --ink: var(--slate);
+  --muted: #6a6b70;
+  --dark-gold: var(--deep-taupe);
+  --light-gold: var(--champagne);
+  --matte-silver: var(--silver);
+  --background-art: url("eight-and-eight-background-20260905.jpeg");
+  --header-height: 90px;
+  --background-shift: 0px;
+  --logo-shift: 0px;
+  --logo-opacity: .18;
+}
+
+html { background: var(--pearl-white); }
+body {
+  min-width: 320px;
+  background: var(--pearl-white);
+  color: var(--slate);
+  font-size: 16px;
+}
+
+/* Disable the older fixed logo/background rules from styles.css. */
+body::before { content: none !important; }
+
+.site-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  overflow: clip;
+  background: transparent !important;
+  isolation: isolate;
+}
+
+/* ONE background plane only. The original 1600 × 900 small-logo artwork is
+   enlarged proportionally to the full height of the complete page. */
+.background-stack {
+  position: absolute;
+  z-index: 0;
+  top: -220px;
+  right: 0;
+  bottom: -220px;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.background-layer {
+  position: absolute;
+  inset: 0;
+  background-image: var(--background-art);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: auto 100%;
+  opacity: 1;
+  transform: translate3d(0, var(--background-shift), 0);
+  transform-origin: center top;
+  will-change: transform;
+}
+
+/* The logo is its own parallax plane. At scroll position 0 it is completely
+   visible, centered, and as large as the viewport permits with balanced room
+   on every side. No content panel enters this first screen. */
+.parallax-logo {
+  position: fixed;
+  z-index: 1;
+  top: calc(var(--header-height) + clamp(22px, 3vh, 42px));
+  left: 50%;
+  width: calc(100vw - clamp(60px, 12vw, 190px));
+  height: calc(100svh - var(--header-height) - clamp(44px, 7vh, 92px));
+  pointer-events: none;
+  opacity: var(--logo-opacity);
+  transform: translate3d(-50%, var(--logo-shift), 0);
+  transform-origin: center top;
+  will-change: transform, opacity;
+  mix-blend-mode: multiply;
+}
+
+.parallax-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+}
+
+main, .footer { position: relative; z-index: 2; }
+main { padding-top: 0; }
+
+.logo-stage {
+  width: 100%;
+  min-height: calc(100svh - var(--header-height));
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Menu remains readable, but the former wallpaper bars are gone so there is
+   genuinely only one continuous background image from top to bottom. */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  min-height: var(--header-height);
+  padding: 14px 5vw;
+  justify-content: space-between;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(251, 248, 243, .72) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--dark-gold-line);
+  backdrop-filter: blur(8px);
+}
+.topbar::before { content: none !important; }
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--deep-taupe);
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1;
+}
+.site-nav { gap: clamp(14px, 1.5vw, 24px); }
+.site-nav a, .site-nav a:hover {
+  color: var(--deep-taupe);
+  font-size: .875rem;
+  letter-spacing: .11em;
+}
+.site-nav a::after, .menu-toggle span { background: var(--gold-accent); }
+
+.hero-card, .section, .partner-grid, .service-grid, .contact-box {
+  border-color: var(--dark-gold-line);
+  border-radius: 28px;
+  box-shadow: 0 18px 55px rgba(47,58,67,.055);
+}
+.hero-card, .hero-copy, .section, .contact-panel, .contact-box, .footer {
+  background: rgba(251,248,243,.92);
+  backdrop-filter: blur(1.5px);
+}
+.section-label {
+  background: rgba(231,211,181,.92);
+  border-color: var(--dark-gold-line);
+  color: var(--deep-taupe);
+  font-size: .875rem;
+}
+h1,h2,h3,.principles strong,.process,.contact-box strong,.contact-tags { color: var(--deep-taupe); }
+p,.lead { color: var(--slate); }
+.eyebrow,.small-label,.note { color: var(--deep-taupe); }
+.eyebrow,.small-label { font-size: .8125rem; }
+.partner-grid,.service-grid {
+  gap: 0;
+  overflow: hidden;
+  background: rgba(255,253,248,.92);
+}
+.partner-slot,.service-grid article {
+  border-radius: 0;
+  background: rgba(255,253,248,.92);
+  color: var(--slate);
+}
+.partner-slot { font-size: .8125rem; }
+.partner-slot + .partner-slot,.service-grid article:nth-child(even) { border-left: 1px solid var(--dark-gold-line); }
+.service-grid article:nth-child(n + 3) { border-top: 1px solid var(--dark-gold-line); }
+.principles,.principles div,.process,.footer { border-color: var(--dark-gold-line); }
+.principles div,.process { background: rgba(231,211,181,.92); }
+.process i { color: #a99c8f; }
+.contact-links a,.footer a { color: var(--deep-taupe); border-color: var(--gold-accent); }
+.footer { color: var(--muted); font-size: .8125rem; }
+.wallpaper-end { display: none !important; }
+
+@media (max-width: 900px) {
+  :root { --header-height: 78px; }
+  .topbar { min-height: var(--header-height); padding: 12px 5vw; }
+  .site-nav { top: var(--header-height); background: rgba(251,248,243,.96); border-color: var(--dark-gold-line); }
+  .site-nav.open { gap: 16px; }
+  .partner-slot + .partner-slot,.service-grid article:nth-child(even) { border-left: 0; }
+  .partner-slot + .partner-slot,.service-grid article:nth-child(n + 2) { border-top: 1px solid var(--dark-gold-line); }
+}
+
+@media (max-width: 560px) {
+  :root { --header-height: 68px; --logo-opacity: .18; }
+  .topbar { min-height: var(--header-height); padding: 9px 5vw; }
+  .site-nav { top: var(--header-height); }
+  .wordmark { font-size: 21px; }
+  .parallax-logo {
+    top: calc(var(--header-height) + 4vh);
+    width: calc(100vw - 44px);
+    height: calc(100svh - var(--header-height) - 8vh);
+  }
+  .logo-stage { min-height: calc(100svh - var(--header-height)); }
+  .hero-card,.section,.partner-grid,.service-grid,.contact-box { border-radius: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .background-layer { transform: none; }
+  .parallax-logo { transform: translate3d(-50%, 0, 0); }
+}
