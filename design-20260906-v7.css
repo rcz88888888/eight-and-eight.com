@@ -449,3 +449,47 @@ html, body, .site-shell {
 .topbar, .footer {
   background-image: none !important;
 }
+
+/* Wallpaper bars: 30% more visible than the previous 12% setting. */
+.topbar,
+.footer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.topbar::before,
+.footer::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--wallpaper) !important;
+  background-repeat: repeat-x !important;
+  background-size: 1120px auto !important;
+  opacity: .156;
+  mix-blend-mode: multiply;
+}
+
+.topbar::before {
+  background-position: center 24% !important;
+}
+
+.footer::before {
+  background-position: center 76% !important;
+}
+
+.topbar > *,
+.footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .topbar::before,
+  .footer::before {
+    background-size: 880px auto !important;
+  }
+}
