@@ -399,3 +399,70 @@ p,
     transform: translate3d(-50%, 0, 0);
   }
 }
+
+/* 2026-09-10 requested visual adjustments */
+:root {
+  --metallic-gold: #c6a34a;
+  --dark-gold-line: #c6a34a;
+  --line: #c6a34a;
+  --gold-accent: #c6a34a;
+  --logo-layer-opacity: .92;
+}
+
+/* Background artwork: 92% visible. */
+body::before {
+  opacity: .92;
+}
+
+/* Large logo: retain its supplied light-gold colour and show it at 92%. */
+.parallax-logo {
+  opacity: .92;
+  mix-blend-mode: normal;
+}
+
+/* Text fields/panels must not have covering translucent interior fills. */
+.hero-card,
+.hero-copy,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.principles,
+.principles div,
+.process,
+.contact-panel,
+.contact-box,
+.footer {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* All structural/divider lines in metallic gold. */
+.hero-card,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.principles,
+.principles div,
+.process,
+.contact-panel,
+.contact-box,
+.footer,
+.topbar,
+.wallpaper-end,
+.contact-links a,
+.footer a {
+  border-color: var(--metallic-gold) !important;
+}
+
+.site-nav a::after,
+.menu-toggle span {
+  background: var(--metallic-gold) !important;
+}
