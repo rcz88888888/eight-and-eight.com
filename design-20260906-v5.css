@@ -24,7 +24,7 @@
   --wallpaper: url("eight-and-eight-background-20260905.jpeg");
   --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
 
-  --header-height: 90px;
+  --header-height: 120px;
   --background-shift: 0px;
   --logo-shift: 0px;
   --logo-layer-opacity: .12;
@@ -116,7 +116,7 @@ main {
   top: 0;
   z-index: 5;
   min-height: var(--header-height);
-  padding: 14px 5vw;
+  padding: 19px 5vw;
   justify-content: space-between;
   overflow: hidden;
   isolation: isolate;
@@ -303,18 +303,42 @@ p,
 
 @media (max-width: 900px) {
   :root {
-    --header-height: 78px;
+    --header-height: 104px;
   }
 
   .topbar {
     min-height: var(--header-height);
-    padding: 12px 5vw;
+    padding: 16px 5vw;
   }
 
   .site-nav {
     top: var(--header-height);
-    background: rgba(251, 248, 243, .96);
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border-color: var(--dark-gold-line);
+  }
+
+  .site-nav::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    pointer-events: none;
+    background-image: var(--wallpaper-bars);
+    background-repeat: repeat-x;
+    background-size: 1120px auto;
+    background-position: center 24%;
+    opacity: .55;
+  }
+
+  .site-nav a {
+    position: relative;
+    z-index: 1;
   }
 
   .site-nav.open {
@@ -338,7 +362,7 @@ p,
 
 @media (max-width: 560px) {
   :root {
-    --header-height: 68px;
+    --header-height: 90.44px;
     --logo-layer-opacity: .12;
   }
 
@@ -348,7 +372,7 @@ p,
 
   .topbar {
     min-height: var(--header-height);
-    padding: 9px 5vw;
+    padding: 12px 5vw;
   }
 
   .site-nav {

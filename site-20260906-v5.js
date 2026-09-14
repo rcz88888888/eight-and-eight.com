@@ -17,19 +17,35 @@ const year = document.getElementById("year");
 if (year) year.textContent = new Date().getFullYear();
 
 // Wallpaper: 37.5% of normal scrolling speed.
-// Logo: 75% of normal scrolling speed, so it moves faster while both
-// remain behind the normally scrolling page content.
+// Logo travel is calculated from the page and viewport dimensions so its
+// visible lower edge leaves the viewport exactly at the bottom of the page.
 let parallaxFrame = 0;
+const parallaxLogo = document.querySelector(".parallax-logo");
+
+const getLogoExitTravel = () => {
+  if (!parallaxLogo) return 0;
+
+  const styles = window.getComputedStyle(parallaxLogo);
+  const top = Number.parseFloat(styles.top) || 0;
+  const boxWidth = parallaxLogo.offsetWidth;
+  const boxHeight = parallaxLogo.offsetHeight;
+
+  // Source size and alpha-content lower edge of Eight&Eight-logo.png.
+  const sourceWidth = 922;
+  const sourceHeight = 1368;
+  const visibleContentBottom = 1223;
+  const scale = Math.min(boxWidth / sourceWidth, boxHeight / sourceHeight);
+  const centeredOffsetY = (boxHeight - sourceHeight * scale) / 2;
+
+  return top + centeredOffsetY + visibleContentBottom * scale + 1;
+};
 
 const updateParallax = () => {
   const scrollY = window.scrollY;
   const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
   const progress = scrollRange > 0 ? Math.min(1, scrollY / scrollRange) : 0;
-  const fade = progress < .86 ? 1 : Math.max(0, (1 - progress) / .14);
-  const logoOpacity = .12 * fade;
   document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.375).toFixed(1)}px`);
-  document.documentElement.style.setProperty("--logo-shift", `${(scrollY * -.75).toFixed(1)}px`);
-  document.documentElement.style.setProperty("--logo-layer-opacity", logoOpacity.toFixed(3));
+  document.documentElement.style.setProperty("--logo-shift", `${(-progress * getLogoExitTravel()).toFixed(1)}px`);
   parallaxFrame = 0;
 };
 
