@@ -16,8 +16,8 @@ document.querySelectorAll(".site-nav a").forEach(link => {
 const year = document.getElementById("year");
 if (year) year.textContent = new Date().getFullYear();
 
-// Wallpaper: 4.5% of normal scrolling speed.
-// Logo: 12% of normal scrolling speed, so it moves slightly faster while both
+// Wallpaper: 37.5% of normal scrolling speed.
+// Logo: 75% of normal scrolling speed, so it moves faster while both
 // remain behind the normally scrolling page content.
 let parallaxFrame = 0;
 
@@ -27,8 +27,8 @@ const updateParallax = () => {
   const progress = scrollRange > 0 ? Math.min(1, scrollY / scrollRange) : 0;
   const fade = progress < .86 ? 1 : Math.max(0, (1 - progress) / .14);
   const logoOpacity = .12 * fade;
-  document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.045).toFixed(1)}px`);
-  document.documentElement.style.setProperty("--logo-shift", `${(scrollY * -.12).toFixed(1)}px`);
+  document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.375).toFixed(1)}px`);
+  document.documentElement.style.setProperty("--logo-shift", `${(scrollY * -.75).toFixed(1)}px`);
   document.documentElement.style.setProperty("--logo-layer-opacity", logoOpacity.toFixed(3));
   parallaxFrame = 0;
 };

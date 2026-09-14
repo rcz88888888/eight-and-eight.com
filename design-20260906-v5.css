@@ -415,10 +415,46 @@ body::before {
   opacity: .92;
 }
 
-/* Large logo: retain its supplied light-gold colour and show it at 92%. */
+/* Large logo: use exactly the same colour as the Eight&Eight wordmark. */
 .parallax-logo {
   opacity: .92;
   mix-blend-mode: normal;
+  background-color: var(--deep-taupe);
+  -webkit-mask-image: url("Eight&Eight-logo.png");
+  mask-image: url("Eight&Eight-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.parallax-logo img {
+  visibility: hidden;
+}
+
+/* Alternative typography version: Bahnschrift Light Condensed throughout. */
+:root {
+  --site-font: "Bahnschrift Light Condensed", "Bahnschrift Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+}
+
+body,
+body *,
+button,
+input,
+select,
+textarea {
+  font-family: var(--site-font) !important;
+  font-stretch: condensed;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-weight: 300;
 }
 
 /* Text fields/panels must not have covering translucent interior fills. */
