@@ -22,6 +22,7 @@
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
   --wallpaper: url("eight-and-eight-background-20260905.jpeg");
+  --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
 
   --header-height: 90px;
   --background-shift: 0px;
@@ -131,10 +132,10 @@ main {
   z-index: 0;
   inset: 0;
   pointer-events: none;
-  background-image: var(--wallpaper);
+  background-image: var(--wallpaper-bars);
   background-repeat: repeat-x;
   background-size: 1120px auto;
-  opacity: .12;
+  opacity: .55;
   mix-blend-mode: multiply;
 }
 
