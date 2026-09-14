@@ -415,11 +415,11 @@ body::before {
   opacity: .92;
 }
 
-/* Large logo: use exactly the same colour as the Eight&Eight wordmark. */
+/* Large logo: use the champagne colour of the wallpaper palette. */
 .parallax-logo {
   opacity: .92;
   mix-blend-mode: normal;
-  background-color: var(--deep-taupe);
+  background-color: var(--champagne);
   -webkit-mask-image: url("Eight&Eight-logo.png");
   mask-image: url("Eight&Eight-logo.png");
   -webkit-mask-repeat: no-repeat;
