@@ -21,12 +21,13 @@
   --light-gold: var(--champagne);
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
-  --wallpaper: url("eight-and-eight-background-20260905.jpeg");
+  --wallpaper: url("Eight&Eight-background-diamond-lattice.jpeg");
   --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
 
   --header-height: 120px;
   --background-shift: 0px;
   --logo-shift: 0px;
+  --logo-rotation: 0deg;
   --logo-layer-opacity: .12;
 }
 
@@ -52,7 +53,7 @@ body::before {
   background-image: var(--wallpaper);
   background-repeat: repeat-y;
   background-position: center var(--background-shift);
-  background-size: max(100vw, 960px) auto;
+  background-size: 100vw auto;
   background-blend-mode: multiply;
   opacity: 1;
   mix-blend-mode: normal;
@@ -79,8 +80,8 @@ body::before {
   max-height: 820px;
   pointer-events: none;
   opacity: var(--logo-layer-opacity);
-  transform: translate3d(-50%, var(--logo-shift), 0);
-  transform-origin: center top;
+  transform: translate3d(-50%, var(--logo-shift), 0) rotate(var(--logo-rotation)) scale(1.15);
+  transform-origin: center center;
   will-change: transform;
   mix-blend-mode: multiply;
 }
@@ -370,7 +371,7 @@ p,
   }
 
   body::before {
-    background-size: 960px auto;
+    background-size: 100vw auto;
   }
 
   .topbar {
@@ -424,7 +425,7 @@ p,
   }
 
   .parallax-logo {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(-50%, 0, 0) scale(1.15);
   }
 }
 

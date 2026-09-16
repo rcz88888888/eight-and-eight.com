@@ -21,6 +21,7 @@ if (year) year.textContent = new Date().getFullYear();
 // visible lower edge leaves the viewport exactly at the bottom of the page.
 let parallaxFrame = 0;
 const parallaxLogo = document.querySelector(".parallax-logo");
+const logoScale = 1.15;
 
 const getLogoExitTravel = () => {
   if (!parallaxLogo) return 0;
@@ -37,7 +38,10 @@ const getLogoExitTravel = () => {
   const scale = Math.min(boxWidth / sourceWidth, boxHeight / sourceHeight);
   const centeredOffsetY = (boxHeight - sourceHeight * scale) / 2;
 
-  return top + centeredOffsetY + visibleContentBottom * scale + 1;
+  const visibleBottom = centeredOffsetY + visibleContentBottom * scale;
+  const scaledVisibleBottom = boxHeight / 2 + (visibleBottom - boxHeight / 2) * logoScale;
+
+  return top + scaledVisibleBottom + 1;
 };
 
 const updateParallax = () => {
@@ -46,6 +50,7 @@ const updateParallax = () => {
   const progress = scrollRange > 0 ? Math.min(1, scrollY / scrollRange) : 0;
   document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.375).toFixed(1)}px`);
   document.documentElement.style.setProperty("--logo-shift", `${(-progress * getLogoExitTravel()).toFixed(1)}px`);
+  document.documentElement.style.setProperty("--logo-rotation", `${(progress * 360).toFixed(2)}deg`);
   parallaxFrame = 0;
 };
 
