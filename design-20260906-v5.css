@@ -32,14 +32,18 @@
 }
 
 html {
-  background: var(--pearl-white);
+  background-color: var(--pearl-white);
+  background-image: var(--wallpaper);
+  background-repeat: repeat-y;
+  background-position: center var(--background-shift);
+  background-size: 100vw auto;
 }
 
 body {
   min-width: 320px;
-  background: var(--pearl-white);
+  background: transparent;
   color: var(--slate);
-  font-size: 16px;
+  font-size: 21px;
 }
 
 /* Rear layer: the supplied wallpaper moves at the slowest rate. */
@@ -619,4 +623,17 @@ textarea {
     padding-top: 16px;
     padding-bottom: 24px;
   }
+}
+
+/* Increase the small black descriptive copy by five pixels. */
+.service-grid article p {
+  font-size: 19px;
+}
+
+/* Keep the long background continuous through the absolute page end. */
+html,
+body,
+.site-shell,
+main {
+  min-height: 100%;
 }
