@@ -16,7 +16,7 @@ document.querySelectorAll(".site-nav a").forEach(link => {
 const year = document.getElementById("year");
 if (year) year.textContent = new Date().getFullYear();
 
-// Small-logo wallpaper: 5% of normal scrolling speed.
+// Small-logo wallpaper: 0.1% of normal scrolling speed (slowest layer).
 // Logo travel is calculated from the page and viewport dimensions so its
 // visible lower edge leaves the viewport exactly at the bottom of the page.
 let parallaxFrame = 0;
@@ -48,9 +48,11 @@ const updateParallax = () => {
   const scrollY = window.scrollY;
   const scrollRange = document.documentElement.scrollHeight - window.innerHeight;
   const progress = scrollRange > 0 ? Math.min(1, scrollY / scrollRange) : 0;
-  const slowedLogoProgress = progress * (0.8 + 0.2 * progress);
-  document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.05).toFixed(1)}px`);
-  document.documentElement.style.setProperty("--logo-shift", `${(-slowedLogoProgress * getLogoExitTravel()).toFixed(1)}px`);
+  // The fourth-power curve keeps the logo visible through almost the complete
+  // page and still reaches the exact exit position at progress === 1.
+  const delayedLogoProgress = progress ** 4;
+  document.documentElement.style.setProperty("--background-shift", `${(scrollY * -.001).toFixed(1)}px`);
+  document.documentElement.style.setProperty("--logo-shift", `${(-delayedLogoProgress * getLogoExitTravel()).toFixed(1)}px`);
   document.documentElement.style.setProperty("--logo-rotation", `${(progress * 360).toFixed(2)}deg`);
   parallaxFrame = 0;
 };
