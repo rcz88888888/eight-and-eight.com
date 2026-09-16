@@ -527,3 +527,18 @@ textarea {
 .menu-toggle span {
   background: var(--metallic-gold) !important;
 }
+
+/* Header wordmark only: Sitka Text at three times its previous size. */
+.topbar .wordmark,
+.topbar .wordmark span {
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif !important;
+  font-size: clamp(66px, 6.6vw, 96px);
+  font-stretch: normal;
+}
+
+@media (max-width: 560px) {
+  .topbar .wordmark,
+  .topbar .wordmark span {
+    font-size: 63px;
+  }
+}
