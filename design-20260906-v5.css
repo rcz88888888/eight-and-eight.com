@@ -25,7 +25,8 @@
   --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
 
   --header-height: 120px;
-  --background-counter-shift: 0px;
+  --background-shift: 0px;
+  --background-rotation: 0deg;
   --logo-shift: 0px;
   --logo-rotation: 0deg;
   --logo-layer-opacity: .12;
@@ -44,24 +45,29 @@ body {
 
 /* Rear layer: the supplied wallpaper moves at the slowest rate. */
 body::before {
-  content: none !important;
-  display: none !important;
-}
-
-.site-shell::before {
-  content: "";
-  position: absolute;
+  content: "" !important;
+  display: block !important;
+  position: fixed;
   z-index: 0;
-  inset: 0;
+  inset: -30vmax;
   pointer-events: none;
-  background: var(--pearl-white) var(--wallpaper) center top / 100% auto repeat-y;
+  background-color: var(--pearl-white);
+  background-image: var(--wallpaper);
+  background-repeat: repeat;
+  background-position: center calc(50% + var(--background-shift));
+  background-size: 100vw auto;
   background-blend-mode: multiply;
   opacity: 1;
   mix-blend-mode: normal;
   filter: none;
-  transform: translate3d(0, var(--background-counter-shift), 0);
-  transform-origin: center top;
-  will-change: transform;
+  transform: rotate(var(--background-rotation));
+  transform-origin: center center;
+  will-change: background-position, transform;
+}
+
+.site-shell::before {
+  content: none !important;
+  display: none !important;
 }
 
 .site-shell {
@@ -419,7 +425,7 @@ p,
     scroll-behavior: auto;
   }
 
-  .site-shell::before {
+  body::before {
     background-position: center top;
   }
 
@@ -438,7 +444,7 @@ p,
 }
 
 /* Background artwork: 92% visible. */
-.site-shell::before {
+body::before {
   opacity: .92;
 }
 
