@@ -535,13 +535,61 @@ textarea {
 .topbar .wordmark,
 .topbar .wordmark span {
   font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif !important;
-  font-size: clamp(66px, 6.6vw, 96px);
+  font-size: clamp(44.22px, 4.422vw, 64.32px);
   font-stretch: normal;
 }
 
 @media (max-width: 560px) {
   .topbar .wordmark,
   .topbar .wordmark span {
-    font-size: 63px;
+    font-size: 42.21px;
+  }
+}
+
+/* Mobile navigation: complete list over the existing, unmoved page wallpaper. */
+@media (max-width: 900px) {
+  .topbar {
+    overflow: visible;
+  }
+
+  .site-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: calc(100vh - var(--header-height));
+    max-height: calc(100dvh - var(--header-height));
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: clamp(24px, 5vh, 48px) 5vw;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-content: start;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 0;
+  }
+
+  .site-nav::before {
+    content: none;
+    display: none;
+  }
+
+  .site-nav.open {
+    display: grid;
+    gap: 16px;
+  }
+
+  .site-nav a {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    padding: 8px 12px;
+    text-align: center;
   }
 }
