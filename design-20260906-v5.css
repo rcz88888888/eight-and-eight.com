@@ -54,7 +54,7 @@ body::before {
   background-color: var(--pearl-white);
   background-image: var(--wallpaper);
   background-repeat: repeat;
-  background-position: center calc(50% + var(--background-shift));
+  background-position: center calc(30vmax + var(--background-shift));
   background-size: 100vw auto;
   background-blend-mode: multiply;
   opacity: 1;
