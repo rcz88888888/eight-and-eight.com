@@ -531,7 +531,7 @@ textarea {
   background: var(--metallic-gold) !important;
 }
 
-/* Header wordmark only: Sitka Text at three times its previous size. */
+/* Header wordmark only: Sitka Text, reduced to 67% of the prior size. */
 .topbar .wordmark,
 .topbar .wordmark span {
   font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif !important;
@@ -546,24 +546,38 @@ textarea {
   }
 }
 
-/* Mobile navigation: complete list over the existing, unmoved page wallpaper. */
+/* Mobile navigation: expand the wallpaper bar without moving its image. */
 @media (max-width: 900px) {
   .topbar {
-    overflow: visible;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: hidden;
+  }
+
+  .topbar::before {
+    background-position: center -244px;
+  }
+
+  .wordmark {
+    order: 1;
+  }
+
+  .menu-toggle {
+    order: 2;
   }
 
   .site-nav {
+    order: 3;
+    flex: 1 0 100%;
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
     width: 100%;
-    max-height: calc(100vh - var(--header-height));
-    max-height: calc(100dvh - var(--header-height));
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: clamp(24px, 5vh, 48px) 5vw;
+    max-height: none;
+    overflow: visible;
+    padding: clamp(20px, 4vh, 36px) 0 clamp(24px, 5vh, 44px);
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     align-content: start;
@@ -591,5 +605,17 @@ textarea {
     max-width: 100%;
     padding: 8px 12px;
     text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar::before {
+    background-size: 880px auto;
+    background-position: center -189.5px;
+  }
+
+  .site-nav {
+    padding-top: 16px;
+    padding-bottom: 24px;
   }
 }
