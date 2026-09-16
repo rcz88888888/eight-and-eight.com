@@ -21,7 +21,7 @@
   --light-gold: var(--champagne);
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
-  --wallpaper: url("Eight&Eight-background-diamond-lattice.jpeg");
+  --wallpaper: url("Eight&Eight-background-exact-ratio-20260916.png");
   --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
 
   --header-height: 120px;
@@ -54,7 +54,7 @@ body::before {
   z-index: 0;
   inset: 0;
   pointer-events: none;
-  background: var(--pearl-white) var(--wallpaper) center top / 100% 100% no-repeat;
+  background: var(--pearl-white) var(--wallpaper) center top / 100% auto repeat-y;
   background-blend-mode: multiply;
   opacity: 1;
   mix-blend-mode: normal;
