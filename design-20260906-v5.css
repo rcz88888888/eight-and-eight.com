@@ -761,3 +761,80 @@ textarea {
   .wordmark { height: 31px; }
   .wordmark-symbol { height: 31px; }
 }
+
+/* 2026-09-24: the 8,888 independently moving background marks are drawn on
+   one viewport canvas to keep scrolling responsive on mobile devices. */
+.background-layers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  display: block;
+  pointer-events: none;
+  background: var(--pearl-white);
+}
+
+/* Eight precisely concentric copies; the foremost copy is fully opaque. */
+.parallax-logo {
+  opacity: 1;
+  background: transparent;
+  -webkit-mask: none;
+  mask: none;
+  transform: translateX(-50%);
+  mix-blend-mode: normal;
+  overflow: visible;
+}
+.main-logo-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-color: var(--deep-taupe);
+  -webkit-mask: url("Eight&Eight-logo.png") center / contain no-repeat;
+  mask: url("Eight&Eight-logo.png") center / contain no-repeat;
+  transform: translate3d(0, var(--layer-shift, 0px), 0) rotate(var(--layer-rotation, 0deg)) scale(calc(1.15 * var(--depth-size)));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Keep the lettering and small mark together at the centre while closed. */
+.wordmark-symbol {
+  background: var(--deep-taupe);
+  -webkit-mask: url("Eight&Eight-logo.png") center / contain no-repeat;
+  mask: url("Eight&Eight-logo.png") center / contain no-repeat;
+  object-position: -9999px 0;
+}
+@media (max-width: 900px) {
+  .topbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .topbar .wordmark {
+    order: 1;
+    margin-inline: auto;
+    max-width: calc(100% - 54px);
+    white-space: nowrap;
+  }
+  .topbar .menu-toggle {
+    position: absolute;
+    right: 5vw;
+    top: calc((var(--header-height) - 31px) / 2);
+    margin: 0;
+    order: 2;
+  }
+  .topbar .site-nav {
+    order: 3;
+  }
+  .topbar .wordmark,
+  .topbar .wordmark span { font-size: clamp(25px, 5.2vw, 46px); }
+}
+@media (max-width: 560px) {
+  .topbar .wordmark,
+  .topbar .wordmark span { font-size: clamp(23px, 7vw, 36px); }
+  .wordmark-symbol { height: 27px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-logo-layer { will-change: auto; }
+}
