@@ -1,5 +1,5 @@
 Eight&Eight – vollständiges Website-Paket
-Version: 20260924-logo-fix-2
+Version: 20260924-logo-scroll-3
 
 MUSS DAS REPOSITORY VORHER GELEERT WERDEN?
 Nein. Zusätzliche, nicht eingebundene Bilder, CSS- oder JavaScript-Dateien
@@ -24,13 +24,26 @@ mehr vom Start des Skripts abhängig. Ein einfaches Hintergrundmuster bleibt
 als Ersatz sichtbar, solange der animierte Logoregen nicht bereit ist.
 Die Hauptlogo-PNG ist bereits exakt RGB(157,115,92) / #9d735c eingefärbt,
 entsprechend dem Schriftzug Eight&Eight. CSS-Masken sind dafür nicht nötig.
-Das vordere Hauptlogo ist zu 100 Prozent sichtbar. Die sieben dahinter sind
-in 8-Prozentpunktschritten transparenter, in 0,8-Prozentschritten größer
-und jeweils um 8 Prozent langsamer als die davorliegende Ebene.
+Alle einzelnen Hauptlogos und Hintergrundlogos sind um 38 Prozent weniger
+sichtbar als in der zuletzt bestätigten Fassung (bisherige Deckkraft mal
+0,62). Von vorne nach hinten beträgt die Deckkraft der Hauptlogos jetzt:
+62 / 57,04 / 52,08 / 47,12 / 42,16 / 37,2 / 32,24 / 27,28 Prozent.
+Die Größenstaffelung bleibt erhalten. Jede dahinterliegende Ebene bewegt
+sich nun mit 72 Prozent der Scrollgeschwindigkeit der Ebene davor, also
+jeweils 28 Prozent langsamer.
+
+Alle acht Hauptlogos liegen genau bei halber Scrollstrecke im Zentrum des
+Bildschirms übereinander. Vor und nach diesem Mittelpunkt sind sie vertikal
+gestaffelt. Jedes Hauptlogo dreht sich über den vollständigen Scrollweg von
+ganz oben nach ganz unten achtmal im Uhrzeigersinn (0 bis 2.880 Grad).
+Die sanfte Beschleunigung und das Abbremsen bleiben erhalten; bei der Hälfte
+stehen alle nach vier vollen Drehungen wieder in der Ausgangsausrichtung.
 Die 8.888 Hintergrundlogos werden auf einer gemeinsamen Grafikfläche mit
 eigener Position, Größe und Scrollgeschwindigkeit dargestellt. Ihre Größen
 liegen zwischen 0,8 und 88 Prozent des dargestellten Hauptlogos. Die
-Sichtbarkeit der Hintergrundlogos beträgt nun 8 bis 32 Prozent.
+Sichtbarkeit der Hintergrundlogos beträgt nun 4,96 bis 19,84 Prozent.
+Das Hintergrund-Ersatzmuster ist ebenfalls um 38 Prozent abgeschwächt.
+Der Schriftzug und das kleine Logo in der Menüleiste bleiben unverändert.
 
 UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
 1. Diese ZIP vollständig entpacken. Die ZIP selbst nicht als Website
@@ -45,7 +58,7 @@ UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
 3. Im richtigen Branch und Website-Ordner alle Dateien dieser ZIP
    hochladen. Die vorhandene index.html muss dabei ersetzt werden.
    Nicht den äußeren Entpack-Ordner zusätzlich hochladen: index.html,
-   logo-fix-20260924.js, design-logo-fix-20260924.css, styles.css und die
+   logo-scroll-20260924-v3.js, design-logo-scroll-20260924-v3.css, styles.css und die
    Bilder müssen unmittelbar nebeneinander liegen.
    Beim Import gleichnamiger Dateien 'Ersetzen' wählen, nicht 'Beide
    behalten'. Die Dateinamen und Groß-/Kleinschreibung nicht verändern.
@@ -59,8 +72,8 @@ UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
 WICHTIGE DATEINAMEN
 index.html
 styles.css
-design-logo-fix-20260924.css
-logo-fix-20260924.js
+design-logo-scroll-20260924-v3.css
+logo-scroll-20260924-v3.js
 Eight&Eight-logo.png
 Eight&Eight-wallpaper.jpeg
 CNAME (bisherige Domain eight-and-eight.com bleibt unverändert)
@@ -77,8 +90,9 @@ PRÜFUNG DIESER FASSUNG
   und gespeichertem Bild, ohne Canvas und bei fehlendem Hintergrundbild
   geprüft, jeweils mit mobilen und Desktop-Abmessungen.
 - Geprüft: 8.888 Logos, Größenbereich, acht feste Hauptlogo-Bilder,
-  verschiedene Scrollgeschwindigkeiten, Menü öffnen/schließen sowie
-  vollständige lokale Dateiverweise.
+  38 Prozent reduzierte Deckkraft, acht volle Drehungen, Deckung bei
+  halber Scrollstrecke auch beim Zurückscrollen, 28 Prozent langsamere
+  Nachbarebenen, Menü öffnen/schließen und vollständige Dateiverweise.
 - Dies ersetzt keine Sichtprüfung in Safari auf einem echten iPhone.
   Ein vollständiger Browser-Render war hier nicht möglich.
 - Der tatsächliche Live-Upload und die Repository-Einstellungen wurden

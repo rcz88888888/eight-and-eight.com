@@ -1,0 +1,856 @@
+:root {
+  /* Palette taken directly from the supplied colour references. */
+  --pearl-white: #fbf8f3;
+  --soft-white: #fffdf8;
+  --warm-ivory: #f6f1e7;
+  --champagne: #e7d3b5;
+  --warm-beige: #d9c8b2;
+  --gold-accent: #c79c5a;
+  --soft-taupe: #a99c8f;
+  --rose-taupe: #b38d73;
+  --deep-taupe: #9d735c;
+  --silver: #8a8f97;
+  --slate: #2f3a43;
+
+  --page-cream: var(--pearl-white);
+  --dark-gold-line: rgba(157, 115, 92, .52);
+  --line: rgba(157, 115, 92, .40);
+  --ink: var(--slate);
+  --muted: #6a6b70;
+  --dark-gold: var(--deep-taupe);
+  --light-gold: var(--champagne);
+  --matte-silver: var(--silver);
+  --deep-gold-green: var(--deep-taupe);
+  --wallpaper: url("Eight&Eight-background-exact-ratio-20260916.png");
+  --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
+
+  --header-height: 120px;
+  --background-shift-1: 0px;
+  --background-shift-2: 0px;
+  --background-shift-3: 0px;
+  --background-shift-4: 0px;
+  --background-shift-5: 0px;
+  --background-shift-6: 0px;
+  --background-shift-7: 0px;
+  --background-shift-8: 0px;
+  --logo-shift: 0px;
+  --logo-rotation: 0deg;
+  --logo-layer-opacity: .12;
+}
+
+html {
+  background: var(--pearl-white);
+}
+
+body {
+  min-width: 320px;
+  background: transparent;
+  color: var(--slate);
+  font-size: 21px;
+}
+
+/* 64 independent background logos. Their positions, opacity, size and
+   scroll factors are generated deterministically in JS so the composition
+   looks random but does not jump around on every reload. */
+body::before {
+  content: none !important;
+  display: none !important;
+}
+
+.background-layers {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto 0;
+  height: 100%;
+  min-height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--pearl-white);
+}
+
+.background-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.background-logo {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc(clamp(260px, 25vw, 400px) * var(--size));
+  aspect-ratio: 400 / 280;
+  background: var(--dark-gold);
+  -webkit-mask: url("background-layer-1.png") center / contain no-repeat;
+  mask: url("background-layer-1.png") center / contain no-repeat;
+  opacity: var(--opacity);
+  transform: translate3d(-50%, var(--parallax-y, 0px), 0);
+  transform-origin: center;
+  will-change: transform;
+}
+
+.site-shell::before {
+  content: none !important;
+  display: none !important;
+}
+
+.site-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  overflow: clip;
+  background: transparent;
+}
+
+/* Middle layer: the supplied logo moves a little faster than the wallpaper. */
+.parallax-logo {
+  position: fixed;
+  z-index: 1;
+  top: calc(var(--header-height) + clamp(20px, 2vw, 32px));
+  left: 50%;
+  width: min(52vw, 560px);
+  height: calc(100vh - var(--header-height) - clamp(56px, 8vh, 96px));
+  max-height: 820px;
+  pointer-events: none;
+  opacity: var(--logo-layer-opacity);
+  transform: translate3d(-50%, var(--logo-shift), 0) rotate(var(--logo-rotation)) scale(1.15);
+  transform-origin: center center;
+  will-change: transform;
+  mix-blend-mode: multiply;
+}
+
+.parallax-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+main,
+.footer,
+.wallpaper-end {
+  position: relative;
+  z-index: 2;
+}
+
+main {
+  padding-top: 0;
+}
+
+.logo-stage {
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  min-height: var(--header-height);
+  padding: 19px 5vw;
+  justify-content: space-between;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(251, 248, 243, .63);
+  border-bottom: 1px solid var(--dark-gold-line);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.topbar::before,
+.wallpaper-end::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--wallpaper-bars);
+  background-repeat: repeat-x;
+  background-size: 1120px auto;
+  opacity: .30;
+  mix-blend-mode: multiply;
+}
+
+.topbar::before {
+  background-position: center 24%;
+}
+
+.wordmark,
+.menu-toggle,
+.site-nav {
+  position: relative;
+  z-index: 1;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--deep-taupe);
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1;
+}
+
+.site-nav {
+  gap: clamp(14px, 1.5vw, 24px);
+}
+
+.site-nav a,
+.site-nav a:hover {
+  color: var(--deep-taupe);
+  font-size: .875rem;
+  letter-spacing: .11em;
+}
+
+.site-nav a::after,
+.menu-toggle span {
+  background: var(--gold-accent);
+}
+
+.hero-card,
+.section,
+.partner-grid,
+.service-grid,
+.contact-box {
+  border-color: var(--dark-gold-line);
+  border-radius: 28px;
+  box-shadow: 0 18px 55px rgba(47, 58, 67, .055);
+}
+
+.hero-card,
+.hero-copy,
+.section,
+.contact-panel,
+.contact-box,
+.footer {
+  background: rgba(251, 248, 243, .08);
+  backdrop-filter: blur(1.5px);
+}
+
+.section-label {
+  background: rgba(231, 211, 181, .08);
+  border-color: var(--dark-gold-line);
+  color: var(--deep-taupe);
+  font-size: .875rem;
+}
+
+h1,
+h2,
+h3,
+.principles strong,
+.process,
+.contact-box strong,
+.contact-tags {
+  color: var(--deep-taupe);
+}
+
+p,
+.lead {
+  color: var(--slate);
+}
+
+.eyebrow,
+.small-label,
+.note {
+  color: var(--deep-taupe);
+}
+
+.eyebrow,
+.small-label {
+  font-size: .8125rem;
+}
+
+.partner-grid,
+.service-grid {
+  gap: 0;
+  overflow: hidden;
+  background: rgba(255, 253, 248, .08);
+}
+
+.partner-slot,
+.service-grid article {
+  border-radius: 0;
+  background: rgba(255, 253, 248, .08);
+  color: var(--slate);
+}
+
+.partner-slot {
+  font-size: .8125rem;
+}
+
+.partner-slot + .partner-slot,
+.service-grid article:nth-child(even) {
+  border-left: 1px solid var(--dark-gold-line);
+}
+
+.service-grid article:nth-child(n + 3) {
+  border-top: 1px solid var(--dark-gold-line);
+}
+
+.principles,
+.principles div,
+.process,
+.footer {
+  border-color: var(--dark-gold-line);
+}
+
+.principles div,
+.process {
+  background: rgba(231, 211, 181, .08);
+}
+
+.process i {
+  color: var(--soft-taupe);
+}
+
+.contact-links a,
+.footer a {
+  color: var(--deep-taupe);
+  border-color: var(--gold-accent);
+}
+
+.footer {
+  color: var(--muted);
+  font-size: .8125rem;
+}
+
+.wallpaper-end {
+  display: block;
+  width: 100%;
+  height: 220px;
+  margin-top: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(251, 248, 243, .63);
+  border-top: 1px solid var(--dark-gold-line);
+  border-bottom: 1px solid var(--dark-gold-line);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.wallpaper-end::before {
+  background-position: center 76%;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --header-height: 104px;
+  }
+
+  .topbar {
+    min-height: var(--header-height);
+    padding: 16px 5vw;
+  }
+
+  .site-nav {
+    top: var(--header-height);
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: var(--dark-gold-line);
+  }
+
+  .site-nav::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    pointer-events: none;
+    background-image: var(--wallpaper-bars);
+    background-repeat: repeat-x;
+    background-size: 1120px auto;
+    background-position: center 24%;
+    opacity: .55;
+  }
+
+  .site-nav a {
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-nav.open {
+    gap: 16px;
+  }
+
+  .logo-stage {
+    min-height: calc(84vh - var(--header-height));
+  }
+
+  .partner-slot + .partner-slot,
+  .service-grid article:nth-child(even) {
+    border-left: 0;
+  }
+
+  .partner-slot + .partner-slot,
+  .service-grid article:nth-child(n + 2) {
+    border-top: 1px solid var(--dark-gold-line);
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --header-height: 90.44px;
+    --logo-layer-opacity: .12;
+  }
+
+  .topbar {
+    min-height: var(--header-height);
+    padding: 12px 5vw;
+  }
+
+  .site-nav {
+    top: var(--header-height);
+  }
+
+  .wordmark {
+    font-size: 21px;
+  }
+
+  .parallax-logo {
+    top: calc(var(--header-height) + 7.5vw);
+    width: min(72vw, 460px);
+    height: calc(78vh - var(--header-height));
+  }
+
+  .logo-stage {
+    min-height: calc(78vh - var(--header-height));
+  }
+
+  .hero-card,
+  .section,
+  .partner-grid,
+  .service-grid,
+  .contact-box {
+    border-radius: 22px;
+  }
+
+  .wallpaper-end {
+    height: 170px;
+  }
+
+  .topbar::before,
+  .wallpaper-end::before {
+    background-size: 880px auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .background-layer {
+    will-change: auto;
+  }
+
+  .parallax-logo {
+    transform: translate3d(-50%, 0, 0) scale(1.15);
+  }
+}
+
+/* 2026-09-10 requested visual adjustments */
+:root {
+  --metallic-gold: #c6a34a;
+  --dark-gold-line: #c6a34a;
+  --line: #c6a34a;
+  --gold-accent: #c6a34a;
+  --logo-layer-opacity: .92;
+}
+
+/* Large logo: use the champagne colour of the wallpaper palette. */
+.parallax-logo {
+  opacity: .92;
+  mix-blend-mode: normal;
+  background-color: var(--champagne);
+  -webkit-mask-image: url("Eight&Eight-logo.png");
+  mask-image: url("Eight&Eight-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.parallax-logo img {
+  visibility: visible;
+}
+
+/* Alternative typography version: Bahnschrift Light Condensed throughout. */
+:root {
+  --site-font: "Bahnschrift Light Condensed", "Bahnschrift Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+}
+
+body,
+body *,
+button,
+input,
+select,
+textarea {
+  font-family: var(--site-font) !important;
+  font-stretch: condensed;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-weight: 300;
+}
+
+/* Text fields/panels must not have covering translucent interior fills. */
+.hero-card,
+.hero-copy,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.principles,
+.principles div,
+.process,
+.contact-panel,
+.contact-box,
+.footer {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* All structural/divider lines in metallic gold. */
+.hero-card,
+.section,
+.section-label,
+.partner-grid,
+.partner-slot,
+.service-grid,
+.service-grid article,
+.principles,
+.principles div,
+.process,
+.contact-panel,
+.contact-box,
+.footer,
+.topbar,
+.wallpaper-end,
+.contact-links a,
+.footer a {
+  border-color: var(--metallic-gold) !important;
+}
+
+.site-nav a::after,
+.menu-toggle span {
+  background: var(--metallic-gold) !important;
+}
+
+/* Header wordmark only: Sitka Text, reduced to 67% of the prior size. */
+.topbar .wordmark,
+.topbar .wordmark span {
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif !important;
+  font-size: clamp(44.22px, 4.422vw, 64.32px);
+  font-stretch: normal;
+}
+
+@media (max-width: 560px) {
+  .topbar .wordmark,
+  .topbar .wordmark span {
+    font-size: 42.21px;
+  }
+}
+
+/* Mobile navigation: expand the wallpaper bar without moving its image. */
+@media (max-width: 900px) {
+  .topbar {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: hidden;
+  }
+
+  .topbar::before {
+    background-position: center -244px;
+  }
+
+  .wordmark {
+    order: 1;
+  }
+
+  .menu-toggle {
+    order: 2;
+  }
+
+  .site-nav {
+    order: 3;
+    flex: 1 0 100%;
+    display: none;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: clamp(20px, 4vh, 36px) 0 clamp(24px, 5vh, 44px);
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-content: start;
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 0;
+  }
+
+  .site-nav::before {
+    content: none;
+    display: none;
+  }
+
+  .site-nav.open {
+    display: grid;
+    gap: 16px;
+  }
+
+  .site-nav a {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    padding: 8px 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar::before {
+    background-size: 880px auto;
+    background-position: center -189.5px;
+  }
+
+  .site-nav {
+    padding-top: 16px;
+    padding-bottom: 24px;
+  }
+}
+
+/* Increase the small black descriptive copy by five pixels. */
+.service-grid article p {
+  font-size: 19px;
+}
+
+/* Portfolio: preserve every supplied logo in its original proportions. */
+.partner-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.partner-slot {
+  min-height: clamp(150px, 16vw, 230px);
+  padding: clamp(18px, 2.5vw, 36px);
+}
+
+.partner-slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 170px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.partner-slot + .partner-slot {
+  border-left: 0;
+}
+
+.partner-slot:nth-child(3n + 2),
+.partner-slot:nth-child(3n + 3) {
+  border-left: 1px solid var(--dark-gold-line);
+}
+
+.partner-slot:nth-child(n + 4) {
+  border-top: 1px solid var(--dark-gold-line);
+}
+
+@media (max-width: 900px) {
+  .partner-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .partner-slot:nth-child(n) {
+    border-left: 0;
+  }
+
+  .partner-slot:nth-child(even) {
+    border-left: 1px solid var(--dark-gold-line);
+  }
+
+  .partner-slot:nth-child(n + 3) {
+    border-top: 1px solid var(--dark-gold-line);
+  }
+}
+
+@media (max-width: 560px) {
+  .partner-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .partner-slot:nth-child(n) {
+    border-left: 0;
+  }
+
+  .partner-slot:nth-child(n + 2) {
+    border-top: 1px solid var(--dark-gold-line);
+  }
+}
+
+/* 2026-09-18: unified Eight&Eight logo colour, 8% visibility + size progression. */
+.background-layer { mix-blend-mode: normal; }
+.background-layer-1 { opacity: .08; background-size: 240px auto; }
+.background-layer-2 { opacity: .16; background-size: 259.2px auto; }
+.background-layer-3 { opacity: .24; background-size: 278.4px auto; }
+.background-layer-4 { opacity: .32; background-size: 297.6px auto; }
+.background-layer-5 { opacity: .40; background-size: 316.8px auto; }
+.background-layer-6 { opacity: .48; background-size: 336px auto; }
+.background-layer-7 { opacity: .56; background-size: 355.2px auto; }
+.background-layer-8 { opacity: .64; background-size: 374.4px auto; }
+
+.parallax-logo { mix-blend-mode: normal; }
+
+/* Header wordmark: symbol and compressed text form one compact logo unit.
+   The symbol is scaled to the full height of the three menu strokes. */
+.wordmark {
+  height: 31px;
+  gap: 8px;
+  overflow: visible;
+}
+.wordmark-symbol {
+  display: block;
+  width: auto;
+  height: 31px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.wordmark-text {
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--deep-taupe);
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1;
+  transform: scaleY(.62);
+  transform-origin: center bottom;
+}
+
+@media (max-width: 900px) {
+  .wordmark { height: 31px; }
+  .wordmark-symbol { height: 31px; }
+}
+
+/* 2026-09-24: the 8,888 independently moving background marks are drawn on
+   one viewport canvas to keep scrolling responsive on mobile devices. */
+.logo-rain-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url("Eight&Eight-logo.png") center top / 120px auto repeat;
+  opacity: .1116;
+}
+.logo-rain-ready .logo-rain-fallback { visibility: hidden; }
+.site-shell { z-index: 2; }
+.background-layers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  display: block;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Eight copies meet at the viewport centre when half the page is scrolled.
+   Each image's individual opacity is 62% of its previous value. */
+.parallax-logo {
+  top: 50%;
+  opacity: 1;
+  background: transparent;
+  -webkit-mask: none;
+  mask: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: normal;
+  overflow: visible;
+}
+.parallax-logo .main-logo-layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  visibility: visible;
+  object-fit: contain;
+  background: transparent;
+  -webkit-mask: none;
+  mask: none;
+  transform: translate3d(0, var(--layer-shift, 0px), 0) rotate(var(--layer-rotation, 0deg)) scale(var(--layer-scale, 1.15));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Keep the lettering and small mark together at the centre while closed. */
+.wordmark-symbol {
+  background: transparent;
+  -webkit-mask: none;
+  mask: none;
+  object-position: center;
+}
+@media (max-width: 900px) {
+  .topbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .topbar .wordmark {
+    order: 1;
+    margin-inline: auto;
+    max-width: calc(100% - 54px);
+    white-space: nowrap;
+  }
+  .topbar .menu-toggle {
+    position: absolute;
+    right: 5vw;
+    top: calc((var(--header-height) - 31px) / 2);
+    margin: 0;
+    order: 2;
+  }
+  .topbar .site-nav {
+    order: 3;
+  }
+  .topbar .wordmark,
+  .topbar .wordmark span { font-size: clamp(25px, 5.2vw, 46px); }
+}
+@media (max-width: 560px) {
+  .topbar .wordmark,
+  .topbar .wordmark span { font-size: clamp(23px, 7vw, 36px); }
+  .wordmark-symbol { height: 27px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-logo-layer { will-change: auto; }
+}
