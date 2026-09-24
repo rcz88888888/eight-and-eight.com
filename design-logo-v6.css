@@ -778,7 +778,7 @@ textarea {
   z-index: 0;
   pointer-events: none;
   background: url("Eight&Eight-logo.png") center top / 120px auto repeat;
-  opacity: .05673744;
+  opacity: .039716208;
 }
 .logo-rain-ready .logo-rain-fallback { visibility: hidden; }
 .site-shell { z-index: 2; }
@@ -955,4 +955,36 @@ h1, h2, h3, h4, h5, h6,
   border: 0 !important;
   justify-content: center;
   text-align: center;
+}
+
+/* v13: both banners retain their edge masks at 80% overall visibility. */
+.topbar, .wallpaper-end { opacity: .8; }
+
+/* A separate, fully visible logo in the opening area, in the same colour
+   as the main logo asset. It scrolls with the document. The stage keeps
+   the existing responsive height with an 8px inset above and below. */
+.logo-stage {
+  height: calc(100vh - var(--header-height));
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-static-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  object-position: center;
+  opacity: 1;
+}
+@media (max-width: 900px) {
+  .logo-stage { height: calc(84vh - var(--header-height)); }
+}
+@media (max-width: 560px) {
+  .logo-stage { height: calc(78vh - var(--header-height)); }
 }

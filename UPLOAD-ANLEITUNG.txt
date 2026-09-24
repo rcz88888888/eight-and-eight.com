@@ -1,5 +1,22 @@
 Eight&Eight – vollständiges Website-Paket
-Version: footer-clean-v12
+Version: hero-logo-visibility-v13
+
+AKTUELLER STAND – VERSION 13
+Die Banner sind um 20 Prozent abgeschwächt (Deckkraft 0,8). Die vorhandenen
+Transparenzmasken an ihren zur Website gerichteten Kanten bleiben erhalten.
+Alle acht Hauptlogo-Ebenen, alle 8.888 Hintergrundlogos und das Ersatzmuster
+sind gegenüber Version 12 zusätzlich um 30 Prozent abgeschwächt, jeweils
+bisherige Deckkraft mal 0,7. Hauptlogos jetzt circa 4,21 bis 9,58 Prozent;
+Hintergrundlogos circa 1,77 bis 7,06 Prozent; Ersatzmuster 3,97 Prozent.
+Im bisherigen Anfangsbereich befindet sich ein zusätzliches, vollständig
+sichtbares Logo mit 100 Prozent Deckkraft. Es verwendet dieselbe Bilddatei
+und Farbe wie die Hauptlogos, ist mittig ausgerichtet und proportional
+angepasst. Der Bereich zwischen oberem Banner und About hat oben und unten
+8 Pixel Innenabstand. Dieses Logo scrollt mit dem Seiteninhalt und ist
+von der Abschwächung der Hintergrund- und Hauptlogo-Ebenen ausgenommen.
+Die vorherige Fußzeile, Typografie und Banner-Fades bleiben erhalten.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLER STAND – VERSION 12
 Die Fußzeile enthält nur noch © 2026 Eight&Eight, horizontal zentriert.
