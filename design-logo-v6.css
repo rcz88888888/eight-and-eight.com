@@ -897,8 +897,6 @@ textarea {
 main p:not(.contact-tags) {
   font-size: 22px;
   font-weight: 700;
-  -webkit-text-stroke: 1px #fff;
-  paint-order: stroke fill;
 }
 main p.lead {
   font-size: calc(clamp(19px, 2.2vw, 27px) + 1px);
@@ -908,13 +906,6 @@ main .service-grid article p {
 }
 main p:not(.contact-tags) strong {
   font-weight: 700;
-}
-@supports not (-webkit-text-stroke: 1px #fff) {
-  main p:not(.contact-tags) {
-    text-shadow: -1px -1px 0 #fff, 0 -1px 0 #fff, 1px -1px 0 #fff,
-                 -1px 0 0 #fff, 1px 0 0 #fff,
-                 -1px 1px 0 #fff, 0 1px 0 #fff, 1px 1px 0 #fff;
-  }
 }
 
 /* v11: use the dominant opaque colour sampled from the supplied wordmark. */
@@ -957,4 +948,11 @@ h1, h2, h3, h4, h5, h6,
 .wallpaper-end {
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
   mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
+}
+
+/* v12: a single centred copyright line, without the footer divider. */
+.footer {
+  border: 0 !important;
+  justify-content: center;
+  text-align: center;
 }

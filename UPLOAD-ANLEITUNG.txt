@@ -1,5 +1,15 @@
 Eight&Eight – vollständiges Website-Paket
-Version: banner-fade-type-v11
+Version: footer-clean-v12
+
+AKTUELLER STAND – VERSION 12
+Die Fußzeile enthält nur noch © 2026 Eight&Eight, horizontal zentriert.
+Die letzte Trennlinie oberhalb der Fußzeile vor dem unteren Banner ist
+entfernt. MARKETING & und BACK TO TOP wurden aus dieser Fußzeile entfernt.
+Der weiße Schriftrand einschließlich der Textschatten-Ersatzdarstellung
+ist aus den Fließtexten entfernt. Die Logofarbe und normale Schriftstärke
+bleiben erhalten, ebenso die fetten Überschriften und Bannerübergänge.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLER STAND – VERSION 11
 Dunkle Fließtexte verwenden #9B694F, den häufigsten deckenden Farbton
