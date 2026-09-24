@@ -1,0 +1,89 @@
+Eight&Eight – vollständiges Website-Paket
+Version: 20260924-logo-fix-2
+
+MUSS DAS REPOSITORY VORHER GELEERT WERDEN?
+Nein. Zusätzliche, nicht eingebundene Bilder, CSS- oder JavaScript-Dateien
+werden von dieser index.html nicht automatisch geladen. Es genügt, die
+gleichnamigen Dateien am richtigen Ort zu ersetzen und alle neuen Dateien
+mit hochzuladen.
+
+Eine Mischung kann Probleme machen, wenn die alte index.html aktiv bleibt,
+Dateien statt ersetzt als index(1).html usw. gespeichert werden oder der
+Upload in einem falschen Unterordner/Branch landet. Die neue ZIP enthält
+nur eine index.html, die benötigten Dateien und diese Anleitung.
+
+GEFUNDENER UND BEHOBENER FEHLER
+In der zuvor ausgegebenen ZIP konnte ein bereits zwischengespeichertes Logo
+einen JavaScript-Fehler auslösen: requestUpdate wurde aufgerufen, bevor es
+initialisiert war. Danach wurden weder die Hauptlogo-Ebenen noch der
+Logoregen aufgebaut. Dies kann auch bei vollständig geleertem Repository
+auftreten. Der eigene Fehler in der ZIP wurde korrigiert.
+
+Die acht Hauptlogo-Bilder sind jetzt direkt in HTML vorhanden und nicht
+mehr vom Start des Skripts abhängig. Ein einfaches Hintergrundmuster bleibt
+als Ersatz sichtbar, solange der animierte Logoregen nicht bereit ist.
+Die Hauptlogo-PNG ist bereits exakt RGB(157,115,92) / #9d735c eingefärbt,
+entsprechend dem Schriftzug Eight&Eight. CSS-Masken sind dafür nicht nötig.
+Das vordere Hauptlogo ist zu 100 Prozent sichtbar. Die sieben dahinter sind
+in 8-Prozentpunktschritten transparenter, in 0,8-Prozentschritten größer
+und jeweils um 8 Prozent langsamer als die davorliegende Ebene.
+Die 8.888 Hintergrundlogos werden auf einer gemeinsamen Grafikfläche mit
+eigener Position, Größe und Scrollgeschwindigkeit dargestellt. Ihre Größen
+liegen zwischen 0,8 und 88 Prozent des dargestellten Hauptlogos. Die
+Sichtbarkeit der Hintergrundlogos beträgt nun 8 bis 32 Prozent.
+
+UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
+1. Diese ZIP vollständig entpacken. Die ZIP selbst nicht als Website
+   hochladen. Es werden die entpackten Dateien benötigt.
+2. Bei GitHub die bisherige Veröffentlichungsquelle prüfen:
+   Repository > Settings > Pages > Build and deployment.
+   Den bisher verwendeten Branch und Ordner beibehalten.
+   Beispiel: main und /(root) bedeutet oberste Ebene des Repositorys;
+   main und /docs bedeutet innerhalb des Ordners docs.
+   Bei einer Veröffentlichung per GitHub Actions den bisher verwendeten
+   Quell-/Buildpfad beibehalten und den bestehenden Workflow nicht löschen.
+3. Im richtigen Branch und Website-Ordner alle Dateien dieser ZIP
+   hochladen. Die vorhandene index.html muss dabei ersetzt werden.
+   Nicht den äußeren Entpack-Ordner zusätzlich hochladen: index.html,
+   logo-fix-20260924.js, design-logo-fix-20260924.css, styles.css und die
+   Bilder müssen unmittelbar nebeneinander liegen.
+   Beim Import gleichnamiger Dateien 'Ersetzen' wählen, nicht 'Beide
+   behalten'. Die Dateinamen und Groß-/Kleinschreibung nicht verändern.
+4. Änderungen speichern/committen. Bei Verwendung von Working Copy
+   anschließend pushen. Bei geschütztem Branch den vorhandenen
+   Pull-Request-/Freigabeweg verwenden.
+5. Die erfolgreiche GitHub-Pages-Veröffentlichung abwarten. GitHub nennt
+   bis zu zehn Minuten nach dem Push. Danach die Website neu laden und
+   nötigenfalls zusätzlich in einem privaten Browser-Tab prüfen.
+
+WICHTIGE DATEINAMEN
+index.html
+styles.css
+design-logo-fix-20260924.css
+logo-fix-20260924.js
+Eight&Eight-logo.png
+Eight&Eight-wallpaper.jpeg
+CNAME (bisherige Domain eight-and-eight.com bleibt unverändert)
+Alle weiteren Bilder im Paket ebenfalls mit hochladen.
+
+Die neue index.html verweist ausschließlich auf das neue Logo-Skript und
+die neue Korrektur-CSS. Ältere parallax- und design-Dateien dürfen im
+Repository liegen bleiben; sie werden durch diese index.html nicht geladen.
+
+PRÜFUNG DIESER FASSUNG
+- Der Abbruch der alten Version wurde mit einem gespeicherten Bild
+  reproduziert (ReferenceError vor Erzeugung der Hauptlogos).
+- Die korrigierte Version wurde in simulierten Ladefällen mit frischem
+  und gespeichertem Bild, ohne Canvas und bei fehlendem Hintergrundbild
+  geprüft, jeweils mit mobilen und Desktop-Abmessungen.
+- Geprüft: 8.888 Logos, Größenbereich, acht feste Hauptlogo-Bilder,
+  verschiedene Scrollgeschwindigkeiten, Menü öffnen/schließen sowie
+  vollständige lokale Dateiverweise.
+- Dies ersetzt keine Sichtprüfung in Safari auf einem echten iPhone.
+  Ein vollständiger Browser-Render war hier nicht möglich.
+- Der tatsächliche Live-Upload und die Repository-Einstellungen wurden
+  nicht direkt geprüft; die Diagnose beruht auf der zuletzt gelieferten ZIP.
+
+Offizielle Hinweise:
+https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
+https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site
