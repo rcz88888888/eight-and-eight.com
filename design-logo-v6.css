@@ -778,7 +778,7 @@ textarea {
   z-index: 0;
   pointer-events: none;
   background: url("Eight&Eight-logo.png") center top / 120px auto repeat;
-  opacity: .069192;
+  opacity: .05673744;
 }
 .logo-rain-ready .logo-rain-fallback { visibility: hidden; }
 .site-shell { z-index: 2; }
@@ -892,31 +892,6 @@ textarea {
   }
 }
 
-/* Matching gold edges facing the page content: ten times the former 1px. */
-.topbar { border-bottom-width: 10px; }
-.wallpaper-end { border-top-width: 10px; }
-
-/* Paint gradients inside the existing 10px borders. The wallpaper remains
-   on ::before; transparent borders expose these border-box backgrounds.
-   Each edge fades from the banner (100%) towards the page (20%). */
-.topbar,
-.wallpaper-end {
-  background-origin: border-box;
-  background-clip: border-box;
-  background-size: 100% 10px;
-  background-repeat: no-repeat;
-}
-.topbar {
-  border-bottom-color: transparent !important;
-  background-image: linear-gradient(to bottom, #c6a34a 0%, rgba(198, 163, 74, .2) 100%);
-  background-position: center bottom;
-}
-.wallpaper-end {
-  border-top-color: transparent !important;
-  background-image: linear-gradient(to top, #c6a34a 0%, rgba(198, 163, 74, .2) 100%);
-  background-position: center top;
-}
-
 /* Dark body copy: add exactly 1px to each previous size. Gold headings,
    labels, navigation and contact tags retain their existing typography. */
 main p:not(.contact-tags) {
@@ -940,4 +915,46 @@ main p:not(.contact-tags) strong {
                  -1px 0 0 #fff, 1px 0 0 #fff,
                  -1px 1px 0 #fff, 0 1px 0 #fff, 1px 1px 0 #fff;
   }
+}
+
+/* v11: use the dominant opaque colour sampled from the supplied wordmark. */
+:root { --banner-logo-ink: #9b694f; }
+body, main p:not(.contact-tags), .partner-slot, .service-grid article {
+  color: var(--banner-logo-ink);
+}
+main p:not(.contact-tags), main p:not(.contact-tags) strong {
+  font-weight: 400;
+}
+h1, h2, h3, h4, h5, h6,
+.section-label, .small-label, .principles strong, .contact-box strong {
+  font-weight: 700;
+}
+
+/* Set existing frames and divider lines to 3px; border-style:none remains
+   none, so previously disabled edges do not reappear. */
+*, *::before, *::after {
+  border-width: 3px !important;
+  outline-width: 3px;
+  text-decoration-thickness: 3px;
+}
+.site-nav a::after, .menu-toggle span { height: 3px; }
+
+/* Remove banner borders entirely. Fade the actual complete banners over
+   the former 10px transition areas, revealing the page underneath. */
+.topbar, .wallpaper-end {
+  border: 0 !important;
+  opacity: 1;
+  background-image: none;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+.topbar {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
+}
+.wallpaper-end {
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
 }

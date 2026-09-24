@@ -1,5 +1,24 @@
 Eight&Eight – vollständiges Website-Paket
-Version: banner-gradient-text-v10
+Version: banner-fade-type-v11
+
+AKTUELLER STAND – VERSION 11
+Dunkle Fließtexte verwenden #9B694F, den häufigsten deckenden Farbton
+des bereitgestellten Bannerlogos. Ihre Schriftstärke ist normal (400).
+Überschriften und Abschnittsbezeichnungen sind fett (700).
+Die vorherige Vergrößerung um 1 Pixel und der weiße 1-Pixel-Schriftrand
+bleiben erhalten. Alle bestehenden Rahmen, Trenn- und Menülinien sind
+3 Pixel stark. Entfernte oder ausgeblendete Ränder bleiben ausgeblendet.
+Die goldenen Ränder an den Bannern sind vollständig entfernt.
+Stattdessen maskiert ein echter Transparenzverlauf jeweils die zur
+Seitenfläche gerichtete Bannerkante: 100 auf 20 Prozent Deckkraft über
+10 Pixel, beim unteren Banner gespiegelt. Die Banner bleiben ansonsten
+bei 100 Prozent Sichtbarkeit. Das Wallpaper-Bild selbst wird beibehalten.
+Alle 8.888 Hintergrundlogos, das Ersatzmuster und jede der acht
+Hauptlogo-Ebenen sind um weitere 18 Prozent abgeschwächt: bisherige
+Deckkraft mal 0,82, einmal pro Logo. Das neue Bannerlogo ist hiervon
+nicht betroffen. Geänderte CSS- und Skriptverweise sind neu versioniert.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLER STAND – VERSION 10
 Beide vollständigen Banner haben wieder 100 Prozent Deckkraft.
