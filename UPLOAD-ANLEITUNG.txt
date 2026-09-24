@@ -1,5 +1,21 @@
 Eight&Eight – vollständiges Website-Paket
-Version: logo-layers-navigation-v6
+Version: wallpaper-background-v7
+
+AKTUELLE ANPASSUNG DER WALLPAPER-LEISTEN
+Der Website-Hintergrund verwendet jetzt #F7EEE5 (RGB 247, 238, 229),
+einen aus dem dunkleren Cremebeige-Grund des Wallpaper-Bildes genommenen
+Farbton.
+Die obere und untere Wallpaper-Leiste einschließlich ihrer Bilder und
+Inhalte werden als Ganzes mit 72 Prozent ihrer bisherigen Sichtbarkeit
+dargestellt: bisherige Deckkraft mal 0,72, also 28 Prozent weniger.
+Das Wallpaper-Bild behält innerhalb der Leiste seine bisherige Deckkraft
+von 30 Prozent; durch die Leisten-Deckkraft wirkt es nun mit 21,6 Prozent.
+Die Reduzierung wird einmal angewendet, nicht zweimal auf dasselbe Bild.
+Die CSS-Verknüpfung in index.html erhält einen neuen Versionsparameter,
+damit nach dem Upload die aktualisierte Gestaltung geladen wird.
+
+Die folgenden Hinweise beschreiben den bisherigen Stand der Logo- und
+Navigationsfunktionen, der in dieser Fassung erhalten bleibt.
 
 NEUE MENÜ-SCROLLBEWEGUNG
 Jeder interne Navigationslink, auch der Schriftzug oben und BACK TO TOP,

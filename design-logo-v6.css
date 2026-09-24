@@ -12,7 +12,9 @@
   --silver: #8a8f97;
   --slate: #2f3a43;
 
-  --page-cream: var(--pearl-white);
+  /* Darker ground colour sampled from the supplied wallpaper image. */
+  --wallpaper-ground: #f7eee5;
+  --page-cream: var(--wallpaper-ground);
   --dark-gold-line: rgba(157, 115, 92, .52);
   --line: rgba(157, 115, 92, .40);
   --ink: var(--slate);
@@ -39,7 +41,7 @@
 }
 
 html {
-  background: var(--pearl-white);
+  background: var(--page-cream);
 }
 
 body {
@@ -335,6 +337,13 @@ p,
   border-bottom: 1px solid var(--dark-gold-line);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+/* Reduce each complete wallpaper band, including its image and contents,
+   by 28% of its previous visibility. Apply the factor only once. */
+.topbar,
+.wallpaper-end {
+  opacity: .72;
 }
 
 .wallpaper-end::before {
