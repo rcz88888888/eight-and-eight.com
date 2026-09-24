@@ -1,5 +1,5 @@
 Eight&Eight – vollständiges Website-Paket
-Version: 20260924-logo-scroll-3
+Version: 20260924-main-opacity-4
 
 MUSS DAS REPOSITORY VORHER GELEERT WERDEN?
 Nein. Zusätzliche, nicht eingebundene Bilder, CSS- oder JavaScript-Dateien
@@ -24,10 +24,11 @@ mehr vom Start des Skripts abhängig. Ein einfaches Hintergrundmuster bleibt
 als Ersatz sichtbar, solange der animierte Logoregen nicht bereit ist.
 Die Hauptlogo-PNG ist bereits exakt RGB(157,115,92) / #9d735c eingefärbt,
 entsprechend dem Schriftzug Eight&Eight. CSS-Masken sind dafür nicht nötig.
-Alle einzelnen Hauptlogos und Hintergrundlogos sind um 38 Prozent weniger
-sichtbar als in der zuletzt bestätigten Fassung (bisherige Deckkraft mal
-0,62). Von vorne nach hinten beträgt die Deckkraft der Hauptlogos jetzt:
-62 / 57,04 / 52,08 / 47,12 / 42,16 / 37,2 / 32,24 / 27,28 Prozent.
+Die acht Hauptlogoebenen sind gegenüber der Fassung mit acht Drehungen
+nochmals um jeweils 30 Prozent weniger sichtbar (Deckkraft mal 0,70).
+Von vorne nach hinten beträgt ihre Deckkraft jetzt:
+43,4 / 39,928 / 36,456 / 32,984 / 29,512 / 26,04 / 22,568 / 19,096 Prozent.
+Die Hintergrundlogos behalten ihre zuletzt eingestellte Sichtbarkeit.
 Die Größenstaffelung bleibt erhalten. Jede dahinterliegende Ebene bewegt
 sich nun mit 72 Prozent der Scrollgeschwindigkeit der Ebene davor, also
 jeweils 28 Prozent langsamer.
@@ -90,7 +91,7 @@ PRÜFUNG DIESER FASSUNG
   und gespeichertem Bild, ohne Canvas und bei fehlendem Hintergrundbild
   geprüft, jeweils mit mobilen und Desktop-Abmessungen.
 - Geprüft: 8.888 Logos, Größenbereich, acht feste Hauptlogo-Bilder,
-  38 Prozent reduzierte Deckkraft, acht volle Drehungen, Deckung bei
+  nochmals 30 Prozent reduzierte Hauptlogo-Deckkraft, acht volle Drehungen, Deckung bei
   halber Scrollstrecke auch beim Zurückscrollen, 28 Prozent langsamere
   Nachbarebenen, Menü öffnen/schließen und vollständige Dateiverweise.
 - Dies ersetzt keine Sichtprüfung in Safari auf einem echten iPhone.
