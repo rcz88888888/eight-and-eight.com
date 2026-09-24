@@ -339,11 +339,10 @@ p,
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Increase both complete bands by 14% relative to v8: 0.72 * 1.14.
-   Apply the factor once to the whole band, including its image and contents. */
+/* Restore full visibility of both complete wallpaper bands. */
 .topbar,
 .wallpaper-end {
-  opacity: .8208;
+  opacity: 1;
 }
 
 .wallpaper-end::before {
@@ -896,3 +895,49 @@ textarea {
 /* Matching gold edges facing the page content: ten times the former 1px. */
 .topbar { border-bottom-width: 10px; }
 .wallpaper-end { border-top-width: 10px; }
+
+/* Paint gradients inside the existing 10px borders. The wallpaper remains
+   on ::before; transparent borders expose these border-box backgrounds.
+   Each edge fades from the banner (100%) towards the page (20%). */
+.topbar,
+.wallpaper-end {
+  background-origin: border-box;
+  background-clip: border-box;
+  background-size: 100% 10px;
+  background-repeat: no-repeat;
+}
+.topbar {
+  border-bottom-color: transparent !important;
+  background-image: linear-gradient(to bottom, #c6a34a 0%, rgba(198, 163, 74, .2) 100%);
+  background-position: center bottom;
+}
+.wallpaper-end {
+  border-top-color: transparent !important;
+  background-image: linear-gradient(to top, #c6a34a 0%, rgba(198, 163, 74, .2) 100%);
+  background-position: center top;
+}
+
+/* Dark body copy: add exactly 1px to each previous size. Gold headings,
+   labels, navigation and contact tags retain their existing typography. */
+main p:not(.contact-tags) {
+  font-size: 22px;
+  font-weight: 700;
+  -webkit-text-stroke: 1px #fff;
+  paint-order: stroke fill;
+}
+main p.lead {
+  font-size: calc(clamp(19px, 2.2vw, 27px) + 1px);
+}
+main .service-grid article p {
+  font-size: 20px;
+}
+main p:not(.contact-tags) strong {
+  font-weight: 700;
+}
+@supports not (-webkit-text-stroke: 1px #fff) {
+  main p:not(.contact-tags) {
+    text-shadow: -1px -1px 0 #fff, 0 -1px 0 #fff, 1px -1px 0 #fff,
+                 -1px 0 0 #fff, 1px 0 0 #fff,
+                 -1px 1px 0 #fff, 0 1px 0 #fff, 1px 1px 0 #fff;
+  }
+}

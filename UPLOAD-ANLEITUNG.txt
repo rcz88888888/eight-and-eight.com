@@ -1,5 +1,20 @@
 Eight&Eight – vollständiges Website-Paket
-Version: banner-lines-v9
+Version: banner-gradient-text-v10
+
+AKTUELLER STAND – VERSION 10
+Beide vollständigen Banner haben wieder 100 Prozent Deckkraft.
+Die zuvor massiven goldenen Trennlinien unter dem oberen und über dem
+unteren Banner sind jetzt Verläufe innerhalb derselben 10-Pixel-Bereiche.
+Sie verlaufen jeweils vom Banner zur Seitenfläche von 100 auf 20 Prozent
+Deckkraft des bisherigen Goldtons; der untere Verlauf ist gespiegelt.
+Dunkle Fließtexte sind um exakt 1 Pixel größer und fett (700), mit einem
+weißen Schriftrand von 1 Pixel. Normale Absätze: 21 auf 22 Pixel;
+Leistungsbeschreibungen: 19 auf 20 Pixel; Einleitungstexte: bisheriger
+responsiver Größenwert plus 1 Pixel. Goldene Überschriften und die
+Logo-Grafik behalten ihre bestehende Gestaltung.
+Dateiverweise und ZIP-Integrität wurden geprüft.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLE BANNER-ANPASSUNG
 Die goldene Unterkante der oberen Bannerleiste und die goldene Oberkante
