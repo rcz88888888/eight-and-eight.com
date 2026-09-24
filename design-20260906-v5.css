@@ -49,71 +49,47 @@ body {
   font-size: 21px;
 }
 
-/* Eight independent logo layers; the complete planes move without rotation. */
+/* 64 independent background logos. Their positions, opacity, size and
+   scroll factors are generated deterministically in JS so the composition
+   looks random but does not jump around on every reload. */
 body::before {
   content: none !important;
   display: none !important;
 }
 
-.background-layers,
-.background-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
 .background-layers {
+  position: absolute;
   z-index: 0;
+  inset: 0 0 auto 0;
+  height: 100%;
+  min-height: 100vh;
+  pointer-events: none;
   overflow: hidden;
   background: var(--pearl-white);
 }
 
 .background-layer {
-  background-repeat: repeat;
-  background-size: clamp(260px, 25vw, 400px) auto;
-  mix-blend-mode: multiply;
-  opacity: .22;
-  will-change: background-position;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.background-layer-1 {
-  background-image: url("background-layer-1.png");
-  background-position: -80px calc(-40px + var(--background-shift-1));
-}
-
-.background-layer-2 {
-  background-image: url("background-layer-2.png");
-  background-position: -60px calc(-30px + var(--background-shift-2));
-}
-
-.background-layer-3 {
-  background-image: url("background-layer-3.png");
-  background-position: -40px calc(-20px + var(--background-shift-3));
-}
-
-.background-layer-4 {
-  background-image: url("background-layer-4.png");
-  background-position: -20px calc(-10px + var(--background-shift-4));
-}
-
-.background-layer-5 {
-  background-image: url("background-layer-5.png");
-  background-position: 0 calc(0px + var(--background-shift-5));
-}
-
-.background-layer-6 {
-  background-image: url("background-layer-6.png");
-  background-position: 20px calc(10px + var(--background-shift-6));
-}
-
-.background-layer-7 {
-  background-image: url("background-layer-7.png");
-  background-position: 40px calc(20px + var(--background-shift-7));
-}
-
-.background-layer-8 {
-  background-image: url("background-layer-8.png");
-  background-position: 60px calc(30px + var(--background-shift-8));
+.background-logo {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc(clamp(260px, 25vw, 400px) * var(--size));
+  aspect-ratio: 400 / 280;
+  background: var(--dark-gold);
+  -webkit-mask: url("background-layer-1.png") center / contain no-repeat;
+  mask: url("background-layer-1.png") center / contain no-repeat;
+  opacity: var(--opacity);
+  transform: translate3d(-50%, var(--parallax-y, 0px), 0);
+  transform-origin: center;
+  will-change: transform;
 }
 
 .site-shell::before {
@@ -739,4 +715,49 @@ textarea {
   .partner-slot:nth-child(n + 2) {
     border-top: 1px solid var(--dark-gold-line);
   }
+}
+
+/* 2026-09-18: unified Eight&Eight logo colour, 8% visibility + size progression. */
+.background-layer { mix-blend-mode: normal; }
+.background-layer-1 { opacity: .08; background-size: 240px auto; }
+.background-layer-2 { opacity: .16; background-size: 259.2px auto; }
+.background-layer-3 { opacity: .24; background-size: 278.4px auto; }
+.background-layer-4 { opacity: .32; background-size: 297.6px auto; }
+.background-layer-5 { opacity: .40; background-size: 316.8px auto; }
+.background-layer-6 { opacity: .48; background-size: 336px auto; }
+.background-layer-7 { opacity: .56; background-size: 355.2px auto; }
+.background-layer-8 { opacity: .64; background-size: 374.4px auto; }
+
+.parallax-logo { mix-blend-mode: normal; }
+
+/* Header wordmark: symbol and compressed text form one compact logo unit.
+   The symbol is scaled to the full height of the three menu strokes. */
+.wordmark {
+  height: 31px;
+  gap: 8px;
+  overflow: visible;
+}
+.wordmark-symbol {
+  display: block;
+  width: auto;
+  height: 31px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.wordmark-text {
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--deep-taupe);
+  font-family: "Sitka Text", Sitka, Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1;
+  transform: scaleY(.62);
+  transform-origin: center bottom;
+}
+
+@media (max-width: 900px) {
+  .wordmark { height: 31px; }
+  .wordmark-symbol { height: 31px; }
 }
