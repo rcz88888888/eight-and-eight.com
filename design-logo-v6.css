@@ -339,11 +339,11 @@ p,
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Reduce each complete wallpaper band, including its image and contents,
-   by 28% of its previous visibility. Apply the factor only once. */
+/* Increase both complete bands by 14% relative to v8: 0.72 * 1.14.
+   Apply the factor once to the whole band, including its image and contents. */
 .topbar,
 .wallpaper-end {
-  opacity: .72;
+  opacity: .8208;
 }
 
 .wallpaper-end::before {
@@ -892,3 +892,7 @@ textarea {
     width: min(62vw, 198px);
   }
 }
+
+/* Matching gold edges facing the page content: ten times the former 1px. */
+.topbar { border-bottom-width: 10px; }
+.wallpaper-end { border-top-width: 10px; }

@@ -1,5 +1,16 @@
 Eight&Eight – vollständiges Website-Paket
-Version: header-wordmark-v8
+Version: banner-lines-v9
+
+AKTUELLE BANNER-ANPASSUNG
+Die goldene Unterkante der oberen Bannerleiste und die goldene Oberkante
+der unteren Bannerleiste sind jeweils 10 Pixel dick (zuvor 1 Pixel).
+Beide Linien verlaufen weiterhin über die gesamte Bannerbreite.
+Die Sichtbarkeit beider vollständiger Banner ist gegenüber Version 8
+um 14 Prozent erhöht: 72 Prozent mal 1,14 = 82,08 Prozent Deckkraft.
+Das gilt einschließlich der Bilder und Inhalte; der Faktor wird einmal
+auf die gesamte Leiste angewendet. Die Wallpaper-Bilder wirken dadurch
+mit 24,624 Prozent Deckkraft statt bisher 21,6 Prozent.
+Die folgenden Abschnitte dokumentieren die vorherigen Änderungen.
 
 NEUES LOGO IN DER OBEREN LEISTE
 Der bisherige Text Eight&Eight und das kleine Logo rechts daneben sind
