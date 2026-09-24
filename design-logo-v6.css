@@ -864,3 +864,31 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .main-logo-layer { will-change: auto; }
 }
+
+/* Supplied transparent wordmark replaces both the header text and symbol.
+   Preserve the artwork's proportions and the existing header heights. */
+.topbar .wordmark {
+  width: 240px;
+  height: auto;
+  min-width: 0;
+  flex: 0 1 240px;
+  gap: 0;
+}
+.topbar .wordmark-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+@media (max-width: 900px) {
+  .topbar .wordmark {
+    width: 216px;
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 560px) {
+  .topbar .wordmark {
+    width: min(62vw, 198px);
+  }
+}

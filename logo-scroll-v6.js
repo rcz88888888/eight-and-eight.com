@@ -35,7 +35,7 @@ const mulberry32 = seed => () => {
   t ^= t + Math.imul(t ^ t >>> 7, t | 61);
   return ((t ^ t >>> 14) >>> 0) / 4294967296;
 };
-const brandColor = () => getComputedStyle(document.querySelector('.wordmark-text')).color;
+const brandColor = () => getComputedStyle(document.querySelector('.wordmark')).color;
 const tintLogo = () => {
   if (!logoImage.complete || !logoImage.naturalWidth) return;
   const target = document.createElement('canvas');

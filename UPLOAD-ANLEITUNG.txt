@@ -1,7 +1,19 @@
 Eight&Eight – vollständiges Website-Paket
-Version: wallpaper-background-v7
+Version: header-wordmark-v8
 
-AKTUELLE ANPASSUNG DER WALLPAPER-LEISTEN
+NEUES LOGO IN DER OBEREN LEISTE
+Der bisherige Text Eight&Eight und das kleine Logo rechts daneben sind
+durch das bereitgestellte transparente PNG ersetzt. Das neue Bild heißt
+eight-and-eight-wordmark-v8.png und muss zusammen mit index.html und
+design-logo-v6.css und logo-scroll-v6.js hochgeladen werden.
+Die Bilddatei ist unverändert;
+die Darstellung passt sich proportional an Desktop, Tablet und Handy an.
+Der Link zur Startposition und die Menübedienung bleiben erhalten.
+Die Hintergrundanimation liest ihre bisherige Farbe jetzt am erhaltenen
+Logo-Link ab, da das bisherige Textelement ersetzt wurde. Beide geänderten
+CSS- und Skriptverweise verwenden einen neuen Versionsparameter.
+
+ANPASSUNG DER WALLPAPER-LEISTEN AUS VERSION 7
 Der Website-Hintergrund verwendet jetzt #F7EEE5 (RGB 247, 238, 229),
 einen aus dem dunkleren Cremebeige-Grund des Wallpaper-Bildes genommenen
 Farbton.
