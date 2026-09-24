@@ -1,16 +1,16 @@
 Eight&Eight – vollständiges Website-Paket
-Version: 20260924-menu-scroll-5
+Version: logo-layers-navigation-v6
 
 NEUE MENÜ-SCROLLBEWEGUNG
-Ein Klick auf einen Menüpunkt beginnt mit 18 Prozent der maximalen
+Jeder interne Navigationslink, auch der Schriftzug oben und BACK TO TOP,
+beginnt mit 18 Prozent der maximalen
 Scrollgeschwindigkeit. Die Bewegung beschleunigt sanft und bremst vor dem
 Ziel stufenlos auf null ab. Je nach Entfernung dauert sie 2,4 bis 8 Sekunden.
 Der Zielabschnitt wird mit Abstand unter der fixierten Menüleiste platziert.
 Ein neuer Menüklick startet zum neuen Ziel; eigenes Scrollen unterbricht
 die Animation. Bei aktivierter Systemeinstellung für reduzierte Bewegung
 wird das Ziel ohne Animation angesprungen.
-Die Sichtbarkeiten, acht Logodrehungen und Ebenengeschwindigkeiten bleiben
-auf dem zuletzt bestätigten Stand.
+Die acht Logodrehungen und die Ebenengeschwindigkeiten bleiben erhalten.
 
 MUSS DAS REPOSITORY VORHER GELEERT WERDEN?
 Nein. Zusätzliche, nicht eingebundene Bilder, CSS- oder JavaScript-Dateien
@@ -35,12 +35,17 @@ mehr vom Start des Skripts abhängig. Ein einfaches Hintergrundmuster bleibt
 als Ersatz sichtbar, solange der animierte Logoregen nicht bereit ist.
 Die Hauptlogo-PNG ist bereits exakt RGB(157,115,92) / #9d735c eingefärbt,
 entsprechend dem Schriftzug Eight&Eight. CSS-Masken sind dafür nicht nötig.
-Die acht Hauptlogoebenen sind gegenüber der Fassung mit acht Drehungen
-nochmals um jeweils 30 Prozent weniger sichtbar (Deckkraft mal 0,70).
-Von vorne nach hinten beträgt ihre Deckkraft jetzt:
-43,4 / 39,928 / 36,456 / 32,984 / 29,512 / 26,04 / 22,568 / 19,096 Prozent.
-Die Hintergrundlogos behalten ihre zuletzt eingestellte Sichtbarkeit.
-Die Größenstaffelung bleibt erhalten. Jede dahinterliegende Ebene bewegt
+Die Hauptlogos werden gegenüber der vorherigen ZIP zuerst um 38 Prozent
+und zusätzlich nochmals um 38 Prozent abgeschwächt: bisherige Deckkraft
+mal 0,62 mal 0,62. Dies entspricht insgesamt 61,56 Prozent weniger
+Sichtbarkeit. Die Deckkraft von vorne nach hinten beträgt jetzt gerundet:
+16,683 / 15,348 / 14,014 / 12,679 / 11,344 / 10,010 / 8,675 / 7,341 Prozent.
+Die Hintergrundlogos werden gegenüber der vorherigen ZIP einmal zusätzlich
+um 38 Prozent abgeschwächt.
+Die acht Hauptlogos haben relativ zum vordersten Logo folgende Größen:
+100 / 108 / 116 / 124 / 132 / 140 / 148 / 156 Prozent.
+Die Größen steigen somit um jeweils 8 Prozent der vorderen Logogröße.
+Jede dahinterliegende Ebene bewegt
 sich nun mit 72 Prozent der Scrollgeschwindigkeit der Ebene davor, also
 jeweils 28 Prozent langsamer.
 
@@ -53,7 +58,7 @@ stehen alle nach vier vollen Drehungen wieder in der Ausgangsausrichtung.
 Die 8.888 Hintergrundlogos werden auf einer gemeinsamen Grafikfläche mit
 eigener Position, Größe und Scrollgeschwindigkeit dargestellt. Ihre Größen
 liegen zwischen 0,8 und 88 Prozent des dargestellten Hauptlogos. Die
-Sichtbarkeit der Hintergrundlogos beträgt nun 4,96 bis 19,84 Prozent.
+Sichtbarkeit der Hintergrundlogos beträgt nun 3,0752 bis 12,3008 Prozent.
 Das Hintergrund-Ersatzmuster ist ebenfalls um 38 Prozent abgeschwächt.
 Der Schriftzug und das kleine Logo in der Menüleiste bleiben unverändert.
 
@@ -70,7 +75,7 @@ UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
 3. Im richtigen Branch und Website-Ordner alle Dateien dieser ZIP
    hochladen. Die vorhandene index.html muss dabei ersetzt werden.
    Nicht den äußeren Entpack-Ordner zusätzlich hochladen: index.html,
-   logo-scroll-20260924-v3.js, design-logo-scroll-20260924-v3.css, styles.css und die
+   logo-scroll-v6.js, menu-scroll-v6.js, design-logo-v6.css, styles.css und die
    Bilder müssen unmittelbar nebeneinander liegen.
    Beim Import gleichnamiger Dateien 'Ersetzen' wählen, nicht 'Beide
    behalten'. Die Dateinamen und Groß-/Kleinschreibung nicht verändern.
@@ -84,9 +89,9 @@ UPLOAD – OHNE DAS REPOSITORY ZU LÖSCHEN
 WICHTIGE DATEINAMEN
 index.html
 styles.css
-design-logo-scroll-20260924-v3.css
-logo-scroll-20260924-v3.js
-menu-scroll-20260924-v5.js
+design-logo-v6.css
+logo-scroll-v6.js
+menu-scroll-v6.js
 Eight&Eight-logo.png
 Eight&Eight-wallpaper.jpeg
 CNAME (bisherige Domain eight-and-eight.com bleibt unverändert)
@@ -103,9 +108,11 @@ PRÜFUNG DIESER FASSUNG
   und gespeichertem Bild, ohne Canvas und bei fehlendem Hintergrundbild
   geprüft, jeweils mit mobilen und Desktop-Abmessungen.
 - Geprüft: 8.888 Logos, Größenbereich, acht feste Hauptlogo-Bilder,
-  nochmals 30 Prozent reduzierte Hauptlogo-Deckkraft, acht volle Drehungen, Deckung bei
+  beide 38-Prozent-Reduzierungen der Hauptlogos, 8-Prozent-Größenstufen,
+  reduzierte Hintergrunddeckkraft, acht volle Drehungen, Deckung bei
   halber Scrollstrecke auch beim Zurückscrollen, 28 Prozent langsamere
-  Nachbarebenen, Menü öffnen/schließen und vollständige Dateiverweise.
+  Nachbarebenen, Menü öffnen/schließen, alle internen Navigationslinks
+  einschließlich der beiden Links nach oben und vollständige Dateiverweise.
 - Dies ersetzt keine Sichtprüfung in Safari auf einem echten iPhone.
   Ein vollständiger Browser-Render war hier nicht möglich.
 - Der tatsächliche Live-Upload und die Repository-Einstellungen wurden
