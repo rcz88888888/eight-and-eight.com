@@ -1,5 +1,16 @@
 Eight&Eight – vollständiges Website-Paket
-Version: 20260924-main-opacity-4
+Version: 20260924-menu-scroll-5
+
+NEUE MENÜ-SCROLLBEWEGUNG
+Ein Klick auf einen Menüpunkt beginnt mit 18 Prozent der maximalen
+Scrollgeschwindigkeit. Die Bewegung beschleunigt sanft und bremst vor dem
+Ziel stufenlos auf null ab. Je nach Entfernung dauert sie 2,4 bis 8 Sekunden.
+Der Zielabschnitt wird mit Abstand unter der fixierten Menüleiste platziert.
+Ein neuer Menüklick startet zum neuen Ziel; eigenes Scrollen unterbricht
+die Animation. Bei aktivierter Systemeinstellung für reduzierte Bewegung
+wird das Ziel ohne Animation angesprungen.
+Die Sichtbarkeiten, acht Logodrehungen und Ebenengeschwindigkeiten bleiben
+auf dem zuletzt bestätigten Stand.
 
 MUSS DAS REPOSITORY VORHER GELEERT WERDEN?
 Nein. Zusätzliche, nicht eingebundene Bilder, CSS- oder JavaScript-Dateien
@@ -75,6 +86,7 @@ index.html
 styles.css
 design-logo-scroll-20260924-v3.css
 logo-scroll-20260924-v3.js
+menu-scroll-20260924-v5.js
 Eight&Eight-logo.png
 Eight&Eight-wallpaper.jpeg
 CNAME (bisherige Domain eight-and-eight.com bleibt unverändert)
