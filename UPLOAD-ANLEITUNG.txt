@@ -1,5 +1,20 @@
 Eight&Eight – vollständiges Website-Paket
-Version: hero-logo-visibility-v13
+Version: vector-overlay-menu-v14
+
+AKTUELLER STAND – VERSION 14
+Das zuletzt ergänzte, voll sichtbare Logo zwischen Banner und About nutzt
+jetzt eight-and-eight-hero-vector.svg: echte Vektorpfade mit Bézierkurven,
+keine eingebettete Rastergrafik. Farbe #9D735C, Seitenverhältnis und Größe
+bleiben erhalten. Die Vektorsilhouette wurde mit der PNG-Vorlage verglichen
+(über 99 Prozent Übereinstimmung als Schnittmenge/Vereinigungsmenge).
+Das mobile Menü liegt als fixierte Ebene außerhalb der oberen Bannerleiste
+über der Seite. Öffnen und Schließen verändern weder die Headerhöhe noch
+den Dokumentfluss oder die Seitenhöhe. Die Menülinks sind überall fett.
+Das neue menu-overlay-v14.js muss mit hochgeladen werden; es wird vor der
+Logoanimation geladen. Desktop-Navigation bleibt innerhalb der Kopfzeile.
+Die bisherigen Banner-Fades und Logo-Deckkräfte bleiben erhalten.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLER STAND – VERSION 13
 Die Banner sind um 20 Prozent abgeschwächt (Deckkraft 0,8). Die vorhandenen

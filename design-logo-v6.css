@@ -988,3 +988,44 @@ h1, h2, h3, h4, h5, h6,
 @media (max-width: 560px) {
   .logo-stage { height: calc(78vh - var(--header-height)); }
 }
+
+/* v14: navigation labels are bold at every viewport size. */
+.site-nav a, .site-nav a:hover { font-weight: 700; }
+
+/* The mobile navigation is portalled to body before the logo animation
+   starts. Its fixed overlay never participates in document layout. */
+@media (max-width: 900px) {
+  .site-nav {
+    position: fixed !important;
+    z-index: 1000;
+    top: var(--menu-top, var(--header-height));
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    max-height: calc(100vh - var(--menu-top, var(--header-height)));
+    max-height: calc(100dvh - var(--menu-top, var(--header-height)));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 5vw 28px;
+    box-sizing: border-box;
+    display: none;
+    background-color: #f7eee5 !important;
+    background-image: linear-gradient(rgba(251,248,243,.78), rgba(251,248,243,.78)), url("Eight&Eight-wallpaper.jpeg") !important;
+    background-repeat: repeat-x;
+    background-size: auto, 1120px auto;
+    background-position: center, center -244px;
+    opacity: .8;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+  }
+  .site-nav.open { display: grid; }
+}
+@media (max-width: 560px) {
+  .site-nav {
+    background-size: auto, 880px auto;
+    background-position: center, center -189.5px;
+  }
+}
