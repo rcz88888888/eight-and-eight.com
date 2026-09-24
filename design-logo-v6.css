@@ -1029,3 +1029,30 @@ h1, h2, h3, h4, h5, h6,
     background-position: center, center -189.5px;
   }
 }
+
+/* v15: one divider per cell boundary, no top border on the first row.
+   Reset legacy sibling borders separately at each column breakpoint. */
+#work .partner-grid { gap: 0; }
+#work .partner-grid > .partner-slot:nth-child(n) { border: 0 !important; }
+#work .partner-grid > .partner-slot:nth-child(3n + 2),
+#work .partner-grid > .partner-slot:nth-child(3n + 3) {
+  border-left: 3px solid var(--metallic-gold) !important;
+}
+#work .partner-grid > .partner-slot:nth-child(n + 4) {
+  border-top: 3px solid var(--metallic-gold) !important;
+}
+@media (max-width: 900px) {
+  #work .partner-grid > .partner-slot:nth-child(n) { border: 0 !important; }
+  #work .partner-grid > .partner-slot:nth-child(even) {
+    border-left: 3px solid var(--metallic-gold) !important;
+  }
+  #work .partner-grid > .partner-slot:nth-child(n + 3) {
+    border-top: 3px solid var(--metallic-gold) !important;
+  }
+}
+@media (max-width: 560px) {
+  #work .partner-grid > .partner-slot:nth-child(n) { border: 0 !important; }
+  #work .partner-grid > .partner-slot:nth-child(n + 2) {
+    border-top: 3px solid var(--metallic-gold) !important;
+  }
+}

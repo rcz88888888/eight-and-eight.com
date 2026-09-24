@@ -1,5 +1,23 @@
 Eight&Eight – vollständiges Website-Paket
-Version: vector-overlay-menu-v14
+Version: portfolio-clean-v16
+
+AKTUELLE BILDREINIGUNG
+Die Portfolio-PNGs wurden gezielt bereinigt: das isolierte blaue Fragment
+unter Netflix wurde transparent gesetzt, das Screenshot-Zählerfeld „7 von
+20“ aus dem oberen linken Bereich von Jaguar entfernt und der helle,
+nahezu weiße Hintergrundsaum beim Holiday-Inn-Logo entfernt. Die übrigen
+Logoformen und Farben bleiben unverändert. Die Rasterlinienkorrektur aus
+Version 15 bleibt erhalten.
+
+AKTUELLER STAND – VERSION 15
+Die doppelte Portfolio-Rasterlinie ist korrigiert. Die erste Zeile erhält
+keine zusätzlichen oberen Zellränder. Bei drei, zwei und einer Spalte
+werden die passenden 3-Pixel-Trennlinien jeweils neu gesetzt.
+Die angefragte Bildbereinigung ist in dieser Fassung noch NICHT enthalten:
+Netflix-Rest, Jaguar-Bildzähler und weiße Logo-Säume bestehen weiterhin.
+Die Bilddateien sind unverändert gegenüber Version 14.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLER STAND – VERSION 14
 Das zuletzt ergänzte, voll sichtbare Logo zwischen Banner und About nutzt
