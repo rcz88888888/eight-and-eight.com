@@ -44,9 +44,6 @@ const tintLogo = () => {
   const ctx = target.getContext('2d');
   if (!ctx) return;
   ctx.drawImage(logoImage, 0, 0, SOURCE_WIDTH, SOURCE_HEIGHT);
-  ctx.globalCompositeOperation = 'source-in';
-  ctx.fillStyle = brandColor();
-  ctx.fillRect(0, 0, SOURCE_WIDTH, SOURCE_HEIGHT);
   tintedLogo = target;
   requestUpdate();
 };
@@ -125,7 +122,7 @@ const requestUpdate = () => { if (!frame) frame = requestAnimationFrame(update);
 // All functions and state are now initialized, including the cached-image path.
 buildRain();
 logoImage.addEventListener('load', tintLogo, { once: true });
-logoImage.src = 'Eight&Eight-logo.png';
+logoImage.src = 'eight-and-eight-logo-dark-v18.png';
 if (logoImage.complete && logoImage.naturalWidth) tintLogo();
 requestUpdate();
 window.addEventListener('load', buildRain, { once: true });

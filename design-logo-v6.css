@@ -86,8 +86,8 @@ body::before {
   width: calc(clamp(260px, 25vw, 400px) * var(--size));
   aspect-ratio: 400 / 280;
   background: var(--dark-gold);
-  -webkit-mask: url("background-layer-1.png") center / contain no-repeat;
-  mask: url("background-layer-1.png") center / contain no-repeat;
+  -webkit-mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
+  mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
   opacity: var(--opacity);
   transform: translate3d(-50%, var(--parallax-y, 0px), 0);
   transform-origin: center;
@@ -483,8 +483,8 @@ p,
   opacity: .92;
   mix-blend-mode: normal;
   background-color: var(--champagne);
-  -webkit-mask-image: url("Eight&Eight-logo.png");
-  mask-image: url("Eight&Eight-logo.png");
+  -webkit-mask-image: url("eight-and-eight-logo-dark-v18.png");
+  mask-image: url("eight-and-eight-logo-dark-v18.png");
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
@@ -777,7 +777,7 @@ textarea {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: url("Eight&Eight-logo.png") center top / 120px auto repeat;
+  background: url("eight-and-eight-logo-dark-v18.png") center top / 120px auto repeat;
   opacity: .039716208;
 }
 .logo-rain-ready .logo-rain-fallback { visibility: hidden; }
