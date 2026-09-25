@@ -1147,3 +1147,25 @@ main#top:focus { outline: none; }
   opacity: .78;
   mix-blend-mode: normal;
 }
+
+/* v28: retain navigation without wallpaper banner surfaces. */
+.topbar, .topbar.menu-expanded {
+  background: transparent !important;
+  opacity: 1;
+  -webkit-mask: none;
+  mask: none;
+  box-shadow: none;
+}
+.topbar::before, .topbar::after,
+.topbar.menu-expanded::before, .topbar.menu-expanded::after,
+.site-nav::before, .site-nav::after {
+  content: none !important;
+  display: none !important;
+}
+.site-nav {
+  background: transparent !important;
+  opacity: 1;
+  -webkit-mask: none;
+  mask: none;
+}
+.wallpaper-end { display: none !important; }
