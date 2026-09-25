@@ -1056,9 +1056,3 @@ h1, h2, h3, h4, h5, h6,
     border-top: 3px solid var(--metallic-gold) !important;
   }
 }
-
-/* v17: the supplied full wordmark contains the two final E forms.
-   Keep one responsive width so the wordmark scales as one coherent unit. */
-.topbar .wordmark { width: 240px; }
-@media (max-width: 900px) { .topbar .wordmark { width: 216px; } }
-@media (max-width: 560px) { .topbar .wordmark { width: min(62vw, 198px); } }
