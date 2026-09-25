@@ -1,5 +1,16 @@
 Eight&Eight – vollständiges Website-Paket
-Version: portfolio-clean-v16
+Version: wordmark-v17
+
+AKTUELLER STAND – VERSION 17
+Das obere Eight&Eight-Wortzeichen verwendet jetzt die bereitgestellte
+1536×512-PNG mit den beiden gewünschten E-Formen. Die Datei wird als
+whole-wordmark eingebunden; die responsive Breite bleibt 240px auf Desktop,
+216px auf mittleren Bildschirmen und maximal 198px auf kleinen Displays.
+Höhe und Seitenverhältnis werden automatisch proportional skaliert.
+Die übrige Website, Portfolio-Bereinigung und Rasterlinienkorrektur bleiben
+unverändert.
+
+Die folgenden Abschnitte dokumentieren frühere Fassungen.
 
 AKTUELLE BILDREINIGUNG
 Die Portfolio-PNGs wurden gezielt bereinigt: das isolierte blaue Fragment
