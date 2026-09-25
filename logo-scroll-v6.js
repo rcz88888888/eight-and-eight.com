@@ -13,8 +13,10 @@ document.querySelectorAll('.site-nav a').forEach(link => link.addEventListener('
 const year = document.getElementById('year');
 if (year) year.textContent = new Date().getFullYear();
 
-const canvas = document.querySelector('.background-layers');
-const context = canvas?.getContext('2d');
+const backdrop = document.querySelector('.background-layers');
+const svgNS = 'http://www.w3.org/2000/svg';
+const visibleMarks = backdrop?.querySelector('.visible-marks');
+const markPool = [];
 const mainLogo = document.querySelector('.parallax-logo');
 const portraitLayout = window.matchMedia("(orientation: portrait)");
 const LOGO_VISIBILITY = 0.2206456; // v13: previous 0.315208 multiplied by 0.70 (30% less visible).
@@ -23,28 +25,10 @@ const LAYER_SPEED_RATIO = 0.72;
 const SOURCE_WIDTH = 922;
 const SOURCE_HEIGHT = 1368;
 const logoImage = new Image();
-let tintedLogo;
+let logoReady = false;
 let droplets = [];
 let frame = 0;
 let pageHeight = 0;
-let renderScaleX = 1;
-let renderScaleY = 1;
-const resizeCanvas = () => {
-  if (!canvas || !context) return;
-  const zoom = window.visualViewport?.scale || 1;
-  // Limit backing-store memory on mobile while refreshing for pinch zoom.
-  const scale = Math.min((devicePixelRatio || 1) * zoom, 3,
-    4096 / Math.max(innerWidth, innerHeight),
-    Math.sqrt(8000000 / (innerWidth * innerHeight)));
-  const width = Math.max(1, Math.round(innerWidth * scale));
-  const height = Math.max(1, Math.round(innerHeight * scale));
-  if (canvas.width !== width) canvas.width = width;
-  if (canvas.height !== height) canvas.height = height;
-  canvas.style.width = `${innerWidth}px`;
-  canvas.style.height = `${innerHeight}px`;
-  renderScaleX = width / innerWidth;
-  renderScaleY = height / innerHeight;
-};
 
 // One seeded position, scale, depth and parallax speed for each of the 8,888 logos.
 const mulberry32 = seed => () => {
@@ -52,18 +36,6 @@ const mulberry32 = seed => () => {
   t = Math.imul(t ^ t >>> 15, t | 1);
   t ^= t + Math.imul(t ^ t >>> 7, t | 61);
   return ((t ^ t >>> 14) >>> 0) / 4294967296;
-};
-const brandColor = () => getComputedStyle(document.querySelector('.wordmark')).color;
-const tintLogo = () => {
-  if (!logoImage.complete || !logoImage.naturalWidth) return;
-  const target = document.createElement('canvas');
-  target.width = SOURCE_WIDTH;
-  target.height = SOURCE_HEIGHT;
-  const ctx = target.getContext('2d');
-  if (!ctx) return;
-  ctx.drawImage(logoImage, 0, 0, SOURCE_WIDTH, SOURCE_HEIGHT);
-  tintedLogo = target;
-  requestUpdate();
 };
 // The eight image elements already exist in HTML. Image loading, canvas or
 // JavaScript failures must never remove the main logo.
@@ -73,7 +45,7 @@ mainLayers.forEach(layer => {
 });
 
 const buildRain = () => {
-  if (!canvas || !context || !mainLogo) return;
+  if (!backdrop || !visibleMarks || !mainLogo) return;
   const LOGO_COUNT = portraitLayout.matches ? 4444 : 8888;
   const rand = mulberry32(88888888);
   pageHeight = Math.max(document.documentElement.scrollHeight, innerHeight);
@@ -93,9 +65,9 @@ const buildRain = () => {
       speed: 0.16 + rand() * 0.56,
     };
   });
-  canvas.dataset.logoCount = String(droplets.length);
-  canvas.dataset.minSizeRatio = '0.008';
-  canvas.dataset.maxSizeRatio = '0.88';
+  backdrop.dataset.logoCount = String(droplets.length);
+  backdrop.dataset.minSizeRatio = '0.008';
+  backdrop.dataset.maxSizeRatio = '0.88';
   requestUpdate();
 };
 
@@ -115,36 +87,40 @@ const update = () => {
     layer.style.setProperty('--layer-shift', `${(logoTravel * speed).toFixed(2)}px`);
     layer.style.setProperty('--layer-rotation', `${rotation.toFixed(2)}deg`);
   }
-  if (!context) return;
-  resizeCanvas();
-  // Clear every physical pixel, including rounded edges, before drawing.
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  context.globalAlpha = 1;
-  context.globalCompositeOperation = 'source-over';
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.setTransform(renderScaleX, 0, 0, renderScaleY, 0, 0);
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = 'high';
-  if (!tintedLogo) return;
+  if (!backdrop || !visibleMarks || !logoReady) return;
+  backdrop.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+  backdrop.style.width = `${innerWidth}px`;
+  backdrop.style.height = `${innerHeight}px`;
   let visibleCount = 0;
   for (const mark of droplets) {
     const y = mark.y - scroll * (1 - mark.speed);
-    if (y + mark.height < 0 || y > innerHeight) continue;
-    context.globalAlpha = mark.opacity;
-    context.drawImage(tintedLogo, mark.x - mark.width / 2, y, mark.width, mark.height);
-    visibleCount += 1;
+    const x = mark.x - mark.width / 2;
+    if (y + mark.height < 0 || y > innerHeight || x + mark.width < 0 || x > innerWidth) continue;
+    let node = markPool[visibleCount];
+    if (!node) {
+      node = document.createElementNS(svgNS, 'use');
+      node.setAttribute('href', '#background-logo-source');
+      visibleMarks.appendChild(node);
+      markPool.push(node);
+    }
+    node.setAttribute('transform', `translate(${x} ${y}) scale(${mark.width / SOURCE_WIDTH} ${mark.height / SOURCE_HEIGHT})`);
+    node.setAttribute('opacity', String(mark.opacity));
+    node.removeAttribute('display');
+    visibleCount++;
   }
-  context.globalAlpha = 1;
-  canvas.dataset.visibleLogos = String(visibleCount);
-  document.documentElement.classList.toggle('logo-rain-ready', visibleCount > 0);
+  // Reuse visible nodes; never accumulate old painted frames while zooming.
+  for (let i = visibleCount; i < markPool.length; i++) markPool[i].setAttribute('display', 'none');
+  backdrop.dataset.visibleLogos = String(visibleCount);
+  document.documentElement.classList.toggle('logo-rain-ready', true);
 };
 const requestUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
 
 // All functions and state are now initialized, including the cached-image path.
 buildRain();
-logoImage.addEventListener('load', tintLogo, { once: true });
+const revealLogo = () => { logoReady = true; requestUpdate(); };
+logoImage.addEventListener('load', revealLogo, { once: true });
 logoImage.src = 'eight-and-eight-logo-dark-v18.png';
-if (logoImage.complete && logoImage.naturalWidth) tintLogo();
+if (logoImage.complete && logoImage.naturalWidth) revealLogo();
 requestUpdate();
 window.addEventListener('load', buildRain, { once: true });
 window.addEventListener('scroll', requestUpdate, { passive: true });

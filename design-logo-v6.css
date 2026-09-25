@@ -957,8 +957,8 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
 }
 
-/* v13: both banners retain their edge masks at 80% overall visibility. */
-.topbar, .wallpaper-end { opacity: .8; }
+/* v25: banner visibility increased by 18% relative: .8 * 1.18 = .944. */
+.topbar, .wallpaper-end { opacity: .944; }
 
 /* A separate, fully visible logo in the opening area, in the same colour
    as the main logo asset. It scrolls with the document. The stage keeps
