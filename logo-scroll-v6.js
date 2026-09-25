@@ -27,6 +27,24 @@ let tintedLogo;
 let droplets = [];
 let frame = 0;
 let pageHeight = 0;
+let renderScaleX = 1;
+let renderScaleY = 1;
+const resizeCanvas = () => {
+  if (!canvas || !context) return;
+  const zoom = window.visualViewport?.scale || 1;
+  // Limit backing-store memory on mobile while refreshing for pinch zoom.
+  const scale = Math.min((devicePixelRatio || 1) * zoom, 3,
+    4096 / Math.max(innerWidth, innerHeight),
+    Math.sqrt(8000000 / (innerWidth * innerHeight)));
+  const width = Math.max(1, Math.round(innerWidth * scale));
+  const height = Math.max(1, Math.round(innerHeight * scale));
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
+  canvas.style.width = `${innerWidth}px`;
+  canvas.style.height = `${innerHeight}px`;
+  renderScaleX = width / innerWidth;
+  renderScaleY = height / innerHeight;
+};
 
 // One seeded position, scale, depth and parallax speed for each of the 8,888 logos.
 const mulberry32 = seed => () => {
@@ -59,12 +77,6 @@ const buildRain = () => {
   const LOGO_COUNT = portraitLayout.matches ? 4444 : 8888;
   const rand = mulberry32(88888888);
   pageHeight = Math.max(document.documentElement.scrollHeight, innerHeight);
-  const dpr = Math.min(devicePixelRatio || 1, 1.5);
-  canvas.width = Math.round(innerWidth * dpr);
-  canvas.height = Math.round(innerHeight * dpr);
-  canvas.style.width = `${innerWidth}px`;
-  canvas.style.height = `${innerHeight}px`;
-  context.setTransform(dpr, 0, 0, dpr, 0, 0);
   // Match the displayed image (object-fit: contain), not only its container.
   const mainWidth = Math.min(mainLogo.clientWidth,
     mainLogo.clientHeight * SOURCE_WIDTH / SOURCE_HEIGHT) * 1.15;
@@ -104,7 +116,15 @@ const update = () => {
     layer.style.setProperty('--layer-rotation', `${rotation.toFixed(2)}deg`);
   }
   if (!context) return;
-  context.clearRect(0, 0, innerWidth, innerHeight);
+  resizeCanvas();
+  // Clear every physical pixel, including rounded edges, before drawing.
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.globalAlpha = 1;
+  context.globalCompositeOperation = 'source-over';
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.setTransform(renderScaleX, 0, 0, renderScaleY, 0, 0);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
   if (!tintedLogo) return;
   let visibleCount = 0;
   for (const mark of droplets) {
@@ -136,3 +156,8 @@ if ('ResizeObserver' in window) {
   });
   layoutObserver.observe(document.querySelector('.site-shell'));
 }
+
+// Pinch zoom does not consistently dispatch window.resize on iOS Safari.
+window.visualViewport?.addEventListener('resize', requestUpdate, { passive: true });
+window.visualViewport?.addEventListener('scroll', requestUpdate, { passive: true });
+window.addEventListener('pageshow', buildRain, { passive: true });

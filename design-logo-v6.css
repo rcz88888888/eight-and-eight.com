@@ -1129,3 +1129,15 @@ main#top:focus { outline: none; }
   }
   .site-nav::before { content: none; display: none; }
 }
+
+/* v23: avoid oversized forced 3D textures during Safari pinch zoom. */
+.parallax-logo, .parallax-logo .main-logo-layer, .background-layers {
+  will-change: auto;
+}
+.parallax-logo .main-logo-layer {
+  transform: translateY(var(--layer-shift, 0px)) rotate(var(--layer-rotation, 0deg)) scale(var(--layer-scale, 1.15));
+}
+.topbar, .wallpaper-end {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
