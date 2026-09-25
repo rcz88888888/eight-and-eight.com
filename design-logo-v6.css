@@ -1065,3 +1065,38 @@ main#top:focus { outline: none; }
   outline: 3px solid var(--banner-logo-ink, #9d735c);
   outline-offset: 4px;
 }
+
+/* v20: one continuous banner surface, with the fade at the expanded edge. */
+@media (max-width: 900px) {
+  .topbar.menu-expanded { -webkit-mask-image: none; mask-image: none; }
+  .site-nav {
+    left: var(--menu-left, 0px);
+    right: auto;
+    width: var(--menu-width, 100%);
+    isolation: isolate;
+    background-color: var(--menu-ground) !important;
+    background-image: none !important;
+    opacity: var(--menu-opacity, .8);
+    backdrop-filter: var(--menu-blur, none) !important;
+    -webkit-backdrop-filter: var(--menu-blur, none) !important;
+    --menu-wallpaper-offset: -244px;
+    --menu-wallpaper-size: 1120px;
+  }
+  .site-nav::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--wallpaper-bars);
+    background-repeat: repeat-x;
+    background-size: var(--menu-wallpaper-size) auto;
+    background-position: center calc(var(--menu-wallpaper-offset) - var(--menu-banner-height));
+    opacity: var(--menu-wallpaper-opacity, .3);
+    mix-blend-mode: var(--menu-wallpaper-blend, multiply);
+  }
+}
+@media (max-width: 560px) {
+  .site-nav { --menu-wallpaper-offset: -189.5px; --menu-wallpaper-size: 880px; }
+}

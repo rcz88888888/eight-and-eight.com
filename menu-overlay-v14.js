@@ -11,7 +11,18 @@
   };
   const position = () => {
     if (!mobile.matches) return;
-    const top = Math.max(0, Math.min(innerHeight, header.getBoundingClientRect().bottom));
+    const rect = header.getBoundingClientRect();
+    const top = Math.max(0, Math.min(innerHeight, rect.bottom));
+    const style = getComputedStyle(header);
+    const wallpaper = getComputedStyle(header, '::before');
+    nav.style.setProperty('--menu-left', `${rect.left}px`);
+    nav.style.setProperty('--menu-width', `${rect.width}px`);
+    nav.style.setProperty('--menu-banner-height', `${rect.height}px`);
+    nav.style.setProperty('--menu-ground', style.backgroundColor);
+    nav.style.setProperty('--menu-opacity', style.opacity);
+    nav.style.setProperty('--menu-blur', style.backdropFilter || 'none');
+    nav.style.setProperty('--menu-wallpaper-opacity', wallpaper.opacity);
+    nav.style.setProperty('--menu-wallpaper-blend', wallpaper.mixBlendMode);
     nav.style.setProperty('--menu-top', `${top}px`);
   };
   const place = () => {
@@ -22,6 +33,11 @@
     if (nav.parentNode !== parent) parent.appendChild(nav);
     position();
   };
+  const syncOpen = () => {
+    header.classList.toggle('menu-expanded', mobile.matches && nav.classList.contains('open'));
+    position();
+  };
+  new MutationObserver(syncOpen).observe(nav, { attributes: true, attributeFilter: ['class'] });
   place();
   mobile.addEventListener('change', place);
   toggle.addEventListener('click', () => {
