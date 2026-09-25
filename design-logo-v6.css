@@ -957,8 +957,8 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
 }
 
-/* v26: one opacity level for the complete wallpaper banners. */
-.topbar, .wallpaper-end { opacity: .75; }
+/* v27: banner layer visibility 98%. */
+.topbar, .wallpaper-end { opacity: .98; }
 
 /* A separate, fully visible logo in the opening area, in the same colour
    as the main logo asset. It scrolls with the document. The stage keeps
@@ -1142,8 +1142,8 @@ main#top:focus { outline: none; }
   -webkit-backdrop-filter: none !important;
 }
 
-/* Wallpaper pixels inherit the single 75% banner opacity, without a second fade. */
+/* v27: wallpaper image visibility 78%, independently of the banner layer. */
 .topbar::before, .wallpaper-end::before {
-  opacity: 1;
+  opacity: .78;
   mix-blend-mode: normal;
 }
