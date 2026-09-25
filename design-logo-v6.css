@@ -1169,19 +1169,3 @@ main#top:focus { outline: none; }
   mask: none;
 }
 .wallpaper-end { display: none !important; }
-
-/* v29: photo-derived 8 motif restored for both wallpaper banners. */
-.topbar, .wallpaper-end {
-  background: rgba(251,248,243,.63) !important;
-  opacity: .98;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
-}
-.wallpaper-end { display: block !important; }
-.topbar::before, .wallpaper-end::before {
-  content: "" !important;
-  display: block !important;
-  opacity: .78;
-  mix-blend-mode: normal;
-  background-image: var(--wallpaper-bars) !important;
-}
