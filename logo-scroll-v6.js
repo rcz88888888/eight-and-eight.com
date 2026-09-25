@@ -16,7 +16,7 @@ if (year) year.textContent = new Date().getFullYear();
 const canvas = document.querySelector('.background-layers');
 const context = canvas?.getContext('2d');
 const mainLogo = document.querySelector('.parallax-logo');
-const LOGO_COUNT = 8888;
+const portraitLayout = window.matchMedia("(orientation: portrait)");
 const LOGO_VISIBILITY = 0.2206456; // v13: previous 0.315208 multiplied by 0.70 (30% less visible).
 const MAIN_LOGO_TURNS = 8;
 const LAYER_SPEED_RATIO = 0.72;
@@ -56,6 +56,7 @@ mainLayers.forEach(layer => {
 
 const buildRain = () => {
   if (!canvas || !context || !mainLogo) return;
+  const LOGO_COUNT = portraitLayout.matches ? 4444 : 8888;
   const rand = mulberry32(88888888);
   pageHeight = Math.max(document.documentElement.scrollHeight, innerHeight);
   const dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -128,6 +129,7 @@ requestUpdate();
 window.addEventListener('load', buildRain, { once: true });
 window.addEventListener('scroll', requestUpdate, { passive: true });
 window.addEventListener('resize', buildRain, { passive: true });
+portraitLayout.addEventListener('change', buildRain);
 if ('ResizeObserver' in window) {
   const layoutObserver = new ResizeObserver(() => {
     if (pageHeight !== Math.max(document.documentElement.scrollHeight, innerHeight)) buildRain();
