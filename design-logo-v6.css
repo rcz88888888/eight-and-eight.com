@@ -1056,3 +1056,12 @@ h1, h2, h3, h4, h5, h6,
     border-top: 3px solid var(--metallic-gold) !important;
   }
 }
+
+/* v19: programmatic home focus must not outline the entire main element. */
+main#top:focus { outline: none; }
+.topbar .wordmark { -webkit-tap-highlight-color: transparent; }
+.topbar .wordmark:focus:not(:focus-visible) { outline: none; }
+.topbar .wordmark:focus-visible {
+  outline: 3px solid var(--banner-logo-ink, #9d735c);
+  outline-offset: 4px;
+}
