@@ -1100,3 +1100,32 @@ main#top:focus { outline: none; }
 @media (max-width: 560px) {
   .site-nav { --menu-wallpaper-offset: -189.5px; --menu-wallpaper-size: 880px; }
 }
+
+/* v21: extend the existing wallpaper itself instead of restarting it in nav. */
+@media (max-width: 900px) {
+  .topbar.menu-expanded { overflow: visible; }
+  .topbar.menu-expanded::before {
+    bottom: calc(-1 * var(--expanded-menu-height, 0px));
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+  }
+  .topbar.menu-expanded::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: var(--expanded-menu-height, 0px);
+    background: var(--expanded-menu-ground);
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+  }
+  .site-nav {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .site-nav::before { content: none; display: none; }
+}

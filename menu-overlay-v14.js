@@ -24,6 +24,8 @@
     nav.style.setProperty('--menu-wallpaper-opacity', wallpaper.opacity);
     nav.style.setProperty('--menu-wallpaper-blend', wallpaper.mixBlendMode);
     nav.style.setProperty('--menu-top', `${top}px`);
+    header.style.setProperty('--expanded-menu-height', `${nav.classList.contains('open') ? nav.getBoundingClientRect().height : 0}px`);
+    header.style.setProperty('--expanded-menu-ground', style.backgroundColor);
   };
   const place = () => {
     close();
@@ -38,6 +40,7 @@
     position();
   };
   new MutationObserver(syncOpen).observe(nav, { attributes: true, attributeFilter: ['class'] });
+  new ResizeObserver(position).observe(nav);
   place();
   mobile.addEventListener('change', place);
   toggle.addEventListener('click', () => {
