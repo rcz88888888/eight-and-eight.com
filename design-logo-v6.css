@@ -24,7 +24,7 @@
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
   --wallpaper: url("Eight&Eight-background-exact-ratio-20260916.png");
-  --wallpaper-bars: url("Eight&Eight-wallpaper.jpeg");
+  --wallpaper-bars: url("wallpaper-banners-20260926.jpeg");
 
   --header-height: 120px;
   --background-shift-1: 0px;
@@ -957,9 +957,6 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
 }
 
-/* v27: banner layer visibility 98%. */
-.topbar, .wallpaper-end { opacity: .98; }
-
 /* A separate, fully visible logo in the opening area, in the same colour
    as the main logo asset. It scrolls with the document. The stage keeps
    the existing responsive height with an 8px inset above and below. */
@@ -1142,30 +1139,8 @@ main#top:focus { outline: none; }
   -webkit-backdrop-filter: none !important;
 }
 
-/* v27: wallpaper image visibility 78%, independently of the banner layer. */
+/* v30: restored banners with 75% wallpaper visibility; navigation stays opaque. */
 .topbar::before, .wallpaper-end::before {
-  opacity: .78;
+  opacity: .75;
   mix-blend-mode: normal;
 }
-
-/* v28: retain navigation without wallpaper banner surfaces. */
-.topbar, .topbar.menu-expanded {
-  background: transparent !important;
-  opacity: 1;
-  -webkit-mask: none;
-  mask: none;
-  box-shadow: none;
-}
-.topbar::before, .topbar::after,
-.topbar.menu-expanded::before, .topbar.menu-expanded::after,
-.site-nav::before, .site-nav::after {
-  content: none !important;
-  display: none !important;
-}
-.site-nav {
-  background: transparent !important;
-  opacity: 1;
-  -webkit-mask: none;
-  mask: none;
-}
-.wallpaper-end { display: none !important; }

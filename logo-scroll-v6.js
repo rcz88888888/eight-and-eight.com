@@ -30,7 +30,7 @@ let droplets = [];
 let frame = 0;
 let pageHeight = 0;
 
-// One seeded position, scale, depth and parallax speed for each of the 8,888 logos.
+// One seeded position, scale, depth and parallax speed per logo (2,222 portrait / 8,888 landscape).
 const mulberry32 = seed => () => {
   let t = seed += 0x6D2B79F5;
   t = Math.imul(t ^ t >>> 15, t | 1);
@@ -46,7 +46,7 @@ mainLayers.forEach(layer => {
 
 const buildRain = () => {
   if (!backdrop || !visibleMarks || !mainLogo) return;
-  const LOGO_COUNT = portraitLayout.matches ? 4444 : 8888;
+  const LOGO_COUNT = portraitLayout.matches ? 2222 : 8888;
   const rand = mulberry32(88888888);
   pageHeight = Math.max(document.documentElement.scrollHeight, innerHeight);
   // Match the displayed image (object-fit: contain), not only its container.
