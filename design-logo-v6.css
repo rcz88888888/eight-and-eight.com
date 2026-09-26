@@ -24,7 +24,7 @@
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
   --wallpaper: url("Eight&Eight-background-exact-ratio-20260916.png");
-  --wallpaper-bars: url("wallpaper-banners-20260926.jpeg");
+  --wallpaper-bars: url("wallpaper-banners-20260926-v31.jpeg");
 
   --header-height: 120px;
   --background-shift-1: 0px;
@@ -930,8 +930,7 @@ h1, h2, h3, h4, h5, h6,
 }
 .site-nav a::after, .menu-toggle span { height: 3px; }
 
-/* Remove banner borders entirely. Fade the actual complete banners over
-   the former 10px transition areas, revealing the page underneath. */
+/* v31: solid 3px banner edges, matching the existing gold frame lines. */
 .topbar, .wallpaper-end {
   border: 0 !important;
   opacity: 1;
@@ -942,12 +941,15 @@ h1, h2, h3, h4, h5, h6,
   mask-size: 100% 100%;
 }
 .topbar {
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 10px), rgba(0,0,0,.2) 100%);
+  border-bottom: 3px solid var(--metallic-gold) !important;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 .wallpaper-end {
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, #000 10px, #000 100%);
+  border-top: 3px solid var(--metallic-gold) !important;
+  border-bottom: 3px solid var(--metallic-gold) !important;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* v12: a single centred copyright line, without the footer divider. */
@@ -1015,8 +1017,8 @@ h1, h2, h3, h4, h5, h6,
     background-size: auto, 1120px auto;
     background-position: center, center -244px;
     opacity: .8;
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    -webkit-mask-image: none;
+    mask-image: none;
   }
   .site-nav.open { display: grid; }
 }
@@ -1063,7 +1065,7 @@ main#top:focus { outline: none; }
   outline-offset: 4px;
 }
 
-/* v20: one continuous banner surface, with the fade at the expanded edge. */
+/* One continuous banner surface, with a solid line at the expanded edge. */
 @media (max-width: 900px) {
   .topbar.menu-expanded { -webkit-mask-image: none; mask-image: none; }
   .site-nav {
@@ -1100,11 +1102,14 @@ main#top:focus { outline: none; }
 
 /* v21: extend the existing wallpaper itself instead of restarting it in nav. */
 @media (max-width: 900px) {
-  .topbar.menu-expanded { overflow: visible; }
+  .topbar.menu-expanded {
+    overflow: visible;
+    border-bottom: 0 !important;
+  }
   .topbar.menu-expanded::before {
     bottom: calc(-1 * var(--expanded-menu-height, 0px));
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    -webkit-mask-image: none;
+    mask-image: none;
   }
   .topbar.menu-expanded::after {
     content: "";
@@ -1116,10 +1121,11 @@ main#top:focus { outline: none; }
     height: var(--expanded-menu-height, 0px);
     background: var(--expanded-menu-ground);
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 10px), rgba(0,0,0,.2));
+    -webkit-mask-image: none;
+    mask-image: none;
   }
   .site-nav {
+    border-bottom: 3px solid var(--metallic-gold) !important;
     background: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
