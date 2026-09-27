@@ -1151,3 +1151,57 @@ main#top:focus { outline: none; }
   opacity: .75;
   mix-blend-mode: normal;
 }
+
+/* v34: requested banner logo, light sand gold framing/fields, darker opening emblem. */
+:root {
+  --metallic-gold: #d9bd87;
+  --dark-gold-line: #d9bd87;
+  --line: #d9bd87;
+  --gold-accent: #d9bd87;
+}
+.topbar .wordmark {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(24vw, 240px);
+  height: var(--header-height);
+  max-width: calc(100% - 110px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.topbar .wordmark-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: contrast(1.25) brightness(1.02);
+  mix-blend-mode: multiply;
+}
+/* The pale sand gold fill remains translucent over the background marks. */
+.section, .section-label, .partner-grid, .partner-slot,
+.service-grid, .service-grid article, .principles div, .process,
+.contact-panel, .contact-box {
+  background-color: rgba(217, 189, 135, .16) !important;
+}
+.hero-static-logo {
+  filter: sepia(.65) saturate(1.35) brightness(.73);
+}
+@media (max-width: 900px) {
+  .topbar .wordmark { width: min(40vw, 216px); flex: none; }
+}
+@media (max-width: 560px) {
+  .topbar .wordmark { width: min(58vw, 198px); }
+}
+@media (min-width: 901px) {
+  .topbar .site-nav {
+    margin-left: auto;
+    max-width: calc(50% - 130px);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 8px;
+  }
+}
