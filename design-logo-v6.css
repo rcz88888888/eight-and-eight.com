@@ -1152,7 +1152,7 @@ main#top:focus { outline: none; }
   mix-blend-mode: normal;
 }
 
-/* v35: transparent wordmark and fields; dark gold type/emblem, light gold lines. */
+/* v36: transparent fields, dark gold text; opening emblem matches light gold lines. */
 :root {
   --site-dark-gold: #80632f;
   --metallic-gold: #d7c193;
@@ -1197,7 +1197,7 @@ body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
 }
 .hero-static-logo {
   filter: none;
-  background-color: var(--site-dark-gold);
+  background-color: var(--metallic-gold);
   -webkit-mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
   mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
 }
