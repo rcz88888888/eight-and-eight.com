@@ -14,7 +14,8 @@
 
   /* Darker ground colour sampled from the supplied wallpaper image. */
   --wallpaper-ground: #f7eee5;
-  --page-cream: var(--wallpaper-ground);
+  /* v32: warm white sampled inside the circled area of IMG_2128.jpeg. */
+  --page-cream: #fdfcfa;
   --dark-gold-line: rgba(157, 115, 92, .52);
   --line: rgba(157, 115, 92, .40);
   --ink: var(--slate);
