@@ -1152,12 +1152,13 @@ main#top:focus { outline: none; }
   mix-blend-mode: normal;
 }
 
-/* v34: requested banner logo, light sand gold framing/fields, darker opening emblem. */
+/* v35: transparent wordmark and fields; dark gold type/emblem, light gold lines. */
 :root {
-  --metallic-gold: #d9bd87;
-  --dark-gold-line: #d9bd87;
-  --line: #d9bd87;
-  --gold-accent: #d9bd87;
+  --site-dark-gold: #80632f;
+  --metallic-gold: #d7c193;
+  --dark-gold-line: #d7c193;
+  --line: #d7c193;
+  --gold-accent: #d7c193;
 }
 .topbar .wordmark {
   position: absolute;
@@ -1178,17 +1179,27 @@ main#top:focus { outline: none; }
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: contrast(1.25) brightness(1.02);
-  mix-blend-mode: multiply;
+  filter: none;
+  mix-blend-mode: normal;
+  background: transparent;
 }
-/* The pale sand gold fill remains translucent over the background marks. */
-.section, .section-label, .partner-grid, .partner-slot,
-.service-grid, .service-grid article, .principles div, .process,
-.contact-panel, .contact-box {
-  background-color: rgba(217, 189, 135, .16) !important;
+/* Field interiors are completely transparent, including nested cells. */
+.hero-card, .hero-copy, .section, .section-label, .partner-grid, .partner-slot,
+.service-grid, .service-grid article, .principles, .principles div, .process,
+.contact-panel, .contact-box, .footer {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
+  color: var(--site-dark-gold) !important;
 }
 .hero-static-logo {
-  filter: sepia(.65) saturate(1.35) brightness(.73);
+  filter: none;
+  background-color: var(--site-dark-gold);
+  -webkit-mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
+  mask: url("eight-and-eight-logo-dark-v18.png") center / contain no-repeat;
 }
 @media (max-width: 900px) {
   .topbar .wordmark { width: min(40vw, 216px); flex: none; }
