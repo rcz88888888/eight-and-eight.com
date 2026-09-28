@@ -18,6 +18,9 @@ const svgNS = 'http://www.w3.org/2000/svg';
 const visibleMarks = backdrop?.querySelector('.visible-marks');
 const markPool = [];
 const mainLogo = document.querySelector('.parallax-logo');
+const heroContourGradient = document.querySelector('#hero-contour-light');
+const heroContourStage = document.querySelector('.logo-stage');
+const contourReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const portraitLayout = window.matchMedia("(orientation: portrait)");
 const LOGO_VISIBILITY = 0.2206456; // v13: previous 0.315208 multiplied by 0.70 (30% less visible).
 const MAIN_LOGO_TURNS = 8;
@@ -76,20 +79,18 @@ const update = () => {
   const scroll = window.scrollY;
   const range = Math.max(1, document.documentElement.scrollHeight - innerHeight);
   const progress = Math.min(1, Math.max(0, scroll / range));
-  // A distant sun crosses the viewport as the foreground and background
-  // layers travel at different speeds. Reflect a little warmth in gold lines.
-  const lightProgress = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : progress;
-  const lightWave = Math.sin(Math.PI * lightProgress);
-  const root = document.documentElement.style;
-  root.setProperty('--sun-x', `${(16 + 69 * lightProgress).toFixed(1)}%`);
-  root.setProperty('--sun-y', `${(24 + 27 * Math.sin(2 * Math.PI * lightProgress)).toFixed(1)}%`);
-  root.setProperty('--sun-opacity', (0.58 + 0.27 * lightWave).toFixed(3));
-  root.setProperty('--sun-glow', `${(4 + 8 * lightWave).toFixed(1)}px`);
-  const glint = Math.round(8 * lightWave);
-  const lineGold = `rgb(${215 + glint} ${193 + glint} ${147 + glint})`;
-  root.setProperty('--metallic-gold', lineGold);
-  root.setProperty('--dark-gold-line', lineGold);
-  root.setProperty('--line', lineGold);
+  // Sweep the light across the opening logo while that logo is visible.
+  // The gradient paints only its original strokes; the interior stays clear.
+  if (heroContourGradient && heroContourStage) {
+    const headerHeight = document.querySelector('.topbar')?.offsetHeight || 0;
+    const exitScroll = heroContourStage.getBoundingClientRect().bottom + scroll - headerHeight;
+    const contourProgress = contourReducedMotion.matches ? 0.35 :
+      Math.min(1, Math.max(0, scroll / Math.max(1, exitScroll)));
+    const lightX = 210 + 620 * contourProgress;
+    const lightY = 220 + 1250 * contourProgress;
+    heroContourGradient.setAttribute('gradientTransform',
+      `translate(${lightX.toFixed(2)} ${lightY.toFixed(2)})`);
+  }
   // All layers cross at the viewport centre at exactly half the scroll range.
   // A shared travel curve preserves the 28% speed reduction between neighbours.
   const travelRange = Math.min(innerHeight, mainLogo?.clientHeight || innerHeight);
@@ -151,3 +152,5 @@ if ('ResizeObserver' in window) {
 window.visualViewport?.addEventListener('resize', requestUpdate, { passive: true });
 window.visualViewport?.addEventListener('scroll', requestUpdate, { passive: true });
 window.addEventListener('pageshow', buildRain, { passive: true });
+
+contourReducedMotion.addEventListener('change', requestUpdate);

@@ -1240,25 +1240,3 @@ body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
   .topbar::before { background-position: center -58px; }
   .site-nav { --menu-wallpaper-size: 220px; --menu-wallpaper-offset: -58px; }
 }
-
-/* The sunlight sits behind the logo rain and page. Its warm spot moves with
-   scroll progress; the gold borders and outline pick up a small reflection. */
-.sunlight-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60vw 72vh at var(--sun-x, 18%) var(--sun-y, 22%),
-      rgba(255, 244, 185, .72), rgba(255, 235, 176, .28) 43%, transparent 83%),
-    radial-gradient(ellipse 95vw 85vh at var(--sun-x, 18%) var(--sun-y, 22%),
-      rgba(248, 215, 137, .24), transparent 82%);
-  opacity: var(--sun-opacity, .7);
-}
-.hero-static-logo,
-.parallax-logo .main-logo-layer {
-  filter: drop-shadow(0 0 var(--sun-glow, 6px) rgba(255, 224, 143, .5));
-}
-@media (prefers-reduced-motion: reduce) {
-  .sunlight-layer { --sun-x: 30%; --sun-y: 28%; --sun-opacity: .55; }
-}
