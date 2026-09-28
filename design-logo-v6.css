@@ -25,7 +25,7 @@
   --matte-silver: var(--silver);
   --deep-gold-green: var(--deep-taupe);
   --wallpaper: url("Eight&Eight-background-exact-ratio-20260916.png");
-  --wallpaper-bars: url("wallpaper-banners-20260926-v31.jpeg");
+  --wallpaper-bars: url("wallpaper-banners-creamgold-v39.jpeg");
 
   --header-height: 120px;
   --background-shift-1: 0px;
@@ -1215,4 +1215,50 @@ body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
     justify-content: flex-end;
     row-gap: 8px;
   }
+}
+
+/* v39: reveal more of the square wallpaper within each shallow band. Keep
+   the mobile menu wallpaper attached to the same top edge when it expands. */
+.topbar,
+.wallpaper-end {
+  background-color: #faf6e8;
+}
+.topbar::before,
+.wallpaper-end::before {
+  background-size: 260px 260px;
+  background-repeat: repeat;
+}
+.topbar::before { background-position: center -70px; }
+.wallpaper-end::before { background-position: center center; }
+@media (max-width: 900px) {
+  .topbar::before { background-position: center -58px; }
+  .site-nav { --menu-wallpaper-size: 260px; --menu-wallpaper-offset: -58px; }
+}
+@media (max-width: 560px) {
+  .topbar::before,
+  .wallpaper-end::before { background-size: 220px 220px; }
+  .topbar::before { background-position: center -58px; }
+  .site-nav { --menu-wallpaper-size: 220px; --menu-wallpaper-offset: -58px; }
+}
+
+/* The sunlight sits behind the logo rain and page. Its warm spot moves with
+   scroll progress; the gold borders and outline pick up a small reflection. */
+.sunlight-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60vw 72vh at var(--sun-x, 18%) var(--sun-y, 22%),
+      rgba(255, 244, 185, .72), rgba(255, 235, 176, .28) 43%, transparent 83%),
+    radial-gradient(ellipse 95vw 85vh at var(--sun-x, 18%) var(--sun-y, 22%),
+      rgba(248, 215, 137, .24), transparent 82%);
+  opacity: var(--sun-opacity, .7);
+}
+.hero-static-logo,
+.parallax-logo .main-logo-layer {
+  filter: drop-shadow(0 0 var(--sun-glow, 6px) rgba(255, 224, 143, .5));
+}
+@media (prefers-reduced-motion: reduce) {
+  .sunlight-layer { --sun-x: 30%; --sun-y: 28%; --sun-opacity: .55; }
 }

@@ -76,6 +76,20 @@ const update = () => {
   const scroll = window.scrollY;
   const range = Math.max(1, document.documentElement.scrollHeight - innerHeight);
   const progress = Math.min(1, Math.max(0, scroll / range));
+  // A distant sun crosses the viewport as the foreground and background
+  // layers travel at different speeds. Reflect a little warmth in gold lines.
+  const lightProgress = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.25 : progress;
+  const lightWave = Math.sin(Math.PI * lightProgress);
+  const root = document.documentElement.style;
+  root.setProperty('--sun-x', `${(16 + 69 * lightProgress).toFixed(1)}%`);
+  root.setProperty('--sun-y', `${(24 + 27 * Math.sin(2 * Math.PI * lightProgress)).toFixed(1)}%`);
+  root.setProperty('--sun-opacity', (0.58 + 0.27 * lightWave).toFixed(3));
+  root.setProperty('--sun-glow', `${(4 + 8 * lightWave).toFixed(1)}px`);
+  const glint = Math.round(8 * lightWave);
+  const lineGold = `rgb(${215 + glint} ${193 + glint} ${147 + glint})`;
+  root.setProperty('--metallic-gold', lineGold);
+  root.setProperty('--dark-gold-line', lineGold);
+  root.setProperty('--line', lineGold);
   // All layers cross at the viewport centre at exactly half the scroll range.
   // A shared travel curve preserves the 28% speed reduction between neighbours.
   const travelRange = Math.min(innerHeight, mainLogo?.clientHeight || innerHeight);
