@@ -1,0 +1,158 @@
+/* White reflection cores, broad soft falloff, 60% viewport reach per side. */
+.gold-light-target, .topbar, .wallpaper-end {
+  --gold-reflection:
+    radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-left-x, 22vw) var(--gold-light-y, 50%),
+    rgba(255, 255, 255, 1.000000) 0.0000%,
+    rgba(255, 255, 255, 0.998048) 3.1250%,
+    rgba(255, 255, 255, 0.992203) 6.2500%,
+    rgba(255, 255, 255, 0.982499) 9.3750%,
+    rgba(255, 255, 255, 0.968994) 12.5000%,
+    rgba(255, 255, 255, 0.951768) 15.6250%,
+    rgba(255, 255, 255, 0.930923) 18.7500%,
+    rgba(255, 255, 254, 0.906587) 21.8750%,
+    rgba(255, 254, 252, 0.878906) 25.0000%,
+    rgba(255, 254, 250, 0.848054) 28.1250%,
+    rgba(255, 253, 248, 0.814224) 31.2500%,
+    rgba(255, 253, 246, 0.777635) 34.3750%,
+    rgba(255, 253, 244, 0.738525) 37.5000%,
+    rgba(255, 252, 242, 0.697160) 40.6250%,
+    rgba(255, 252, 240, 0.653824) 43.7500%,
+    rgba(255, 251, 238, 0.608827) 46.8750%,
+    rgba(255, 251, 236, 0.562500) 50.0000%,
+    rgba(255, 250, 234, 0.515199) 53.1250%,
+    rgba(255, 250, 232, 0.467300) 56.2500%,
+    rgba(255, 250, 230, 0.419206) 59.3750%,
+    rgba(255, 249, 228, 0.371338) 62.5000%,
+    rgba(255, 249, 226, 0.324143) 65.6250%,
+    rgba(255, 248, 225, 0.278091) 68.7500%,
+    rgba(255, 248, 223, 0.233674) 71.8750%,
+    rgba(255, 247, 221, 0.191406) 75.0000%,
+    rgba(255, 247, 219, 0.151826) 78.1250%,
+    rgba(255, 247, 217, 0.115494) 81.2500%,
+    rgba(255, 246, 215, 0.082994) 84.3750%,
+    rgba(255, 246, 213, 0.054932) 87.5000%,
+    rgba(255, 245, 211, 0.031938) 90.6250%,
+    rgba(255, 245, 209, 0.014664) 93.7500%,
+    rgba(255, 244, 207, 0.003785) 96.8750%,
+    rgba(255, 244, 205, 0.000000) 100.0000%),
+    radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-right-x, 78vw) var(--gold-light-y, 50%),
+    rgba(255, 255, 255, 1.000000) 0.0000%,
+    rgba(255, 255, 255, 0.998048) 3.1250%,
+    rgba(255, 255, 255, 0.992203) 6.2500%,
+    rgba(255, 255, 255, 0.982499) 9.3750%,
+    rgba(255, 255, 255, 0.968994) 12.5000%,
+    rgba(255, 255, 255, 0.951768) 15.6250%,
+    rgba(255, 255, 255, 0.930923) 18.7500%,
+    rgba(255, 255, 254, 0.906587) 21.8750%,
+    rgba(255, 254, 252, 0.878906) 25.0000%,
+    rgba(255, 254, 250, 0.848054) 28.1250%,
+    rgba(255, 253, 248, 0.814224) 31.2500%,
+    rgba(255, 253, 246, 0.777635) 34.3750%,
+    rgba(255, 253, 244, 0.738525) 37.5000%,
+    rgba(255, 252, 242, 0.697160) 40.6250%,
+    rgba(255, 252, 240, 0.653824) 43.7500%,
+    rgba(255, 251, 238, 0.608827) 46.8750%,
+    rgba(255, 251, 236, 0.562500) 50.0000%,
+    rgba(255, 250, 234, 0.515199) 53.1250%,
+    rgba(255, 250, 232, 0.467300) 56.2500%,
+    rgba(255, 250, 230, 0.419206) 59.3750%,
+    rgba(255, 249, 228, 0.371338) 62.5000%,
+    rgba(255, 249, 226, 0.324143) 65.6250%,
+    rgba(255, 248, 225, 0.278091) 68.7500%,
+    rgba(255, 248, 223, 0.233674) 71.8750%,
+    rgba(255, 247, 221, 0.191406) 75.0000%,
+    rgba(255, 247, 219, 0.151826) 78.1250%,
+    rgba(255, 247, 217, 0.115494) 81.2500%,
+    rgba(255, 246, 215, 0.082994) 84.3750%,
+    rgba(255, 246, 213, 0.054932) 87.5000%,
+    rgba(255, 245, 211, 0.031938) 90.6250%,
+    rgba(255, 245, 209, 0.014664) 93.7500%,
+    rgba(255, 244, 207, 0.003785) 96.8750%,
+    rgba(255, 244, 205, 0.000000) 100.0000%),
+    linear-gradient(#d7c193, #d7c193);
+}
+/* Rounded frames use a hollow mask, so neither text nor the transparent
+   field interior receives a coloured fill. No extra DOM children are added. */
+.gold-frame-relative { position: relative; }
+.gold-frame-light:not(.topbar)::after,
+.gold-header-edge {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  border: 0 !important;
+  border-radius: inherit;
+  padding: var(--gold-edge-top, 0px) var(--gold-edge-right, 0px)
+    var(--gold-edge-bottom, 0px) var(--gold-edge-left, 0px);
+  background: var(--gold-reflection);
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.site-nav a.gold-light-target::after,
+.menu-toggle span.gold-light-target {
+  background: var(--gold-reflection) !important;
+}
+
+/* Recolour only the ornament; the banner paper is fully transparent.
+   Keep the smaller v39 repeat scale and the menu's fixed wallpaper origin. */
+.topbar::before,
+.wallpaper-end::before {
+  background: var(--gold-reflection);
+  opacity: 1;
+  mix-blend-mode: normal;
+  -webkit-mask-image: url("wallpaper-ornament-mask-v45.png");
+  mask-image: url("wallpaper-ornament-mask-v45.png");
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  -webkit-mask-size: 260px 260px;
+  mask-size: 260px 260px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.topbar::before {
+  -webkit-mask-position: center -70px;
+  mask-position: center -70px;
+}
+.wallpaper-end::before {
+  -webkit-mask-position: center center;
+  mask-position: center center;
+}
+@media (max-width: 900px) {
+  .topbar::before,
+  .topbar.menu-expanded::before {
+    -webkit-mask-image: url("wallpaper-ornament-mask-v45.png");
+    mask-image: url("wallpaper-ornament-mask-v45.png");
+    -webkit-mask-position: center -58px;
+    mask-position: center -58px;
+  }
+}
+@media (max-width: 560px) {
+  .topbar::before,
+  .wallpaper-end::before {
+    -webkit-mask-size: 220px 220px;
+    mask-size: 220px 220px;
+  }
+}
+
+/* v42: all banner ground layers are transparent; keep the masked ornament. */
+.topbar,
+.wallpaper-end,
+.site-nav,
+.topbar.menu-expanded::after {
+  background: transparent !important;
+}
+
+.topbar, .wallpaper-end, .topbar::before, .wallpaper-end::before {
+  opacity: 1 !important;
+}
+
+/* Same sampled gold as the wordmark. Kept outside animated lighting. */
+.topbar .menu-toggle > span {
+  background: #aa8d5e !important;
+  background-image: none !important;
+}

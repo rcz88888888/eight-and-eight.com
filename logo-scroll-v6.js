@@ -29,6 +29,7 @@ let logoReady = false;
 let droplets = [];
 let frame = 0;
 let pageHeight = 0;
+let cachedTravelRange = innerHeight;
 
 // One seeded position, scale, depth and parallax speed per logo (2,222 portrait / 8,888 landscape).
 const mulberry32 = seed => () => {
@@ -49,6 +50,10 @@ const buildRain = () => {
   const LOGO_COUNT = portraitLayout.matches ? 2222 : 8888;
   const rand = mulberry32(88888888);
   pageHeight = Math.max(document.documentElement.scrollHeight, innerHeight);
+  cachedTravelRange = Math.min(innerHeight, mainLogo.clientHeight || innerHeight);
+  backdrop.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
+  backdrop.style.width = `${innerWidth}px`;
+  backdrop.style.height = `${innerHeight}px`;
   // Match the displayed image (object-fit: contain), not only its container.
   const mainWidth = Math.min(mainLogo.clientWidth,
     mainLogo.clientHeight * SOURCE_WIDTH / SOURCE_HEIGHT) * 1.15;
@@ -74,11 +79,11 @@ const buildRain = () => {
 const update = () => {
   frame = 0;
   const scroll = window.scrollY;
-  const range = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  const range = Math.max(1, pageHeight - innerHeight);
   const progress = Math.min(1, Math.max(0, scroll / range));
   // All layers cross at the viewport centre at exactly half the scroll range.
   // A shared travel curve preserves the 28% speed reduction between neighbours.
-  const travelRange = Math.min(innerHeight, mainLogo?.clientHeight || innerHeight);
+  const travelRange = cachedTravelRange;
   const logoTravel = (0.5 - progress) * travelRange;
   // Preserve the gentle start/end while completing eight full clockwise turns.
   const rotation = (0.5 - 0.5 * Math.cos(Math.PI * progress)) * 360 * MAIN_LOGO_TURNS;
@@ -88,9 +93,6 @@ const update = () => {
     layer.style.setProperty('--layer-rotation', `${rotation.toFixed(2)}deg`);
   }
   if (!backdrop || !visibleMarks || !logoReady) return;
-  backdrop.setAttribute('viewBox', `0 0 ${innerWidth} ${innerHeight}`);
-  backdrop.style.width = `${innerWidth}px`;
-  backdrop.style.height = `${innerHeight}px`;
   let visibleCount = 0;
   for (const mark of droplets) {
     const y = mark.y - scroll * (1 - mark.speed);
@@ -104,14 +106,22 @@ const update = () => {
       markPool.push(node);
     }
     node.setAttribute('transform', `translate(${x} ${y}) scale(${mark.width / SOURCE_WIDTH} ${mark.height / SOURCE_HEIGHT})`);
-    node.setAttribute('opacity', String(mark.opacity));
-    node.removeAttribute('display');
+    if (node._goldMark !== mark) {
+      node.setAttribute('opacity', String(mark.opacity));
+      node._goldMark = mark;
+    }
+    if (!node._goldVisible) { node.removeAttribute('display'); node._goldVisible = true; }
     visibleCount++;
   }
   // Reuse visible nodes; never accumulate old painted frames while zooming.
-  for (let i = visibleCount; i < markPool.length; i++) markPool[i].setAttribute('display', 'none');
+  for (let i = visibleCount; i < markPool.length; i++) {
+    if (markPool[i]._goldVisible) {
+      markPool[i].setAttribute('display', 'none');
+      markPool[i]._goldVisible = false;
+    }
+  }
   backdrop.dataset.visibleLogos = String(visibleCount);
-  document.documentElement.classList.toggle('logo-rain-ready', true);
+  if (!document.documentElement.classList.contains('logo-rain-ready')) document.documentElement.classList.add('logo-rain-ready');
 };
 const requestUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
 
