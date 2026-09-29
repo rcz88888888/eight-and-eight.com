@@ -50,6 +50,34 @@
     CSS.supports('-webkit-mask-composite', 'xor');
   const heroLeft = document.querySelector('#hero-gold-left');
   const heroRight = document.querySelector('#hero-gold-right');
+  // Keep the rotating logo geometry, depth and opacity; illuminate its
+  // silhouette in viewport coordinates so the light does not rotate with it.
+  const ns = 'http://www.w3.org/2000/svg';
+  const rotatingLights = [...document.querySelectorAll('svg.main-logo-layer')].map((svg, i) => {
+    const make = (name, attributes) => {
+      const node = document.createElementNS(ns, name);
+      Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+      return node;
+    };
+    const defs = make('defs', {});
+    const mask = make('mask', {id: 'rotating-mask-' + i, maskUnits: 'userSpaceOnUse',
+      x: 0, y: 0, width: 922, height: 1368, style: 'mask-type:alpha'});
+    mask.appendChild(make('image', {href: 'eight-and-eight-logo-dark-v18.png',
+      width: 922, height: 1368}));
+    defs.appendChild(mask);
+    const gradients = [heroLeft, heroRight].map((source, side) => {
+      const gradient = source.cloneNode(true);
+      gradient.id = 'rotating-light-' + i + '-' + side;
+      defs.appendChild(gradient);
+      return gradient;
+    });
+    svg.appendChild(defs);
+    const shape = make('g', {mask: 'url(#rotating-mask-' + i + ')'});
+    [ '#d7c193', ...gradients.map(g => 'url(#' + g.id + ')') ].forEach(fill =>
+      shape.appendChild(make('rect', {width: 922, height: 1368, fill})));
+    svg.appendChild(shape);
+    return {svg, gradients};
+  });
   if (header && hollowMaskSupported) {
     const edge = document.createElement('span');
     edge.className = 'gold-header-edge';
@@ -177,7 +205,7 @@
       paint(element, '--gold-left-x', `${(leftSource - left).toFixed(2)}px`);
       paint(element, '--gold-right-x', `${(rightSource - left).toFixed(2)}px`);
       paint(element, '--gold-light-y', `${centerY.toFixed(2)}px`);
-      if (element.matches('.wordmark, .wordmark-logo, .site-nav a, .menu-toggle span')) {
+      if (element.matches('.wordmark, .wordmark-logo, .menu-toggle span')) {
         const extraCenterY = extraLightY - top;
         const extraLeftSource = viewportWidth * (.34 + .08 * Math.cos(travel * .43));
         const extraRightSource = viewportWidth - extraLeftSource;
@@ -185,6 +213,18 @@
         paint(element, '--gold-right-x', `${(extraRightSource - left).toFixed(2)}px`);
         paint(element, '--gold-light-y', `${extraCenterY.toFixed(2)}px`);
       }
+    }
+    for (const {svg, gradients} of rotatingLights) {
+      const matrix = svg.getScreenCTM();
+      if (!matrix) continue;
+      const inverse = matrix.inverse();
+      gradients.forEach((gradient, side) => {
+        gradient.setAttribute('cx', side === 0 ? leftSource : rightSource);
+        gradient.setAttribute('cy', lightY);
+        gradient.setAttribute('r', reach);
+        gradient.setAttribute('gradientTransform',
+          `matrix(${inverse.a} ${inverse.b} ${inverse.c} ${inverse.d} ${inverse.e} ${inverse.f})`);
+      });
     }
     if (heroGeometry && heroLeft && heroRight) {
       const box = heroGeometry;

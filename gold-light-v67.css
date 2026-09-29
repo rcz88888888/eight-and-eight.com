@@ -125,13 +125,26 @@
   transform: scaleY(1.08);
   transform-origin: center bottom;
 }
+/* Leave enough painting room for rounded-font descenders (g, j, p, q, y),
+   especially with Safari's text-clipped background and the 8% stretch. */
+h1.gold-text-light,
+h2.gold-text-light,
+h3.gold-text-light,
+h4.gold-text-light,
+h5.gold-text-light,
+h6.gold-text-light {
+  line-height: 1.25;
+  padding-top: .08em;
+  padding-bottom: .2em;
+  overflow: visible;
+}
 /* Navigation labels use the same black-gold base as the banner wordmark;
    their moving highlight remains aligned with the shared light field. */
 .site-nav a.gold-text-light,
 .site-nav a.gold-text-light:hover {
-  background-image: var(--banner-reflection) !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent;
+  background-image: none !important;
+  color: var(--banner-logo-metal) !important;
+  -webkit-text-fill-color: var(--banner-logo-metal);
 }
 /* Add light to previously missed text without stretching its surrounding box. */
 .gold-text-light.gold-text-coverage {
