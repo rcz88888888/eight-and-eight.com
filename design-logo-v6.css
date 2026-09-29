@@ -1240,3 +1240,8 @@ body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
   .topbar::before { background-position: center -58px; }
   .site-nav { --menu-wallpaper-size: 220px; --menu-wallpaper-offset: -58px; }
 }
+
+/* v44: hamburger strokes use the dominant opaque gold of the banner wordmark. */
+.topbar .menu-toggle span {
+  background: #aa8d5e !important;
+}
