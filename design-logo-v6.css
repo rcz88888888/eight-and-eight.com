@@ -1195,6 +1195,16 @@ main#top:focus { outline: none; }
 body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
   color: var(--site-dark-gold) !important;
 }
+
+/* Subtly rounded display/text faces: preserve the existing scale and spacing
+   while avoiding sharp, squared-off menu and body glyphs where available. */
+body, body *, button, input, select, textarea {
+  font-family: "Avenir Next Rounded", "Arial Rounded MT Bold", "Trebuchet MS",
+    var(--site-font) !important;
+  letter-spacing: .008em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
 .hero-static-logo {
   filter: none;
   background: transparent;
