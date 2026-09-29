@@ -1,0 +1,93 @@
+/* One metallic palette for the contour, field edges and banner ornaments.
+   The band width matches the opening logo's tripled light gradient. */
+.gold-light-target,
+.topbar,
+.wallpaper-end {
+  --gold-band-size: 1000px;
+  --gold-band-center: 320px;
+  --gold-reflection: linear-gradient(123.690068deg,
+    #d7c193 calc(var(--gold-band-center) - var(--gold-band-size) * .5),
+    #d7c193 calc(var(--gold-band-center) - var(--gold-band-size) * .25),
+    #b68c41 calc(var(--gold-band-center) - var(--gold-band-size) * .11),
+    #f0d48a calc(var(--gold-band-center) - var(--gold-band-size) * .03),
+    #fffdf4 calc(var(--gold-band-center) + var(--gold-band-size) * .02),
+    #f2d991 calc(var(--gold-band-center) + var(--gold-band-size) * .07),
+    #c2a060 calc(var(--gold-band-center) + var(--gold-band-size) * .18),
+    #d7c193 calc(var(--gold-band-center) + var(--gold-band-size) * .32),
+    #d7c193 calc(var(--gold-band-center) + var(--gold-band-size) * .5));
+}
+
+/* Border images keep the existing active sides and widths of dividers. */
+.gold-straight-light {
+  border-image-source: var(--gold-reflection) !important;
+  border-image-slice: 1 !important;
+  border-image-width: 1;
+  border-image-repeat: stretch;
+}
+
+/* Rounded frames use a hollow mask, so neither text nor the transparent
+   field interior receives a coloured fill. No extra DOM children are added. */
+.gold-frame-relative { position: relative; }
+.gold-rounded-light::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  border: 0 !important;
+  border-radius: inherit;
+  padding: var(--gold-edge-top, 0px) var(--gold-edge-right, 0px)
+    var(--gold-edge-bottom, 0px) var(--gold-edge-left, 0px);
+  background: var(--gold-reflection);
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.site-nav a.gold-light-target::after,
+.menu-toggle span.gold-light-target {
+  background: var(--gold-reflection) !important;
+}
+
+/* Recolour only the ornament; the banner paper stays light cream-white-gold.
+   Keep the smaller v39 repeat scale and the menu's fixed wallpaper origin. */
+.topbar::before,
+.wallpaper-end::before {
+  background: var(--gold-reflection);
+  opacity: 1;
+  mix-blend-mode: normal;
+  -webkit-mask-image: url("wallpaper-ornament-mask-v41.svg");
+  mask-image: url("wallpaper-ornament-mask-v41.svg");
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  -webkit-mask-size: 260px 260px;
+  mask-size: 260px 260px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.topbar::before {
+  -webkit-mask-position: center -70px;
+  mask-position: center -70px;
+}
+.wallpaper-end::before {
+  -webkit-mask-position: center center;
+  mask-position: center center;
+}
+@media (max-width: 900px) {
+  .topbar::before,
+  .topbar.menu-expanded::before {
+    -webkit-mask-image: url("wallpaper-ornament-mask-v41.svg");
+    mask-image: url("wallpaper-ornament-mask-v41.svg");
+    -webkit-mask-position: center -58px;
+    mask-position: center -58px;
+  }
+}
+@media (max-width: 560px) {
+  .topbar::before,
+  .wallpaper-end::before {
+    -webkit-mask-size: 220px 220px;
+    mask-size: 220px 220px;
+  }
+}
