@@ -1,0 +1,189 @@
+(() => {
+  'use strict';
+
+  const edges = ['Top', 'Right', 'Bottom', 'Left'];
+  const frameSelector = [
+    '.hero-card', '.section', '.section-label', '.partner-grid', '.partner-slot',
+    '.service-grid', '.service-grid article', '.principles', '.principles div',
+    '.process', '.contact-panel', '.contact-box', '.footer', '.topbar',
+    '.wallpaper-end', '.contact-links a', '.footer a', '.site-nav'
+  ].join(',');
+  const frames = [...document.querySelectorAll(frameSelector)];
+  const targets = [...new Set([
+    ...frames, ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo')
+  ])];
+  const hero = document.querySelector('.hero-static-logo');
+  const nav = document.querySelector('.site-nav');
+  const header = document.querySelector('.topbar');
+  const bottomBanner = document.querySelector('.wallpaper-end');
+  const bannerRoots = new Map();
+  for (const element of targets) {
+    const root = element === bottomBanner ? bottomBanner :
+      (element === header || header?.contains(element) || element === nav || nav?.contains(element)) ? header : null;
+    if (root) {
+      bannerRoots.set(element, root);
+      element.classList.add('gold-banner-light');
+    }
+  }
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const hollowMaskSupported = CSS.supports('mask-composite', 'exclude') ||
+    CSS.supports('-webkit-mask-composite', 'xor');
+  const heroLeft = document.querySelector('#hero-gold-left');
+  const heroRight = document.querySelector('#hero-gold-right');
+  if (header && hollowMaskSupported) {
+    const edge = document.createElement('span');
+    edge.className = 'gold-header-edge';
+    edge.setAttribute('aria-hidden', 'true');
+    header.appendChild(edge);
+  }
+  let pendingFrame = 0;
+  let needsMeasure = true;
+  let geometry = [];
+  let heroGeometry = null;
+  let viewportWidth = 0;
+  let viewportHeight = 0;
+  let scrollRange = 1;
+  let headerHeight = 0;
+  let menuExtension = 0;
+  const lastPaint = new WeakMap();
+  function paint(element, name, value) {
+    let previous = lastPaint.get(element);
+    if (!previous) { previous = {}; lastPaint.set(element, previous); }
+    if (previous[name] === value) return;
+    previous[name] = value;
+    element.style.setProperty(name, value);
+  }
+  function cacheGeometry() {
+    viewportWidth = document.documentElement.clientWidth;
+    viewportHeight = innerHeight;
+    scrollRange = Math.max(1, document.documentElement.scrollHeight - viewportHeight);
+    const offset = scrollY;
+    const head = header?.getBoundingClientRect();
+    headerHeight = head?.height || 0;
+    menuExtension = parseFloat(header?.style.getPropertyValue('--expanded-menu-height')) || 0;
+    geometry = targets.map(element => {
+      const box = element.getBoundingClientRect();
+      const root = bannerRoots.get(element);
+      return {element, root, left: box.left, width: box.width, height: box.height,
+        top: root === header && head ? box.top - head.top : box.top + offset};
+    });
+    if (hero) {
+      const box = hero.getBoundingClientRect();
+      heroGeometry = {left: box.left, top: box.top + offset, width: box.width, height: box.height};
+    }
+    const reach = `${(viewportWidth * 3 / 5).toFixed(2)}px`;
+    targets.forEach(element => paint(element, '--gold-reach', reach));
+  }
+
+  targets.forEach(element => element.classList.add('gold-light-target'));
+
+  function measureEdges() {
+    // Read first, then write, to avoid repeatedly forcing page layout.
+    const metrics = frames.map(element => {
+      const style = getComputedStyle(element);
+      return {
+        element,
+        widths: edges.map(edge => parseFloat(style[`border${edge}Width`]) || 0),
+        rounded: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft']
+          .some(corner => parseFloat(style[`border${corner}Radius`]) > 0),
+        position: style.position
+      };
+    });
+    for (const {element, widths, rounded, position} of metrics) {
+      const active = widths.some(width => width > 0);
+      const useMask = active && hollowMaskSupported;
+      element.classList.toggle('gold-frame-light', useMask);
+      if (useMask && position === 'static') element.classList.add('gold-frame-relative');
+      edges.forEach((edge, index) => {
+        element.style.setProperty(`--gold-edge-${edge.toLowerCase()}`, `${widths[index]}px`);
+        if (useMask) element.style.setProperty(`border-${edge.toLowerCase()}-color`, 'transparent', 'important');
+        else element.style.removeProperty(`border-${edge.toLowerCase()}-color`);
+      });
+    }
+  }
+
+  function update() {
+    pendingFrame = 0;
+    if (document.hidden) return;
+    if (needsMeasure) {
+      needsMeasure = false;
+      measureEdges();
+      cacheGeometry();
+    }
+    const scroll = Math.max(0, scrollY);
+    const reach = viewportWidth * 3 / 5;
+    const travel = reducedMotion.matches ? 0 : scroll / Math.max(1, viewportHeight);
+    const lightReach = viewportWidth * 3 / 5;
+    const progress = Math.min(1, scroll / scrollRange);
+    // Exactly 88 shared bottom-to-top light passes across the full page.
+    const lightPhase = reducedMotion.matches ? .5 :
+      (progress === 1 ? 1 : (progress * 88) % 1);
+    const lightY = viewportHeight + lightReach -
+      lightPhase * (viewportHeight + 2 * lightReach);
+    // Bring the white reflection centres gently inward so they cross the gold.
+    const leftSource = viewportWidth * (.22 + .1 * Math.sin(travel * .65));
+    const rightSource = viewportWidth - leftSource;
+    // Only the sticky header needs a live layout read during ordinary scrolling.
+    const headerTop = header?.getBoundingClientRect().top || 0;
+    for (const item of geometry) {
+      const {element, root, left, width, height} = item;
+      const top = root === header ? headerTop + item.top : item.top - scroll;
+      if (!width || !height || top + height < 0 || top > viewportHeight) continue;
+      let centerY = lightY - top;
+      if (root) {
+        centerY = lightY - top;
+      }
+      paint(element, '--gold-left-x', `${(leftSource - left).toFixed(2)}px`);
+      paint(element, '--gold-right-x', `${(rightSource - left).toFixed(2)}px`);
+      paint(element, '--gold-light-y', `${centerY.toFixed(2)}px`);
+      if (element.classList.contains('wordmark-logo')) {
+        const intensity = Math.max(0, Math.min(1, 1 - Math.abs(centerY - height / 2) / Math.max(1, lightReach)));
+        paint(element, '--banner-logo-brightness', (1 + intensity * .55).toFixed(3));
+        paint(element, '--banner-logo-glow', `${(2 + intensity * 13).toFixed(1)}px`);
+      }
+    }
+    if (heroGeometry && heroLeft && heroRight) {
+      const box = heroGeometry;
+      const topOnScreen = box.top - scroll;
+      const scale = Math.min(box.width / 922, box.height / 1368);
+      if (scale > 0 && topOnScreen + box.height >= 0 && topOnScreen <= viewportHeight) {
+        const left = box.left + (box.width - 922 * scale) / 2;
+        const top = topOnScreen + (box.height - 1368 * scale) / 2;
+        const radius = reach / scale;
+        const y = (lightY - top) / scale;
+        for (const [gradient, source] of [[heroLeft, leftSource], [heroRight, rightSource]]) {
+          gradient.setAttribute('gradientTransform', `translate(${((source-left)/scale).toFixed(3)} ${y.toFixed(3)}) scale(${radius.toFixed(3)} ${radius.toFixed(3)})`);
+        }
+      }
+    }
+  }
+
+  function schedule() {
+    if (!pendingFrame) pendingFrame = requestAnimationFrame(update);
+  }
+  function remeasure() {
+    needsMeasure = true;
+    schedule();
+  }
+  addEventListener('scroll', schedule, {passive: true});
+  addEventListener('resize', remeasure, {passive: true});
+  addEventListener('load', remeasure, {once: true});
+  addEventListener('pageshow', remeasure, {passive: true});
+  window.visualViewport?.addEventListener('resize', remeasure, {passive: true});
+  reducedMotion.addEventListener('change', schedule);
+  document.fonts?.ready.then(remeasure);
+  if ('ResizeObserver' in window) {
+    const observer = new ResizeObserver(remeasure);
+    observer.observe(document.querySelector('.site-shell'));
+  }
+  if (nav) {
+    let wasOpen = nav.classList.contains('open');
+    new MutationObserver(() => {
+      const open = nav.classList.contains('open');
+      if (open !== wasOpen) { wasOpen = open; remeasure(); }
+    }).observe(nav, {attributes: true, attributeFilter: ['class']});
+  }
+  document.addEventListener('visibilitychange', schedule);
+  nav?.addEventListener('scroll', remeasure, {passive: true});
+  schedule();
+})();
