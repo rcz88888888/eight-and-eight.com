@@ -275,7 +275,11 @@ body {
   display: block;
   pointer-events: none;
 }
+/* Hide the actual fallback children: their older explicit visibility:visible
+   overrides inherited visibility:hidden on the parent. Keep the sized parent
+   for canvas geometry, but remove all eight static copies from painting. */
 .canvas-logos-ready .parallax-logo { visibility: hidden; }
+.canvas-logos-ready .parallax-logo .main-logo-layer { display: none; }
 /* Small viewport units prevent the address bar from resizing the opening
    section and changing the complete scroll range on every mobile gesture. */
 @supports (height: 100svh) {

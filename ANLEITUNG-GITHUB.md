@@ -1,4 +1,4 @@
-# Eight&Eight – Version 72
+# Eight&Eight – Version 73
 
 ## Website hochladen
 
@@ -66,3 +66,12 @@ Bewegung und Stillstand geprüft. Die Löschlogik wurde in temporären
 Git-Repositories einschließlich Vorschau, Wiederholung und Schutz geänderter
 Dateien ausgeführt. Ein vollständiger Browser- und iPhone-Safari-Test war in
 dieser Umgebung nicht möglich; eine garantierte Bildrate ist damit nicht belegt.
+
+## Korrektur in Version 73
+
+Die acht statischen SVG-Ersatzlogos werden nach dem Start der Canvas-Darstellung
+jetzt direkt mit `display: none` ausgeblendet. Die ältere Regel
+`visibility: visible` auf den SVG-Elementen konnte zuvor die Vererbung von
+`visibility: hidden` umgehen. Der Elternbereich behält seine Maße; dadurch
+bleibt die Berechnung der acht bewegten Hauptlogos unverändert. Ohne aktive
+Canvas-Darstellung stehen die Ersatzlogos weiterhin zur Verfügung.
