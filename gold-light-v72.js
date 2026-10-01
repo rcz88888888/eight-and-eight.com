@@ -76,7 +76,7 @@
   let viewportWidth = 0;
   let viewportHeight = 0;
   let headerDocumentTop = 0;
-  let bannerHeight = 0;
+  let textMaskEdge = 0;
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -90,13 +90,29 @@
     viewportHeight = innerHeight;
     const offset = scrollY;
     const head = header?.getBoundingClientRect();
-    bannerHeight = (head?.height || 0) +
+    const bannerHeight = (head?.height || 0) +
       (header?.classList.contains("menu-expanded") ? nav?.getBoundingClientRect().height || 0 : 0);
+    const inset = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--text-mask-banner-inset')) || 16;
+    // One viewport-anchored edge, safely inside the wallpaper. Recalculate
+    // only for layout/menu changes, never from a scrolling text position.
+    textMaskEdge = Math.max(0, bannerHeight - inset);
+    const verticalScales = new Map();
+    function verticalScale(element) {
+      if (!element) return 1;
+      if (verticalScales.has(element)) return verticalScales.get(element);
+      const transform = getComputedStyle(element).transform;
+      const own = transform === 'none' ? 1 : Math.abs(new DOMMatrixReadOnly(transform).m22);
+      const scale = own * verticalScale(element.parentElement);
+      verticalScales.set(element, scale);
+      return scale || 1;
+    }
     headerDocumentTop = (header?.parentElement.getBoundingClientRect().top || 0) + offset;
     geometry = targets.map(element => {
       const box = element.getBoundingClientRect();
       const root = bannerRoots.get(element);
       return {element, root, left: box.left, width: box.width, height: box.height,
+        textScaleY: element.classList.contains('banner-occluded-text') ? verticalScale(element) : 1,
         top: root === header && head ? box.top - head.top : box.top + offset};
     });
     if (hero) {
@@ -148,9 +164,12 @@
       const {element, root, left, width, height} = item;
       const top = root === header ? headerTop + item.top : item.top - scroll;
       if (element.classList.contains('banner-occluded-text')) {
-        // Hard occlusion only where the sticky banner overlaps the glyph box.
-        const hiddenHeight = Math.max(0, Math.min(height, headerTop + bannerHeight - top));
-        paint(element, '--text-banner-clip', `${hiddenHeight.toFixed(2)}px`);
+        // Insets use local CSS pixels; the cached box uses viewport pixels.
+        // Account for the 1.08 text stretch (including nested text), otherwise
+        // the visible cut drifts down as each line crosses the banner.
+        const hiddenHeight = Math.max(0, Math.min(height, textMaskEdge - top));
+        const localInset = hiddenHeight / item.textScaleY;
+        paint(element, '--text-banner-clip', `${localInset.toFixed(3)}px`);
       }
       if (!width || !height || top + height < 0 || top > viewportHeight) continue;
       const extra = element.matches('.wordmark, .wordmark-logo, .menu-toggle span');

@@ -295,8 +295,9 @@ body {
 }
 body, body * { text-rendering: auto; }
 
-/* v74: mask glyphs only at the banner edge. Frames, logos and images
+/* v76: mask glyphs at a fixed edge 16px inside the banner. Frames, logos and images
    remain visible through the transparent wallpaper without an edge fade. */
+:root { --text-mask-banner-inset: 16px; }
 .banner-occluded-text {
   clip-path: inset(var(--text-banner-clip, 0px) -2px 0 -2px);
 }
