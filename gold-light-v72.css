@@ -30,8 +30,6 @@
     rgba(255, 244, 205, calc(0.000000 * var(--gold-light-visibility))) 100.0000%);
   --gold-reflection: var(--gold-radials),
     linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold));
-  --banner-reflection: var(--gold-radials),
-    linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal));
 }
 /* Rounded frames use a hollow mask, so neither text nor the transparent
    field interior receives a coloured fill. No extra DOM children are added. */
@@ -60,11 +58,18 @@
   background: var(--gold-reflection) !important;
 }
 
-/* Text receives the same broad shared reflection as the lines. Clipping the
-   animated field to the glyphs keeps the original gold base and adds a soft,
-   natural highlight without thin beam-like streaks. */
+/* v78: a separate left-to-right text shimmer, once every eight seconds.
+   The broad scroll-driven reflection is reserved for frames and ornaments. */
 .gold-text-light {
-  background-image: var(--banner-reflection) !important;
+  background-image: linear-gradient(110deg,
+    var(--banner-logo-metal) 0%, var(--banner-logo-metal) 42%,
+    #90794f 47%, #cbb88a 50%, #90794f 53%,
+    var(--banner-logo-metal) 58%, var(--banner-logo-metal) 100%) !important;
+  background-size: 300% 100% !important;
+  background-position: 100% 0;
+  background-repeat: no-repeat !important;
+  animation: text-shimmer 8s linear infinite;
+  animation-play-state: paused;
   /* Override older important background shorthands on panel labels:
      those also reset background-clip and otherwise paint the entire box. */
   background-clip: text !important;
@@ -78,10 +83,23 @@
   transform: scaleY(1.08);
   transform-origin: center bottom;
 }
+.gold-text-light.text-shimmer-visible { animation-play-state: running; }
+@keyframes text-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
+}
+html.text-shimmer-paused .gold-text-light { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .gold-text-light {
+    animation: none;
+    background-image: linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
+  }
+}
 /* Navigation labels retain the banner wordmark's black-gold without light. */
 .site-nav a.gold-text-light,
 .site-nav a.gold-text-light:hover {
   background-image: none !important;
+  animation: none;
   color: var(--banner-logo-metal) !important;
   -webkit-text-fill-color: var(--banner-logo-metal);
 }
@@ -295,11 +313,12 @@ body {
 }
 body, body * { text-rendering: auto; }
 
-/* v77: mask glyphs at a fixed edge 1.5px inside the banner. Frames, logos and images
-   remain visible through the transparent wallpaper without an edge fade. */
-:root { --text-mask-banner-inset: 1.5px; }
-.banner-occluded-text {
-  clip-path: inset(var(--text-banner-clip, 0px) -2px 0 -2px);
+/* v78: glyphs and portfolio artwork share the exact lower banner edge.
+   Only the content is clipped; its surrounding gold frames stay separate. */
+.banner-occluded-text,
+.banner-occluded-logo {
+  -webkit-clip-path: inset(var(--banner-content-clip, 0px) -2px 0 -2px);
+  clip-path: inset(var(--banner-content-clip, 0px) -2px 0 -2px);
 }
 
 .banner-text-glyphs { display: inline-block; max-width: 100%; }

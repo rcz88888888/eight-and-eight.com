@@ -44,10 +44,17 @@
       textNodes.push(owner);
     }
   }
-  const targets = [...new Set([
-    ...frames, ...textNodes,
+  const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
+  const lightTargets = new Set([
+    ...frames,
     ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
-  ])];
+  ]);
+  const targets = [...new Set([...lightTargets, ...textNodes, ...portfolioLogos])];
+  const clippedContent = new Set([
+    ...textNodes.filter(element => !element.matches(frameSelector) &&
+      !element.closest('.topbar, .site-nav, .wallpaper-end')),
+    ...portfolioLogos
+  ]);
   const hero = document.querySelector('.hero-static-logo');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
@@ -90,13 +97,13 @@
     viewportHeight = innerHeight;
     const offset = scrollY;
     const head = header?.getBoundingClientRect();
+    const menuOpen = header?.classList.contains('menu-expanded');
     const bannerHeight = (head?.height || 0) +
-      (header?.classList.contains("menu-expanded") ? nav?.getBoundingClientRect().height || 0 : 0);
-    const inset = parseFloat(getComputedStyle(document.documentElement)
-      .getPropertyValue('--text-mask-banner-inset')) || 1.5;
-    // One viewport-anchored edge, safely inside the wallpaper. Recalculate
-    // only for layout/menu changes, never from a scrolling text position.
-    textMaskEdge = Math.max(0, bannerHeight - inset);
+      (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
+    // One fixed edge at the banner's outer lower border. Round toward the
+    // content by at most one physical pixel, never back into the wallpaper.
+    const pixelRatio = Math.max(1, devicePixelRatio || 1);
+    textMaskEdge = Math.ceil(bannerHeight * pixelRatio) / pixelRatio;
     const verticalScales = new Map();
     function verticalScale(element) {
       if (!element) return 1;
@@ -112,7 +119,7 @@
       const box = element.getBoundingClientRect();
       const root = bannerRoots.get(element);
       return {element, root, left: box.left, width: box.width, height: box.height,
-        textScaleY: element.classList.contains('banner-occluded-text') ? verticalScale(element) : 1,
+        contentScaleY: clippedContent.has(element) ? verticalScale(element) : 1,
         top: root === header && head ? box.top - head.top : box.top + offset};
     });
     if (hero) {
@@ -120,16 +127,33 @@
       heroGeometry = {left: box.left, top: box.top + offset, width: box.width, height: box.height};
     }
     const reach = `${(viewportWidth * 3 / 5).toFixed(1)}px`;
-    targets.forEach(element => paint(element, '--gold-reach', reach));
+    lightTargets.forEach(element => paint(element, '--gold-reach', reach));
   }
 
-  targets.forEach(element => element.classList.add('gold-light-target'));
+  lightTargets.forEach(element => element.classList.add('gold-light-target'));
   textNodes.forEach(element => {
     element.classList.add('gold-text-light');
     if (!element.matches(frameSelector) && !element.closest('.topbar, .site-nav, .wallpaper-end')) {
       element.classList.add('banner-occluded-text');
     }
   });
+  portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
+
+  // Animate only visible text; the CSS clock is independent of scroll events.
+  const shimmerText = textNodes.filter(element => !element.closest('.site-nav'));
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        entry.target.classList.toggle('text-shimmer-visible', entry.isIntersecting);
+      }
+    });
+    shimmerText.forEach(element => observer.observe(element));
+  } else {
+    shimmerText.forEach(element => element.classList.add('text-shimmer-visible'));
+  }
+  const pauseTextLight = () => document.documentElement.classList.toggle('text-shimmer-paused', document.hidden);
+  document.addEventListener('visibilitychange', pauseTextLight);
+  pauseTextLight();
 
   function measureEdges() {
     // Read first, then write, to avoid repeatedly forcing page layout.
@@ -163,15 +187,15 @@
     for (const item of geometry) {
       const {element, root, left, width, height} = item;
       const top = root === header ? headerTop + item.top : item.top - scroll;
-      if (element.classList.contains('banner-occluded-text')) {
+      if (clippedContent.has(element)) {
         // Insets use local CSS pixels; the cached box uses viewport pixels.
         // Account for the 1.08 text stretch (including nested text), otherwise
         // the visible cut drifts down as each line crosses the banner.
         const hiddenHeight = Math.max(0, Math.min(height, textMaskEdge - top));
-        const localInset = hiddenHeight / item.textScaleY;
-        paint(element, '--text-banner-clip', `${localInset.toFixed(3)}px`);
+        const localInset = Math.ceil(hiddenHeight / item.contentScaleY * 10000) / 10000;
+        paint(element, '--banner-content-clip', `${localInset.toFixed(4)}px`);
       }
-      if (!width || !height || top + height < 0 || top > viewportHeight) continue;
+      if (!lightTargets.has(element) || !width || !height || top + height < 0 || top > viewportHeight) continue;
       const extra = element.matches('.wordmark, .wordmark-logo, .menu-toggle span');
       paint(element, '--gold-left-x', `${((extra ? state.extraLeft : leftSource) - left).toFixed(1)}px`);
       paint(element, '--gold-right-x', `${((extra ? state.extraRight : rightSource) - left).toFixed(1)}px`);
@@ -206,6 +230,10 @@
   engine.subscribe({
     measure() { measureEdges(); cacheGeometry(); },
     paint: update
+  });
+  // Lazy-loaded portfolio images can change their height after initial layout.
+  portfolioLogos.forEach(element => {
+    if (!element.complete) element.addEventListener('load', engine.invalidate, {once: true});
   });
   if (nav) {
     let wasOpen = nav.classList.contains('open');
