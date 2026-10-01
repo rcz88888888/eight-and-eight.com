@@ -9,6 +9,22 @@
     '.wallpaper-end', '.contact-links a', '.footer a', '.site-nav'
   ].join(',');
   const frames = [...document.querySelectorAll(frameSelector)];
+  // Isolate text owned by bordered boxes before adding glyph-only clipping.
+  // Do not clip the owner: that would also hide its frame or images.
+  const framedText = [];
+  const frameWalker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (frameWalker.nextNode()) {
+    const node = frameWalker.currentNode;
+    if (node.textContent.trim() && node.parentElement?.matches(frameSelector) &&
+        !node.parentElement.closest('.topbar, .site-nav, .wallpaper-end')) framedText.push(node);
+  }
+  for (const node of framedText) {
+    const glyphs = document.createElement('span');
+    glyphs.className = 'banner-text-glyphs';
+    node.replaceWith(glyphs);
+    glyphs.appendChild(node);
+  }
+
   const textNodes = [...document.querySelectorAll(
     'h1,h2,h3,h4,h5,h6,p,li,a,button,label,small,strong,em,blockquote,figcaption,dt,dd,th,td'
   )].filter(element => !element.closest('.wordmark, .menu-toggle'));
@@ -60,6 +76,7 @@
   let viewportWidth = 0;
   let viewportHeight = 0;
   let headerDocumentTop = 0;
+  let bannerHeight = 0;
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -73,6 +90,8 @@
     viewportHeight = innerHeight;
     const offset = scrollY;
     const head = header?.getBoundingClientRect();
+    bannerHeight = (head?.height || 0) +
+      (header?.classList.contains("menu-expanded") ? nav?.getBoundingClientRect().height || 0 : 0);
     headerDocumentTop = (header?.parentElement.getBoundingClientRect().top || 0) + offset;
     geometry = targets.map(element => {
       const box = element.getBoundingClientRect();
@@ -89,7 +108,12 @@
   }
 
   targets.forEach(element => element.classList.add('gold-light-target'));
-  textNodes.forEach(element => element.classList.add('gold-text-light'));
+  textNodes.forEach(element => {
+    element.classList.add('gold-text-light');
+    if (!element.matches(frameSelector) && !element.closest('.topbar, .site-nav, .wallpaper-end')) {
+      element.classList.add('banner-occluded-text');
+    }
+  });
 
   function measureEdges() {
     // Read first, then write, to avoid repeatedly forcing page layout.
@@ -123,6 +147,11 @@
     for (const item of geometry) {
       const {element, root, left, width, height} = item;
       const top = root === header ? headerTop + item.top : item.top - scroll;
+      if (element.classList.contains('banner-occluded-text')) {
+        // Hard occlusion only where the sticky banner overlaps the glyph box.
+        const hiddenHeight = Math.max(0, Math.min(height, headerTop + bannerHeight - top));
+        paint(element, '--text-banner-clip', `${hiddenHeight.toFixed(2)}px`);
+      }
       if (!width || !height || top + height < 0 || top > viewportHeight) continue;
       const extra = element.matches('.wordmark, .wordmark-logo, .menu-toggle span');
       paint(element, '--gold-left-x', `${((extra ? state.extraLeft : leftSource) - left).toFixed(1)}px`);

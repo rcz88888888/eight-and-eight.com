@@ -1,5 +1,6 @@
 /* White reflection cores, broad soft falloff, 60% viewport reach per side. */
 :root {
+  --gold-light-visibility: .58;
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
@@ -8,25 +9,25 @@
 .gold-light-target, .topbar, .wallpaper-end {
   --gold-radials:
     radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-left-x, 22vw) var(--gold-light-y, 50%),
-    rgba(255, 255, 255, 1.000000) 0.0000%,
-    rgba(255, 255, 255, 0.968994) 12.5000%,
-    rgba(255, 254, 252, 0.878906) 25.0000%,
-    rgba(255, 253, 244, 0.738525) 37.5000%,
-    rgba(255, 251, 236, 0.562500) 50.0000%,
-    rgba(255, 249, 228, 0.371338) 62.5000%,
-    rgba(255, 247, 221, 0.191406) 75.0000%,
-    rgba(255, 246, 213, 0.054932) 87.5000%,
-    rgba(255, 244, 205, 0.000000) 100.0000%),
+    rgba(255, 255, 255, calc(1.000000 * var(--gold-light-visibility))) 0.0000%,
+    rgba(255, 255, 255, calc(0.968994 * var(--gold-light-visibility))) 12.5000%,
+    rgba(255, 254, 252, calc(0.878906 * var(--gold-light-visibility))) 25.0000%,
+    rgba(255, 253, 244, calc(0.738525 * var(--gold-light-visibility))) 37.5000%,
+    rgba(255, 251, 236, calc(0.562500 * var(--gold-light-visibility))) 50.0000%,
+    rgba(255, 249, 228, calc(0.371338 * var(--gold-light-visibility))) 62.5000%,
+    rgba(255, 247, 221, calc(0.191406 * var(--gold-light-visibility))) 75.0000%,
+    rgba(255, 246, 213, calc(0.054932 * var(--gold-light-visibility))) 87.5000%,
+    rgba(255, 244, 205, calc(0.000000 * var(--gold-light-visibility))) 100.0000%),
     radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-right-x, 78vw) var(--gold-light-y, 50%),
-    rgba(255, 255, 255, 1.000000) 0.0000%,
-    rgba(255, 255, 255, 0.968994) 12.5000%,
-    rgba(255, 254, 252, 0.878906) 25.0000%,
-    rgba(255, 253, 244, 0.738525) 37.5000%,
-    rgba(255, 251, 236, 0.562500) 50.0000%,
-    rgba(255, 249, 228, 0.371338) 62.5000%,
-    rgba(255, 247, 221, 0.191406) 75.0000%,
-    rgba(255, 246, 213, 0.054932) 87.5000%,
-    rgba(255, 244, 205, 0.000000) 100.0000%);
+    rgba(255, 255, 255, calc(1.000000 * var(--gold-light-visibility))) 0.0000%,
+    rgba(255, 255, 255, calc(0.968994 * var(--gold-light-visibility))) 12.5000%,
+    rgba(255, 254, 252, calc(0.878906 * var(--gold-light-visibility))) 25.0000%,
+    rgba(255, 253, 244, calc(0.738525 * var(--gold-light-visibility))) 37.5000%,
+    rgba(255, 251, 236, calc(0.562500 * var(--gold-light-visibility))) 50.0000%,
+    rgba(255, 249, 228, calc(0.371338 * var(--gold-light-visibility))) 62.5000%,
+    rgba(255, 247, 221, calc(0.191406 * var(--gold-light-visibility))) 75.0000%,
+    rgba(255, 246, 213, calc(0.054932 * var(--gold-light-visibility))) 87.5000%,
+    rgba(255, 244, 205, calc(0.000000 * var(--gold-light-visibility))) 100.0000%);
   --gold-reflection: var(--gold-radials),
     linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold));
   --banner-reflection: var(--gold-radials),
@@ -293,3 +294,11 @@ body {
   }
 }
 body, body * { text-rendering: auto; }
+
+/* v74: mask glyphs only at the banner edge. Frames, logos and images
+   remain visible through the transparent wallpaper without an edge fade. */
+.banner-occluded-text {
+  clip-path: inset(var(--text-banner-clip, 0px) -2px 0 -2px);
+}
+
+.banner-text-glyphs { display: inline-block; max-width: 100%; }

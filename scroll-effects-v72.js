@@ -7,6 +7,8 @@
   const hero = document.querySelector('.hero-static-logo');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const subscribers = [];
+  const lightPasses = 8;
+  const lightVisibility = .58;
   const image = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
@@ -116,13 +118,12 @@
     const motion = reduced.matches ? 0 : progress;
     const travel = reduced.matches ? 0 : scroll / Math.max(1, height);
     const left = width * (.22 + .1 * Math.sin(travel * .65));
-    const extraLeft = width * (.34 + .08 * Math.cos(travel * .43));
     return {width, height, scroll, progress, reach, travel,
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion,
       left, right: width - left,
-      y: start - ((offset + motion * 18 * cycle) % cycle),
-      extraY: start - ((offset + motion * 8 * cycle) % cycle),
-      extraLeft, extraRight: width - extraLeft};
+      y: start - ((offset + motion * lightPasses * cycle) % cycle),
+      extraY: start - ((offset + motion * lightPasses * cycle) % cycle),
+      extraLeft: left, extraRight: width - left};
   }
   function paintCanvas(state) {
     if (!bg || !ink || !light || !mainBox || !sprites.length) return;
@@ -166,7 +167,7 @@
         light.fillRect(0, 0, width, height);
       }
       ink.globalCompositeOperation = 'source-atop';
-      ink.globalAlpha = .3;
+      ink.globalAlpha = .3 * lightVisibility;
       ink.drawImage(lightSurface, 0, 0, width, height);
       ink.globalAlpha = 1;
       ink.globalCompositeOperation = 'source-over';
