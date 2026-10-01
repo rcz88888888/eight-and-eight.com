@@ -313,7 +313,7 @@ body {
 }
 body, body * { text-rendering: auto; }
 
-/* v78: glyphs and portfolio artwork share the exact lower banner edge.
+/* v79: glyphs and portfolio artwork share a fixed edge, moved 2px up.
    Only the content is clipped; its surrounding gold frames stay separate. */
 .banner-occluded-text,
 .banner-occluded-logo {

@@ -100,10 +100,10 @@
     const menuOpen = header?.classList.contains('menu-expanded');
     const bannerHeight = (head?.height || 0) +
       (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
-    // One fixed edge at the banner's outer lower border. Round toward the
-    // content by at most one physical pixel, never back into the wallpaper.
+    // v79: keep the shared edge fixed and move it exactly 2 CSS pixels up
+    // from the v78 position for both text and portfolio artwork.
     const pixelRatio = Math.max(1, devicePixelRatio || 1);
-    textMaskEdge = Math.ceil(bannerHeight * pixelRatio) / pixelRatio;
+    textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 2);
     const verticalScales = new Map();
     function verticalScale(element) {
       if (!element) return 1;
