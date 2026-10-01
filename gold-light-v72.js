@@ -93,7 +93,7 @@
     const bannerHeight = (head?.height || 0) +
       (header?.classList.contains("menu-expanded") ? nav?.getBoundingClientRect().height || 0 : 0);
     const inset = parseFloat(getComputedStyle(document.documentElement)
-      .getPropertyValue('--text-mask-banner-inset')) || 16;
+      .getPropertyValue('--text-mask-banner-inset')) || 1.5;
     // One viewport-anchored edge, safely inside the wallpaper. Recalculate
     // only for layout/menu changes, never from a scrolling text position.
     textMaskEdge = Math.max(0, bannerHeight - inset);
