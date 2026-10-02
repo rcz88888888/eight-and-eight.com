@@ -203,7 +203,7 @@
       lineOwners.forEach(node => lineObserver.observe(node));
     } else lineOwners.forEach(node => setLineVisible(node, true));
 
-    const animated = [...(contentLayer || document).querySelectorAll('.gold-text-light, .portfolio-shimmer')]
+    const animated = [...(contentLayer || document).querySelectorAll('.portfolio-shimmer')]
       .filter(node => !node.closest('.topbar, .site-nav, .logo-stage, .wallpaper-end'));
     // All newly visible elements join the same eight-second clock. Re-entering
     // the viewport does not trigger an extra highlight.

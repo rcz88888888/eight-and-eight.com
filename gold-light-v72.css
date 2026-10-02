@@ -69,14 +69,13 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v88: a 0.8-second reflection every eight seconds, at 48% light visibility. */
+/* v93: stationary text; portfolio and line reflections keep their timing. */
 .gold-text-light {
-  background-image: var(--vertical-shimmer-beam),
-    linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
-  background-size: 100% 300%, 100% 100% !important;
+  background-image: linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
+  background-size: 100% 100% !important;
   background-position: 0 100%;
   background-repeat: no-repeat !important;
-  animation: text-shimmer 8s linear infinite;
+  animation: none !important;
   animation-play-state: paused;
   /* Override older important background shorthands on panel labels:
      those also reset background-clip and otherwise paint the entire box. */
@@ -106,7 +105,6 @@
   animation: text-shimmer 8s linear infinite;
   animation-play-state: paused;
 }
-.gold-text-light.text-shimmer-visible,
 .portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
 @keyframes text-shimmer {
   from { background-position: 0 100%; }
@@ -116,7 +114,6 @@
   from { background-position: 0 100%; }
   10%, 100% { background-position: 0 0%; }
 }
-html.text-shimmer-paused .gold-text-light,
 html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
   .portfolio-shimmer { animation: none; display: none; }
@@ -390,15 +387,22 @@ body { height: auto; min-height: 100%; overflow: visible; }
   position: relative;
   z-index: 3;
 }
-/* Offscreen entries restart on the shared clock instead of resuming a stale phase. */
-.content-scroll .gold-text-light, .content-scroll .portfolio-shimmer { animation-name: none; }
-.content-scroll .gold-text-light.text-shimmer-visible,
+/* v93: text stays steady; only portfolio artwork retains its reflection. */
+.content-scroll .portfolio-shimmer { animation-name: none; }
 .content-scroll .portfolio-shimmer.text-shimmer-visible { animation-name: text-shimmer; }
-html.text-shimmer-paused .content-scroll .gold-text-light,
 html.text-shimmer-paused .content-scroll .portfolio-shimmer { animation-name: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .content-scroll .gold-text-light.text-shimmer-visible,
   .content-scroll .portfolio-shimmer.text-shimmer-visible { animation: none; }
+}
+.banner-content-mask { overflow: hidden; }
+.banner-logo-feed {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none;
 }
 
 /* Shared line lighting replaces the old scroll-driven frame reflections.

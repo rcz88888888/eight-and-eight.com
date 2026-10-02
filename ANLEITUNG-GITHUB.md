@@ -1,4 +1,4 @@
-# Eight&Eight – Version 92
+# Eight&Eight – Version 93
 
 ## Website hochladen
 
@@ -34,6 +34,23 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 93
+
+Die Texte sind konstant dunkelgolden; ihre blinkende Lichtanimation entfällt.
+Die Kooperationslogos und Linien behalten ihre bisherigen Reflexionen.
+In der cremefarbenen Maske liegt eine transparente Canvas-Ebene, die den
+Banner-Ausschnitt der bereits gezeichneten Hintergrundlogos und acht Hauptlogos
+im selben Bildschritt übernimmt. Sie liegt über der Maskenfarbe und unter den
+Rahmen, dem Startlinienlogo und dem Tapetenmuster. Es entstehen keine weiteren
+Logos und keine zusätzliche dauerhafte Animationsschleife. Natives Dokument-
+Scrollen und der sofortige Abbruch von Menüanimationen bleiben erhalten.
+
+Geprüft: Bannerkopie aus beiden Originalebenen im selben Bildschritt,
+Ausschnitt und Pixeldichten beim Scrollen, Größenwechsel und erweitertem Menü;
+keine weitere dauerhafte Animationsschleife. Textanimation deaktiviert,
+Scroll- und Maskenregressionen sowie Skript-/Dateiprüfungen bestanden.
+Ein Test auf einem echten iPhone steht noch aus.
 
 ## Änderungen in Version 92
 

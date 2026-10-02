@@ -6,6 +6,10 @@
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
+  const bannerMask = document.querySelector('.banner-content-mask');
+  const bannerFeed = document.querySelector('.banner-logo-feed');
+  const feed = bannerFeed?.getContext('2d');
+  let feedHeight = 0;
   const hero = document.querySelector('.hero-static-logo');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const subscribers = [];
@@ -77,6 +81,10 @@
       heroBox = {left: box.left, top: box.top + scrollPosition(), width: box.width, height: box.height};
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
+    if (feed && bannerMask) {
+      feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
+      resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
+    }
     if (!bg || !ink || !light || !mainBox) return;
     bgRatio = Math.min(devicePixelRatio || 1, 1.25);
     inkRatio = Math.min(devicePixelRatio || 1, 1.5);
@@ -181,6 +189,17 @@
       root.classList.add('logo-rain-ready', 'canvas-logos-ready');
     }
   }
+  // Copy the same rendered frame, cropped to the banner. Do not create or
+  // animate another set of logos: position, rotation, opacity and light match.
+  function paintBannerFeed(width, height) {
+    if (!feed || !bg || !ink || !feedHeight || !width || !height) return;
+    feed.clearRect(0, 0, width, feedHeight);
+    for (const source of [background, logos]) {
+      if (!source.width || !source.height) continue;
+      feed.drawImage(source, 0, 0, source.width, source.height * feedHeight / height,
+        0, 0, width, feedHeight);
+    }
+  }
   function render() {
     raf = 0;
     if (document.hidden) return;
@@ -193,6 +212,7 @@
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
     paintCanvas(state);
+    paintBannerFeed(width, height);
     subscribers.forEach(item => item.paint?.(state));
   }
   image.addEventListener('load', () => {
