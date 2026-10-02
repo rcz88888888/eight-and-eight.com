@@ -1,4 +1,4 @@
-# Eight&Eight – Version 73
+# Eight&Eight – Version 89
 
 ## Website hochladen
 
@@ -35,7 +35,30 @@ Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
 
-## Anpassungen
+## Änderungen in Version 89
+
+- Texte, Linien und Kooperationslogos scrollen gemeinsam in einer nativen
+  Browserfläche. Die per JavaScript nachgeführte Kopie des Seiteninhalts
+  entfällt; Textpositionen werden beim Scrollen nicht mehr verschoben.
+- Die feste Maskenkante reicht 1 CSS-Pixel weiter nach unten als in Version 88.
+- Navigation und Hintergrundeffekte verwenden die Scrollposition dieser
+  Fläche. Die acht Reflexionsrichtungen, 48 % Sichtbarkeit, der Rhythmus von
+  0,8 Sekunden alle acht Sekunden und 0,8-px-Linien im Querformat bleiben aktiv.
+
+## Änderungen in Version 88
+
+- Kontaktbox: Eight&Eight, rCz audio, Contact und +491631583194; Telefonnummer
+  direkt anwählbar. Der doppelte Kontaktblock unter Legal Information entfällt.
+- Die acht zusätzlichen Lichter auf dem Startlinienlogo sind entfernt.
+  Das Logo erhält das gemeinsame Lichtfeld des oberen Banners.
+- Eine zusätzliche Reflexion kommt zufällig aus einer von acht Richtungen;
+  dieselbe Richtung wird nicht direkt hintereinander verwendet.
+- Text, Kooperationslogos, Linien, Felder und Bannerlinien reflektieren
+  alle acht Sekunden für 0,8 Sekunden mit 48 % Licht-Sichtbarkeit.
+- Im Querformat sind Feldlinien und Startlinienlogo 0,8 px dick.
+- Die feste Maskenkante für Texte und Kooperationslogos bleibt erhalten.
+
+## Bisherige Anpassungen
 
 - Eigene Blur-Ebene mit 38 % Deckkraft und 10 px Unschärferadius hinter beiden
   Bannern, einschließlich ausgeklapptem mobilen Banner. Muster, Logos,
@@ -57,7 +80,15 @@ angeforderten 38 % sind deshalb die Deckkraft der separaten Unschärfe-Ebene:
 GitHub-Anleitung: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow
 Pages-Build: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
 
-## Prüfung
+## Prüfung von Version 89
+
+JavaScript-Syntax, Seitenstruktur, Ressourcen und unveränderte Texte sind
+geprüft. Lokale Ablaufprüfungen decken schnelle und gebrochene Scrollwerte,
+die feste Maskenkante, Logoausrichtung, Navigation, Größenänderung,
+Hintergrundparameter und den unveränderten Reflexionsrhythmus ab.
+Ein direkter Browser- oder iPhone-Safari-Test war in dieser Umgebung nicht möglich.
+
+## Frühere Prüfungen (Version 73)
 
 JavaScript-Syntax, Ressourcenverweise, Anker und unveränderte Seiteninhalte
 sind geprüft. Das Zeichenprogramm wurde lokal mit echten Canvas-Flächen

@@ -1,16 +1,16 @@
 /* White reflection cores, broad soft falloff, 60% viewport reach per side. */
 :root {
   --gold-light-visibility: .58;
-  --content-light-visibility: .18;
+  --content-light-visibility: .48;
   --shimmer-beam: linear-gradient(180deg,
     rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
-    rgba(255, 244, 218, .3) 47%, rgba(255, 244, 218, .68) 50%,
-    rgba(255, 244, 218, .3) 53%, rgba(255, 244, 218, 0) 58%,
+    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, var(--content-light-visibility)) 50%,
+    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 53%, rgba(255, 244, 218, 0) 58%,
     rgba(255, 244, 218, 0) 100%);
   --vertical-shimmer-beam: linear-gradient(180deg,
     rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
-    rgba(255, 244, 218, calc(.3 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, calc(.68 * var(--content-light-visibility))) 50%,
-    rgba(255, 244, 218, calc(.3 * var(--content-light-visibility))) 53%, rgba(255, 244, 218, 0) 58%,
+    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, var(--content-light-visibility)) 50%,
+    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 53%, rgba(255, 244, 218, 0) 58%,
     rgba(255, 244, 218, 0) 100%);
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
@@ -69,8 +69,7 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v83: vertical warm beam on text and portfolio artwork;
-   one uninterrupted eight-second sweep from top to bottom, repeating. */
+/* v88: a 0.8-second reflection every eight seconds, at 48% light visibility. */
 .gold-text-light {
   background-image: var(--vertical-shimmer-beam),
     linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
@@ -111,11 +110,11 @@
 .portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
 @keyframes text-shimmer {
   from { background-position: 0 100%; }
-  to { background-position: 0 0%; }
+  10%, 100% { background-position: 0 0%; }
 }
 @keyframes line-shimmer {
   from { background-position: 0 100%; }
-  to { background-position: 0 0%; }
+  10%, 100% { background-position: 0 0%; }
 }
 html.text-shimmer-paused .gold-text-light,
 html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
@@ -346,54 +345,34 @@ body, body * { text-rendering: auto; }
 
 .banner-text-glyphs { display: inline-block; max-width: 100%; }
 
-/* v81: a single viewport-fixed clipping plane. Only its contents move. */
-.content-display {
+/* v89: the browser scrolls the original content inside one fixed clip.
+   Text, frames and portfolio artwork share the same native scroll surface. */
+html, body { height: 100%; overflow: hidden; }
+.site-shell { height: 100%; min-height: 100%; }
+.content-scroll {
   position: fixed;
   inset: 0;
   z-index: 3;
-  pointer-events: none;
-  overflow: hidden;
+  padding-top: var(--content-start, var(--header-height));
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+  scroll-behavior: auto;
+  outline: none;
   contain: paint;
-  -webkit-clip-path: inset(var(--display-cut, 0px) 0 0 0);
-  clip-path: inset(var(--display-cut, 0px) 0 0 0);
+  -webkit-clip-path: inset(var(--content-cut, calc(var(--header-height) - 3px)) 0 0 0);
+  clip-path: inset(var(--content-cut, calc(var(--header-height) - 3px)) 0 0 0);
 }
-.content-display > .display-copy {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  overflow: visible;
-  will-change: transform;
-  pointer-events: none;
-}
-.display-copy .topbar { position: relative; top: auto; }
-.display-copy .topbar, .display-copy .logo-stage, .display-copy .wallpaper-end {
-  visibility: hidden !important;
-}
-.display-copy *::before, .display-copy *::after { display: none !important; }
-.display-copy .banner-occluded-text, .display-copy .banner-occluded-logo {
-  -webkit-clip-path: none;
-  clip-path: none;
-}
-/* Original content remains selectable, focusable and accessible in its layout. */
-.display-source > main .gold-text-light,
-.display-source > .footer .gold-text-light {
-  animation: none !important;
-  background-image: none !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-}
-.display-source > main .partner-slot img,
-.display-source > main .portfolio-shimmer { opacity: 0 !important; }
 /* Offscreen entries restart on the shared clock instead of resuming a stale phase. */
-.display-copy .gold-text-light, .display-copy .portfolio-shimmer { animation-name: none; }
-.display-copy .gold-text-light.text-shimmer-visible,
-.display-copy .portfolio-shimmer.text-shimmer-visible { animation-name: text-shimmer; }
-html.text-shimmer-paused .display-copy .gold-text-light,
-html.text-shimmer-paused .display-copy .portfolio-shimmer { animation-name: none !important; }
+.content-scroll .gold-text-light, .content-scroll .portfolio-shimmer { animation-name: none; }
+.content-scroll .gold-text-light.text-shimmer-visible,
+.content-scroll .portfolio-shimmer.text-shimmer-visible { animation-name: text-shimmer; }
+html.text-shimmer-paused .content-scroll .gold-text-light,
+html.text-shimmer-paused .content-scroll .portfolio-shimmer { animation-name: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .display-copy .gold-text-light.text-shimmer-visible,
-  .display-copy .portfolio-shimmer.text-shimmer-visible { animation: none; }
+  .content-scroll .gold-text-light.text-shimmer-visible,
+  .content-scroll .portfolio-shimmer.text-shimmer-visible { animation: none; }
 }
 
 /* Shared line lighting replaces the old scroll-driven frame reflections.
@@ -428,12 +407,54 @@ html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !impo
   }
 }
 
-/* v84: the opening contour logo shares the text/partner beam, inside its mask. */
+
+/* v88: the start logo shares the banner's continuous light field and has
+   one separate, randomly directed reflection (0.8s per 8s cycle). */
+.hero-banner-light > rect { opacity: var(--gold-light-visibility); }
+.hero-directional-reflection { opacity: var(--content-light-visibility); }
 @media (prefers-reduced-motion: reduce) {
-  .hero-partner-shimmer { display: none; }
+  .hero-directional-reflection { display: none; }
 }
 
-/* v87: dim only the opening logo's light overlays, including all eight spots. */
-.hero-partner-shimmer,
-.hero-eight-ambient,
-.hero-eight-contours { opacity: var(--content-light-visibility); }
+/* Reflections across the transparent field interiors, below text and frames. */
+.section, .contact-box, .service-grid article, .partner-slot { position: relative; }
+.section::before, .contact-box::before,
+.service-grid article::before, .partner-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--vertical-shimmer-beam);
+  background-size: 100% 300%;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  animation: line-shimmer 8s linear infinite;
+  animation-name: var(--line-shimmer-name, none);
+  animation-delay: var(--line-shimmer-delay, 0ms);
+}
+html.text-shimmer-paused .section::before,
+html.text-shimmer-paused .contact-box::before,
+html.text-shimmer-paused .service-grid article::before,
+html.text-shimmer-paused .partner-slot::before { animation-name: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .section::before, .contact-box::before,
+  .service-grid article::before, .partner-slot::before { animation: none; }
+}
+
+/* Landscape only: preserve which edges exist, but use 0.8px on every edge. */
+@media (orientation: landscape) {
+  body .site-shell *, body .site-nav, body .site-nav * {
+    border-width: .8px !important;
+    outline-width: .8px;
+    text-decoration-thickness: .8px;
+  }
+  body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-child(n) {
+    border-width: .8px !important;
+  }
+  .hero-static-logo mask > g,
+  .hero-static-logo [vector-effect="non-scaling-stroke"] { stroke-width: .8px !important; }
+  body .site-nav::after, body .site-nav a::after { height: .8px !important; }
+  body .topbar .menu-toggle > span { height: .8px !important; min-height: .8px !important; }
+}

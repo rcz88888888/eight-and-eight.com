@@ -48,7 +48,8 @@
   if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(nav);
   mobile.addEventListener('change', place);
   addEventListener('resize', schedule, {passive: true});
-  addEventListener('scroll', () => { if (nav.classList.contains('open')) schedule(); }, {passive: true});
+  (document.querySelector('.content-scroll') || window).addEventListener('scroll',
+    () => { if (nav.classList.contains('open')) schedule(); }, {passive: true});
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && nav.classList.contains('open')) {
       close();

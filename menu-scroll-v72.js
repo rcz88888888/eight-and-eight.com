@@ -6,11 +6,16 @@
   const area = startSpeed / 2 + acceleration / 6;
   const ease = t => (startSpeed * t + (acceleration - startSpeed) * t * t / 2
     - acceleration * t * t * t / 3) / area;
-  const root = document.documentElement;
+  const scrollSurface = document.querySelector('.content-scroll');
+  const root = scrollSurface || document.documentElement;
+  const scrollPosition = () => scrollSurface ? scrollSurface.scrollTop : window.scrollY;
+  const scrollTo = options => (scrollSurface || window).scrollTo(options);
   let active = null;
   let destinationDirty = true;
   if ('ResizeObserver' in window) {
-    new ResizeObserver(() => { destinationDirty = true; }).observe(document.querySelector('.site-shell'));
+    const observer = new ResizeObserver(() => { destinationDirty = true; });
+    (scrollSurface ? [...scrollSurface.children] : [document.querySelector('.site-shell')])
+      .forEach(node => observer.observe(node));
   }
   window.addEventListener('resize', () => { destinationDirty = true; }, {passive: true});
 
@@ -32,8 +37,8 @@
     const headerHeight = header && (position === 'sticky' || position === 'fixed')
       ? header.getBoundingClientRect().height : 0;
     const margin = Math.max(headerHeight + 16, parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
-    const limit = Math.max(0, root.scrollHeight - window.innerHeight);
-    return Math.min(limit, Math.max(0, window.scrollY + target.getBoundingClientRect().top - margin));
+    const limit = Math.max(0, root.scrollHeight - (scrollSurface ? scrollSurface.clientHeight : window.innerHeight));
+    return Math.min(limit, Math.max(0, scrollPosition() + target.getBoundingClientRect().top - margin));
   };
 
   const finish = (target, hash) => {
@@ -66,12 +71,12 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       active.frame = requestAnimationFrame(startTime => {
-        const start = window.scrollY;
+        const start = scrollPosition();
         let destination = destinationFor(target);
         destinationDirty = false;
         const distance = destination - start;
         if (Math.abs(distance) < 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          window.scrollTo({ top: destinationFor(target), behavior: 'auto' });
+          scrollTo({ top: destinationFor(target), behavior: 'auto' });
           finish(target, hash);
           return;
         }
@@ -83,7 +88,7 @@
             destination = destinationFor(target);
             destinationDirty = false;
           }
-          window.scrollTo({ top: start + (destination - start) * ease(progress), behavior: 'auto' });
+          scrollTo({ top: start + (destination - start) * ease(progress), behavior: 'auto' });
           if (progress < 1) active.frame = requestAnimationFrame(step);
           else finish(target, hash);
         };

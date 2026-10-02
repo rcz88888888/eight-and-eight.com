@@ -1,6 +1,9 @@
 (() => {
   'use strict';
   const root = document.documentElement;
+  const scrollSurface = document.querySelector('.content-scroll');
+  const scrollPosition = () => scrollSurface ? scrollSurface.scrollTop : window.scrollY;
+  const scrollHeight = () => scrollSurface ? scrollSurface.scrollHeight : root.scrollHeight;
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
@@ -52,7 +55,8 @@
   window.EightEightEffects = {
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
     invalidate,
-    schedule
+    schedule,
+    scrollPosition
   };
   function resizeSurface(canvas, context, width, height, ratio) {
     const w = Math.round(width * ratio);
@@ -67,11 +71,11 @@
   }
   function measure(width, height) {
     // All layout reads happen before the scroll frame's paints.
-    pageHeight = Math.max(root.scrollHeight, height);
+    pageHeight = Math.max(scrollHeight(), height);
     mainBox = main?.getBoundingClientRect();
     if (hero) {
       const box = hero.getBoundingClientRect();
-      heroBox = {left: box.left, top: box.top + scrollY, width: box.width, height: box.height};
+      heroBox = {left: box.left, top: box.top + scrollPosition(), width: box.width, height: box.height};
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (!bg || !ink || !light || !mainBox) return;
@@ -188,7 +192,7 @@
       layoutDirty = viewportDirty = false;
       lastWidth = width;
     }
-    const state = field(width, height, Math.max(0, scrollY));
+    const state = field(width, height, Math.max(0, scrollPosition()));
     paintCanvas(state);
     subscribers.forEach(item => item.paint?.(state));
   }
@@ -204,21 +208,25 @@
     invalidate();
   }, {once: true});
   image.src = 'eight-and-eight-logo-dark-v18.png';
-  addEventListener('scroll', schedule, {passive: true});
-  addEventListener('resize', () => {
+  (scrollSurface || window).addEventListener('scroll', schedule, {passive: true});
+  const resize = () => {
     if (root.clientWidth !== lastWidth) layoutDirty = true;
     viewportDirty = true;
     schedule();
-  }, {passive: true});
+  };
+  addEventListener('resize', resize, {passive: true});
+  window.visualViewport?.addEventListener('resize', resize, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
   document.addEventListener('visibilitychange', schedule);
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {
-    new ResizeObserver(() => {
-      if (root.scrollHeight !== pageHeight) invalidate();
-    }).observe(document.querySelector('.site-shell'));
+    const observer = new ResizeObserver(() => {
+      if (scrollHeight() !== pageHeight) invalidate();
+    });
+    (scrollSurface ? [...scrollSurface.children] : [document.querySelector('.site-shell')])
+      .forEach(node => observer.observe(node));
   }
   schedule();
 })();
