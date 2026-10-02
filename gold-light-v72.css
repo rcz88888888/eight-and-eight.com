@@ -1,7 +1,7 @@
 /* White reflection cores, broad soft falloff, 60% viewport reach per side. */
 :root {
-  --gold-light-visibility: .58;
-  --content-light-visibility: .48;
+  --gold-light-visibility: .68;
+  --content-light-visibility: .68;
   --shimmer-beam: linear-gradient(180deg,
     rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
     rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, var(--content-light-visibility)) 50%,
@@ -69,7 +69,7 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v93: stationary text; portfolio and line reflections keep their timing. */
+/* v94: content text has only its constant dark-gold paint, never a light. */
 .gold-text-light {
   background-image: linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
   background-size: 100% 100% !important;
@@ -90,37 +90,9 @@
   transform: scaleY(1.08);
   transform-origin: center bottom;
 }
-/* A masked reflection follows the exact transparent PNG silhouette. */
-.partner-slot { position: relative; }
-.portfolio-shimmer {
-  position: absolute;
-  z-index: 1;
-  pointer-events: none;
-  background-image: var(--vertical-shimmer-beam);
-  background-size: 100% 300%;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  -webkit-mask: var(--portfolio-logo-mask) center / contain no-repeat;
-  mask: var(--portfolio-logo-mask) center / contain no-repeat;
-  animation: text-shimmer 8s linear infinite;
-  animation-play-state: paused;
-}
-.portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
-@keyframes text-shimmer {
-  from { background-position: 0 100%; }
-  10%, 100% { background-position: 0 0%; }
-}
 @keyframes line-shimmer {
   from { background-position: 0 100%; }
-  10%, 100% { background-position: 0 0%; }
-}
-html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) {
-  .portfolio-shimmer { animation: none; display: none; }
-  .gold-text-light {
-    animation: none;
-    background-image: linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
-  }
+  44.444444%, 100% { background-position: 0 0%; }
 }
 /* Navigation labels retain the banner wordmark's black-gold without light. */
 .site-nav a.gold-text-light,
@@ -382,17 +354,10 @@ body { height: auto; min-height: 100%; overflow: visible; }
 .content-scroll .section::before,
 .content-scroll .contact-box::before,
 .content-scroll .service-grid article::before,
-.content-scroll .partner-slot::before { z-index: 3; }
+.content-scroll .partner-slot::before { z-index: 0; }
 .content-scroll .hero-static-logo {
   position: relative;
   z-index: 3;
-}
-/* v93: text stays steady; only portfolio artwork retains its reflection. */
-.content-scroll .portfolio-shimmer { animation-name: none; }
-.content-scroll .portfolio-shimmer.text-shimmer-visible { animation-name: text-shimmer; }
-html.text-shimmer-paused .content-scroll .portfolio-shimmer { animation-name: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  .content-scroll .portfolio-shimmer.text-shimmer-visible { animation: none; }
 }
 .banner-content-mask { overflow: hidden; }
 .banner-logo-feed {
@@ -417,7 +382,7 @@ html.text-shimmer-paused .content-scroll .portfolio-shimmer { animation-name: no
   background-size: 100% 300%, 100% 100% !important;
   background-position: 0 100%;
   background-repeat: no-repeat !important;
-  animation: line-shimmer 8s linear infinite;
+  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
   animation-name: var(--line-shimmer-name, none);
   animation-delay: var(--line-shimmer-delay, 0ms);
 }
@@ -438,14 +403,6 @@ html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !impo
 }
 
 
-/* v88: the start logo shares the banner's continuous light field and has
-   one separate, randomly directed reflection (0.8s per 8s cycle). */
-.hero-banner-light > rect { opacity: var(--gold-light-visibility); }
-.hero-directional-reflection { opacity: var(--content-light-visibility); }
-@media (prefers-reduced-motion: reduce) {
-  .hero-directional-reflection { display: none; }
-}
-
 /* Reflections across the transparent field interiors, below text and frames. */
 .section, .contact-box, .service-grid article, .partner-slot { position: relative; }
 .section::before, .contact-box::before,
@@ -460,7 +417,7 @@ html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !impo
   background-size: 100% 300%;
   background-position: 0 100%;
   background-repeat: no-repeat;
-  animation: line-shimmer 8s linear infinite;
+  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
   animation-name: var(--line-shimmer-name, none);
   animation-delay: var(--line-shimmer-delay, 0ms);
 }
@@ -484,7 +441,37 @@ html.text-shimmer-paused .partner-slot::before { animation-name: none !important
     border-width: .8px !important;
   }
   .hero-static-logo mask > g,
-  .hero-static-logo [vector-effect="non-scaling-stroke"] { stroke-width: .8px !important; }
   body .site-nav::after, body .site-nav a::after { height: .8px !important; }
   body .topbar .menu-toggle > span { height: .8px !important; min-height: .8px !important; }
+}
+
+/* v94: no light layer is allowed above content glyphs or company artwork. */
+.content-scroll .gold-text-light,
+.content-scroll .partner-slot img { position: relative; z-index: 1; }
+.portfolio-shimmer { display: none !important; }
+.topbar::before, .wallpaper-end::before {
+  background-image: var(--vertical-shimmer-beam), linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold));
+  background-size: 100% 300%, 100% 100%;
+  background-position: 0 100%;
+  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
+  animation-name: var(--line-shimmer-name, none);
+  animation-delay: var(--line-shimmer-delay, 0ms);
+}
+.topbar .wordmark.gold-light-target::after {
+  background-image: var(--vertical-shimmer-beam);
+  background-size: 100% 300%;
+  background-position: 0 100%;
+  opacity: 1;
+  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
+  animation-name: var(--line-shimmer-name, none);
+  animation-delay: var(--line-shimmer-delay, 0ms);
+}
+.hero-paper-reflection { opacity: .68; }
+html.text-shimmer-paused .topbar::before,
+html.text-shimmer-paused .wallpaper-end::before,
+html.text-shimmer-paused .topbar .wordmark::after { animation-name: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .topbar::before, .wallpaper-end::before,
+  .topbar .wordmark.gold-light-target::after { animation: none !important; }
+  .hero-paper-reflection { display: none; }
 }

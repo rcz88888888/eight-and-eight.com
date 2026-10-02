@@ -1,4 +1,4 @@
-# Eight&Eight – Version 93
+# Eight&Eight – Version 94
 
 ## Website hochladen
 
@@ -34,6 +34,32 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 94
+
+Fließtexte und Unternehmens-/Kooperationslogos bekommen keine Lichtschichten.
+Die Unternehmenslogo-Shimmer werden nicht mehr erzeugt. Alle Textglyphen und
+Unternehmensbilder liegen über den Feldreflexionen, die unter ihnen strahlen.
+Linien bleiben über der Bannermaske; die normale Dokument-Scrollsteuerung und
+die synchron übertragene Logoebene im Banner sind erhalten.
+
+Das Startlogo verwendet die bisherigen geschlossenen Kurven und Punktformen
+als gefüllte SVG-Silhouette. Außenkontur und Innenaussparungen bleiben erhalten,
+aber es wird kein Konturrand gezeichnet. Cremeweiß und Gold sowie die Tapete
+kommen aus dem Bannerdesign; die Mustergröße entspricht der aktuellen Banner-
+Mustergröße auf dem Bildschirm.
+
+Linien, Felder, oberer und unterer Tapetenbanner, der vollständige Eight&Eight-
+Schriftzug im oberen Banner und das neue Tapetenlogo erhalten weiches warmes
+Licht mit 68 % Spitzen-Sichtbarkeit. Die Bewegung dauert 8 Sekunden je 18-
+Sekunden-Zyklus; die restlichen 10 Sekunden ruhen. Der Startlogo-Schweif zieht
+langsam diagonal mit sanftem Anlauf und Auslauf. Nicht sichtbare und reduzierte
+Animationen werden angehalten.
+
+Geprüft: SVG-Füllform samt Tapete gerendert und visuell kontrolliert; keine
+Unternehmenslogo-Lichtebene; Texte/Bilder über Feldlicht; Zeit- und Masken-
+steuerung, Dokument-Scrollen, Menüabbruch und synchroner Banner-Ausschnitt.
+Skripte, Dateiverweise und ZIP-Integrität geprüft. Kein echter iPhone-Test.
 
 ## Änderungen in Version 93
 

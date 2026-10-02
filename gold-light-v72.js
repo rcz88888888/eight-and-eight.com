@@ -45,15 +45,6 @@
     }
   }
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
-  // Keep the original image and illuminate only its opaque artwork.
-  const portfolioLights = portfolioLogos.map(image => {
-    const light = document.createElement('span');
-    light.className = 'portfolio-shimmer banner-occluded-logo';
-    light.setAttribute('aria-hidden', 'true');
-    light.style.setProperty('--portfolio-logo-mask', `url("${image.getAttribute('src')}")`);
-    image.parentElement.appendChild(light);
-    return {image, light};
-  });
   const lightTargets = new Set([
     ...frames,
     ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
@@ -97,22 +88,6 @@
   function cacheGeometry() {
     const head = header?.getBoundingClientRect();
     if (contentLayer) paint(contentLayer, '--content-start', `${head?.height || 0}px`);
-    // Measure all image boxes together; each mask uses the same contain fit.
-    const lightBoxes = portfolioLights.map(({image, light}) => {
-      const imageBox = image.getBoundingClientRect();
-      const slotBox = image.parentElement.getBoundingClientRect();
-      const slotStyle = getComputedStyle(image.parentElement);
-      return {light,
-        left: imageBox.left - slotBox.left - (parseFloat(slotStyle.borderLeftWidth) || 0),
-        top: imageBox.top - slotBox.top - (parseFloat(slotStyle.borderTopWidth) || 0),
-        width: imageBox.width, height: imageBox.height};
-    });
-    lightBoxes.forEach(({light, left, top, width, height}) => {
-      paint(light, 'left', `${left}px`);
-      paint(light, 'top', `${top}px`);
-      paint(light, 'width', `${width}px`);
-      paint(light, 'height', `${height}px`);
-    });
     viewportWidth = document.documentElement.clientWidth;
     viewportHeight = innerHeight;
     const offset = engine.scrollPosition();
@@ -187,12 +162,12 @@
 
   function observeShimmers() {
     const lineOwners = [...new Set([...frames,
-      ...document.querySelectorAll('.site-nav a, .topbar .menu-toggle > span')])];
+      ...document.querySelectorAll('.site-nav a, .topbar .menu-toggle > span, .topbar .wordmark')])];
     const visibleLines = new Set();
     function setLineVisible(node, visible) {
       if (visible) {
         visibleLines.add(node);
-        node.style.setProperty('--line-shimmer-delay', `${-(performance.now() % 8000)}ms`);
+        node.style.setProperty('--line-shimmer-delay', `${-(performance.now() % 18000)}ms`);
       } else visibleLines.delete(node);
       node.style.setProperty('--line-shimmer-name', visible ? 'line-shimmer' : 'none');
     }
@@ -203,26 +178,10 @@
       lineOwners.forEach(node => lineObserver.observe(node));
     } else lineOwners.forEach(node => setLineVisible(node, true));
 
-    const animated = [...(contentLayer || document).querySelectorAll('.portfolio-shimmer')]
-      .filter(node => !node.closest('.topbar, .site-nav, .logo-stage, .wallpaper-end'));
-    // All newly visible elements join the same eight-second clock. Re-entering
-    // the viewport does not trigger an extra highlight.
-    function setVisible(node, visible) {
-      if (visible) node.style.animationDelay = `${-(performance.now() % 8000)}ms`;
-      node.classList.toggle('text-shimmer-visible', visible);
-    }
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => setVisible(entry.target, entry.isIntersecting));
-      }, {root: null});
-      animated.forEach(node => observer.observe(node));
-    } else animated.forEach(node => setVisible(node, true));
     function visibility() {
       document.documentElement.classList.toggle('text-shimmer-paused', document.hidden);
       if (!document.hidden) {
         visibleLines.forEach(node => setLineVisible(node, true));
-        animated.filter(node => node.classList.contains('text-shimmer-visible'))
-          .forEach(node => setVisible(node, true));
       }
     }
     document.addEventListener('visibilitychange', visibility);
