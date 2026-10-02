@@ -58,7 +58,7 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v78: a separate left-to-right text shimmer, once every eight seconds.
+/* v80: a separate left-to-right text shimmer, once every second.
    The broad scroll-driven reflection is reserved for frames and ornaments. */
 .gold-text-light {
   background-image: linear-gradient(110deg,
@@ -68,7 +68,7 @@
   background-size: 300% 100% !important;
   background-position: 100% 0;
   background-repeat: no-repeat !important;
-  animation: text-shimmer 8s linear infinite;
+  animation: text-shimmer 1s linear infinite;
   animation-play-state: paused;
   /* Override older important background shorthands on panel labels:
      those also reset background-clip and otherwise paint the entire box. */
@@ -83,13 +83,35 @@
   transform: scaleY(1.08);
   transform-origin: center bottom;
 }
-.gold-text-light.text-shimmer-visible { animation-play-state: running; }
+/* A masked reflection follows the exact transparent PNG silhouette. */
+.partner-slot { position: relative; }
+.portfolio-shimmer {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  background-image: linear-gradient(110deg,
+    rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
+    rgba(255, 244, 218, .3) 47%, rgba(255, 244, 218, .68) 50%,
+    rgba(255, 244, 218, .3) 53%, rgba(255, 244, 218, 0) 58%,
+    rgba(255, 244, 218, 0) 100%);
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  background-repeat: no-repeat;
+  -webkit-mask: var(--portfolio-logo-mask) center / contain no-repeat;
+  mask: var(--portfolio-logo-mask) center / contain no-repeat;
+  animation: text-shimmer 1s linear infinite;
+  animation-play-state: paused;
+}
+.gold-text-light.text-shimmer-visible,
+.portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
 @keyframes text-shimmer {
   from { background-position: 100% 0; }
   to { background-position: 0% 0; }
 }
-html.text-shimmer-paused .gold-text-light { animation-play-state: paused; }
+html.text-shimmer-paused .gold-text-light,
+html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
+  .portfolio-shimmer { animation: none; display: none; }
   .gold-text-light {
     animation: none;
     background-image: linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
@@ -313,7 +335,7 @@ body {
 }
 body, body * { text-rendering: auto; }
 
-/* v79: glyphs and portfolio artwork share a fixed edge, moved 2px up.
+/* v80: glyphs and portfolio artwork share a fixed edge, moved another 2px up.
    Only the content is clipped; its surrounding gold frames stay separate. */
 .banner-occluded-text,
 .banner-occluded-logo {

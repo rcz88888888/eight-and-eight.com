@@ -45,15 +45,24 @@
     }
   }
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
+  // Keep the original image and illuminate only its opaque artwork.
+  const portfolioLights = portfolioLogos.map(image => {
+    const light = document.createElement('span');
+    light.className = 'portfolio-shimmer banner-occluded-logo';
+    light.setAttribute('aria-hidden', 'true');
+    light.style.setProperty('--portfolio-logo-mask', `url("${image.getAttribute('src')}")`);
+    image.parentElement.appendChild(light);
+    return {image, light};
+  });
   const lightTargets = new Set([
     ...frames,
     ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
   ]);
-  const targets = [...new Set([...lightTargets, ...textNodes, ...portfolioLogos])];
+  const targets = [...new Set([...lightTargets, ...textNodes, ...portfolioLogos, ...portfolioLights.map(item => item.light)])];
   const clippedContent = new Set([
     ...textNodes.filter(element => !element.matches(frameSelector) &&
       !element.closest('.topbar, .site-nav, .wallpaper-end')),
-    ...portfolioLogos
+    ...portfolioLogos, ...portfolioLights.map(item => item.light)
   ]);
   const hero = document.querySelector('.hero-static-logo');
   const nav = document.querySelector('.site-nav');
@@ -93,6 +102,22 @@
     element.style.setProperty(name, value);
   }
   function cacheGeometry() {
+    // Measure all image boxes together; each mask uses the same contain fit.
+    const lightBoxes = portfolioLights.map(({image, light}) => {
+      const imageBox = image.getBoundingClientRect();
+      const slotBox = image.parentElement.getBoundingClientRect();
+      const slotStyle = getComputedStyle(image.parentElement);
+      return {light,
+        left: imageBox.left - slotBox.left - (parseFloat(slotStyle.borderLeftWidth) || 0),
+        top: imageBox.top - slotBox.top - (parseFloat(slotStyle.borderTopWidth) || 0),
+        width: imageBox.width, height: imageBox.height};
+    });
+    lightBoxes.forEach(({light, left, top, width, height}) => {
+      paint(light, 'left', `${left}px`);
+      paint(light, 'top', `${top}px`);
+      paint(light, 'width', `${width}px`);
+      paint(light, 'height', `${height}px`);
+    });
     viewportWidth = document.documentElement.clientWidth;
     viewportHeight = innerHeight;
     const offset = scrollY;
@@ -100,10 +125,9 @@
     const menuOpen = header?.classList.contains('menu-expanded');
     const bannerHeight = (head?.height || 0) +
       (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
-    // v79: keep the shared edge fixed and move it exactly 2 CSS pixels up
-    // from the v78 position for both text and portfolio artwork.
+    // v80: fixed shared edge, another 2 CSS pixels above v79 (4px above v78).
     const pixelRatio = Math.max(1, devicePixelRatio || 1);
-    textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 2);
+    textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 4);
     const verticalScales = new Map();
     function verticalScale(element) {
       if (!element) return 1;
@@ -139,8 +163,9 @@
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
 
-  // Animate only visible text; the CSS clock is independent of scroll events.
-  const shimmerText = textNodes.filter(element => !element.closest('.site-nav'));
+  // Animate only visible text and portfolio light; independent of scrolling.
+  const shimmerText = [...textNodes.filter(element => !element.closest('.site-nav')),
+    ...portfolioLights.map(item => item.light)];
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
