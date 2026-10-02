@@ -1,4 +1,4 @@
-# Eight&Eight – Version 96
+# Eight&Eight – Version 97
 
 ## Website hochladen
 
@@ -34,6 +34,20 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 97
+
+Bei vollständig nach oben gescrollter Seite treffen sich die Mittelpunkte
+aller acht Hauptlogos exakt im Mittelpunkt des Tapetenstartlogos. Größen,
+Transparenzen und Rotation bleiben erhalten. Die Startkorrektur wird beim
+Scrollen im ersten Viertel der Seite weich ausgeblendet; danach gilt die
+bisherige Bewegung der einzelnen Tiefenebenen. Auch nach einer Neumessung
+und beim Zurückscrollen an den Anfang gilt dieselbe Zentrierung.
+
+Geprüft: acht identische Mittelpunkte bei Scrollposition null, Rückkehr zum
+Anfang nach tieferem Scrollen und Neumessung, ursprüngliche Bewegung ab dem
+ersten Seitenviertel, Bannerübertragung und Scroll-/Menüregressionen.
+Alle Lichteffekte bleiben entfernt. Kein echter iPhone-Test.
 
 ## Änderungen in Version 96
 

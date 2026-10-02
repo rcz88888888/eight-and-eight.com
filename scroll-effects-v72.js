@@ -6,6 +6,7 @@
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
+  const openingLogo = document.querySelector('.hero-static-logo');
   const bannerMask = document.querySelector('.banner-content-mask');
   const bannerFeed = document.querySelector('.banner-logo-feed');
   const feed = bannerFeed?.getContext('2d');
@@ -30,6 +31,7 @@
   let particles = [];
   let sprites = [];
   let mainBox;
+  let openingCenter;
   let bgRatio = 1;
   let inkRatio = 1;
   const randomFrom = seed => () => {
@@ -64,6 +66,11 @@
     pageHeight = Math.max(scrollHeight(), height);
     mainBox = main?.getBoundingClientRect();
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
+    if (openingLogo) {
+      const box = openingLogo.getBoundingClientRect();
+      openingCenter = {x: box.left + box.width / 2,
+        y: box.top + scrollPosition() + box.height / 2};
+    }
     if (feed && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
@@ -129,9 +136,17 @@
     const cy = mainBox.top + mainBox.height / 2;
     const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
     const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16;
+    // All eight centers coincide with the opening emblem at scroll zero.
+    // Fade this correction smoothly during the first quarter of the page,
+    // retaining the established depth-dependent movement further down.
+    const openingBlend = Math.max(0, 1 - motionProgress * 4) ** 2;
+    const startX = openingCenter?.x ?? cx;
+    const startY = openingCenter?.y ?? cy;
+    const openingTravel = .5 * Math.min(height, mainBox.height);
     for (const layer of layers) {
       ink.save();
-      ink.translate(cx, cy + travel * layer.speed);
+      ink.translate(cx + (startX - cx) * openingBlend,
+        cy + travel * layer.speed + (startY - cy - openingTravel * layer.speed) * openingBlend);
       ink.rotate(rotation);
       ink.scale(layer.scale, layer.scale);
       ink.globalAlpha = layer.opacity;
