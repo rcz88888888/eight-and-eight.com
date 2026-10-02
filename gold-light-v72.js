@@ -58,12 +58,7 @@
     ...frames,
     ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
   ]);
-  const targets = [...new Set([...lightTargets, ...textNodes, ...portfolioLogos, ...portfolioLights.map(item => item.light)])];
-  const clippedContent = new Set([
-    ...textNodes.filter(element => !element.matches(frameSelector) &&
-      !element.closest('.topbar, .site-nav, .wallpaper-end')),
-    ...portfolioLogos, ...portfolioLights.map(item => item.light)
-  ]);
+  const targets = [...lightTargets];
   const hero = document.querySelector('.hero-static-logo');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
@@ -93,6 +88,7 @@
   let viewportHeight = 0;
   let headerDocumentTop = 0;
   let textMaskEdge = 0;
+  let displayPlane = null;
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -128,22 +124,11 @@
     // v80: fixed shared edge, another 2 CSS pixels above v79 (4px above v78).
     const pixelRatio = Math.max(1, devicePixelRatio || 1);
     textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 4);
-    const verticalScales = new Map();
-    function verticalScale(element) {
-      if (!element) return 1;
-      if (verticalScales.has(element)) return verticalScales.get(element);
-      const transform = getComputedStyle(element).transform;
-      const own = transform === 'none' ? 1 : Math.abs(new DOMMatrixReadOnly(transform).m22);
-      const scale = own * verticalScale(element.parentElement);
-      verticalScales.set(element, scale);
-      return scale || 1;
-    }
     headerDocumentTop = (header?.parentElement.getBoundingClientRect().top || 0) + offset;
     geometry = targets.map(element => {
       const box = element.getBoundingClientRect();
       const root = bannerRoots.get(element);
       return {element, root, left: box.left, width: box.width, height: box.height,
-        contentScaleY: clippedContent.has(element) ? verticalScale(element) : 1,
         top: root === header && head ? box.top - head.top : box.top + offset};
     });
     if (hero) {
@@ -152,6 +137,7 @@
     }
     const reach = `${(viewportWidth * 3 / 5).toFixed(1)}px`;
     lightTargets.forEach(element => paint(element, '--gold-reach', reach));
+    displayPlane?.measure(textMaskEdge);
   }
 
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
@@ -162,23 +148,6 @@
     }
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
-
-  // Animate only visible text and portfolio light; independent of scrolling.
-  const shimmerText = [...textNodes.filter(element => !element.closest('.site-nav')),
-    ...portfolioLights.map(item => item.light)];
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(entries => {
-      for (const entry of entries) {
-        entry.target.classList.toggle('text-shimmer-visible', entry.isIntersecting);
-      }
-    });
-    shimmerText.forEach(element => observer.observe(element));
-  } else {
-    shimmerText.forEach(element => element.classList.add('text-shimmer-visible'));
-  }
-  const pauseTextLight = () => document.documentElement.classList.toggle('text-shimmer-paused', document.hidden);
-  document.addEventListener('visibilitychange', pauseTextLight);
-  pauseTextLight();
 
   function measureEdges() {
     // Read first, then write, to avoid repeatedly forcing page layout.
@@ -204,6 +173,7 @@
   }
 
   function update(state) {
+    displayPlane?.sync();
     const {scroll, reach, left: leftSource, right: rightSource,
       y: lightY, extraY: extraLightY, width, height} = state;
     viewportWidth = width;
@@ -212,14 +182,6 @@
     for (const item of geometry) {
       const {element, root, left, width, height} = item;
       const top = root === header ? headerTop + item.top : item.top - scroll;
-      if (clippedContent.has(element)) {
-        // Insets use local CSS pixels; the cached box uses viewport pixels.
-        // Account for the 1.08 text stretch (including nested text), otherwise
-        // the visible cut drifts down as each line crosses the banner.
-        const hiddenHeight = Math.max(0, Math.min(height, textMaskEdge - top));
-        const localInset = Math.ceil(hiddenHeight / item.contentScaleY * 10000) / 10000;
-        paint(element, '--banner-content-clip', `${localInset.toFixed(4)}px`);
-      }
       if (!lightTargets.has(element) || !width || !height || top + height < 0 || top > viewportHeight) continue;
       const extra = element.matches('.wordmark, .wordmark-logo, .menu-toggle span');
       paint(element, '--gold-left-x', `${((extra ? state.extraLeft : leftSource) - left).toFixed(1)}px`);
@@ -250,10 +212,121 @@
     }
   }
 
+
+  function createDisplayPlane() {
+    const source = document.querySelector('.site-shell');
+    if (!source) return null;
+    const copy = source.cloneNode(true);
+    copy.classList.add('display-copy');
+    copy.setAttribute('aria-hidden', 'true');
+    copy.inert = true;
+    const originals = [source, ...source.querySelectorAll('*')];
+    const replicas = [copy, ...copy.querySelectorAll('*')];
+    const pairs = new Map(originals.map((node, i) => [node, replicas[i]]));
+    replicas.forEach(node => {
+      if (node.id) {
+        node.dataset.displayId = node.id;
+        node.removeAttribute('id');
+      }
+      // Preserve border widths and thus the exact source layout, but draw
+      // all frames only once, in the original document beneath this plane.
+      node.style.setProperty('border-color', 'transparent', 'important');
+      node.removeAttribute('autofocus');
+      if (node.tagName === 'IMG') node.loading = 'eager';
+    });
+    const viewport = document.createElement('div');
+    viewport.className = 'content-display';
+    viewport.setAttribute('aria-hidden', 'true');
+    viewport.inert = true;
+    viewport.appendChild(copy);
+    source.appendChild(viewport);
+    let documentTop = 0;
+    let lastScroll = NaN;
+    let frame = 0;
+    let activeUntil = 0;
+    let touching = false;
+    function sync() {
+      const position = window.scrollY;
+      if (position !== lastScroll) {
+        copy.style.transform = `translate3d(0, ${documentTop - position}px, 0)`;
+        lastScroll = position;
+      }
+    }
+    function tick(now) {
+      frame = 0;
+      if (document.hidden) return;
+      sync();
+      if (touching || now < activeUntil) frame = requestAnimationFrame(tick);
+    }
+    function wake() {
+      activeUntil = performance.now() + 240;
+      sync();
+      if (!frame && !document.hidden) frame = requestAnimationFrame(tick);
+    }
+    function measure(edge) {
+      const box = source.getBoundingClientRect();
+      documentTop = box.top + window.scrollY;
+      copy.style.width = `${box.width}px`;
+      // The clipping edge is changed only for layout/menu changes, not scroll.
+      viewport.style.setProperty('--display-cut', `${edge}px`);
+      portfolioLights.forEach(({light}) => {
+        const replica = pairs.get(light);
+        for (const property of ['left', 'top', 'width', 'height']) {
+          replica.style.setProperty(property, light.style.getPropertyValue(property));
+        }
+      });
+      lastScroll = NaN;
+      wake();
+    }
+    addEventListener('scroll', wake, {passive: true});
+    addEventListener('wheel', wake, {passive: true});
+    addEventListener('touchstart', () => { touching = true; wake(); }, {passive: true});
+    addEventListener('touchend', () => { touching = false; wake(); }, {passive: true});
+    addEventListener('touchcancel', () => { touching = false; wake(); }, {passive: true});
+    addEventListener('scrollend', wake, {passive: true});
+    window.visualViewport?.addEventListener('scroll', wake, {passive: true});
+    window.visualViewport?.addEventListener('resize', () => { engine.invalidate(); wake(); }, {passive: true});
+
+    const animated = [...copy.querySelectorAll('.gold-text-light, .portfolio-shimmer')]
+      .filter(node => !node.closest('.topbar, .site-nav, .logo-stage, .wallpaper-end'));
+    // All newly visible elements join the same eight-second clock. Re-entering
+    // the viewport does not trigger an extra highlight.
+    function setVisible(node, visible) {
+      if (visible) node.style.animationDelay = `${-(performance.now() % 8000)}ms`;
+      node.classList.toggle('text-shimmer-visible', visible);
+    }
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => setVisible(entry.target, entry.isIntersecting));
+      }, {root: viewport});
+      animated.forEach(node => observer.observe(node));
+    } else animated.forEach(node => setVisible(node, true));
+    function visibility() {
+      document.documentElement.classList.toggle('text-shimmer-paused', document.hidden);
+      if (document.hidden) {
+        cancelAnimationFrame(frame); frame = 0; touching = false;
+      } else {
+        animated.filter(node => node.classList.contains('text-shimmer-visible'))
+          .forEach(node => setVisible(node, true));
+        wake();
+      }
+    }
+    document.addEventListener('visibilitychange', visibility);
+    source.classList.add('display-source');
+    visibility();
+    return {measure, sync};
+  }
+
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
-    measure() { measureEdges(); cacheGeometry(); },
+    measure() {
+      measureEdges(); cacheGeometry();
+      if (!displayPlane) {
+        displayPlane = createDisplayPlane();
+        displayPlane?.measure(textMaskEdge);
+      }
+    },
     paint: update
   });
   // Lazy-loaded portfolio images can change their height after initial layout.

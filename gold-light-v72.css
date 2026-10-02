@@ -58,7 +58,7 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v80: a separate left-to-right text shimmer, once every second.
+/* v80: a separate left-to-right text shimmer, 0.8 seconds of motion once every eight seconds.
    The broad scroll-driven reflection is reserved for frames and ornaments. */
 .gold-text-light {
   background-image: linear-gradient(110deg,
@@ -68,7 +68,7 @@
   background-size: 300% 100% !important;
   background-position: 100% 0;
   background-repeat: no-repeat !important;
-  animation: text-shimmer 1s linear infinite;
+  animation: text-shimmer 8s linear infinite;
   animation-play-state: paused;
   /* Override older important background shorthands on panel labels:
      those also reset background-clip and otherwise paint the entire box. */
@@ -99,14 +99,14 @@
   background-repeat: no-repeat;
   -webkit-mask: var(--portfolio-logo-mask) center / contain no-repeat;
   mask: var(--portfolio-logo-mask) center / contain no-repeat;
-  animation: text-shimmer 1s linear infinite;
+  animation: text-shimmer 8s linear infinite;
   animation-play-state: paused;
 }
 .gold-text-light.text-shimmer-visible,
 .portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
 @keyframes text-shimmer {
   from { background-position: 100% 0; }
-  to { background-position: 0% 0; }
+  10%, 100% { background-position: 0% 0; }
 }
 html.text-shimmer-paused .gold-text-light,
 html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
@@ -335,12 +335,54 @@ body {
 }
 body, body * { text-rendering: auto; }
 
-/* v80: glyphs and portfolio artwork share a fixed edge, moved another 2px up.
-   Only the content is clipped; its surrounding gold frames stay separate. */
-.banner-occluded-text,
-.banner-occluded-logo {
-  -webkit-clip-path: inset(var(--banner-content-clip, 0px) -2px 0 -2px);
-  clip-path: inset(var(--banner-content-clip, 0px) -2px 0 -2px);
-}
-
 .banner-text-glyphs { display: inline-block; max-width: 100%; }
+
+/* v81: a single viewport-fixed clipping plane. Only its contents move. */
+.content-display {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  contain: paint;
+  -webkit-clip-path: inset(var(--display-cut, 0px) 0 0 0);
+  clip-path: inset(var(--display-cut, 0px) 0 0 0);
+}
+.content-display > .display-copy {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: visible;
+  will-change: transform;
+  pointer-events: none;
+}
+.display-copy .topbar { position: relative; top: auto; }
+.display-copy .topbar, .display-copy .logo-stage, .display-copy .wallpaper-end {
+  visibility: hidden !important;
+}
+.display-copy *::before, .display-copy *::after { display: none !important; }
+.display-copy .banner-occluded-text, .display-copy .banner-occluded-logo {
+  -webkit-clip-path: none;
+  clip-path: none;
+}
+/* Original content remains selectable, focusable and accessible in its layout. */
+.display-source > main .gold-text-light,
+.display-source > .footer .gold-text-light {
+  animation: none !important;
+  background-image: none !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.display-source > main .partner-slot img,
+.display-source > main .portfolio-shimmer { opacity: 0 !important; }
+/* Offscreen entries restart on the shared clock instead of resuming a stale phase. */
+.display-copy .gold-text-light, .display-copy .portfolio-shimmer { animation-name: none; }
+.display-copy .gold-text-light.text-shimmer-visible,
+.display-copy .portfolio-shimmer.text-shimmer-visible { animation-name: text-shimmer; }
+html.text-shimmer-paused .display-copy .gold-text-light,
+html.text-shimmer-paused .display-copy .portfolio-shimmer { animation-name: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .display-copy .gold-text-light.text-shimmer-visible,
+  .display-copy .portfolio-shimmer.text-shimmer-visible { animation: none; }
+}
