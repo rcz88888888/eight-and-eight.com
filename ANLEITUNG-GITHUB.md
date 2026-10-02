@@ -1,4 +1,4 @@
-# Eight&Eight – Version 95
+# Eight&Eight – Version 96
 
 ## Website hochladen
 
@@ -34,6 +34,18 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 96
+
+Das transparente Tapetenstartlogo scrollt wieder nativ in seiner Startfläche
+mit dem Inhalt nach oben aus dem Bildschirm. Es ist keine feste Ebene mehr;
+seine Position wird nicht per JavaScript gesetzt oder nachgeführt. Transparente
+Zwischenräume, Bannertapete und Goldränder bleiben erhalten. Alle Lichteffekte
+bleiben ausgeschaltet, ebenso bleiben Scrollsteuerung und Bannermaske erhalten.
+
+Geprüft: normale SVG-Position im Dokument, Entfernung der festen Positions-
+steuerung, Mustermaßstab und Randdicke, native Scroll-/Menüregressionen,
+Bannerübertragung, Dateiverweise und ZIP-Integrität. Kein echter iPhone-Test.
 
 ## Änderungen in Version 95
 

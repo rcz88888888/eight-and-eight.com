@@ -330,9 +330,9 @@ body { height: auto; min-height: 100%; overflow: visible; }
 .content-scroll .partner-slot img { position: relative; z-index: 1; }
 .portfolio-shimmer { display: none !important; }
 
-/* The transparent logo is a fixed ornament plane above the unlit content. */
+/* The transparent start logo scrolls natively with its opening stage. */
 .content-scroll .hero-wallpaper-logo {
-  position: fixed;
+  position: relative;
   pointer-events: none;
   background: transparent;
   overflow: hidden;
