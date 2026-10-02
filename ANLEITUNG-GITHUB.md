@@ -1,4 +1,4 @@
-# Eight&Eight – Version 89
+# Eight&Eight – Version 90
 
 ## Website hochladen
 
@@ -34,6 +34,14 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 90
+
+Der untere Abschlussbanner gehört wieder hinter den Footer innerhalb der
+nativen Scrollfläche. In Version 89 stand er außerhalb dieser Fläche und
+erschien dadurch direkt unter dem oberen Banner. Der zusätzliche Tapetenblock
+am Seitenanfang ist damit entfernt. Scroll-Darstellung, Maskenkante und alle
+bisherigen Licht- und Kontaktänderungen bleiben erhalten.
 
 ## Änderungen in Version 89
 
