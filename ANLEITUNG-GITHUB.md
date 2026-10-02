@@ -1,4 +1,4 @@
-# Eight&Eight – Version 94
+# Eight&Eight – Version 95
 
 ## Website hochladen
 
@@ -34,6 +34,32 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 95
+
+Sämtliche Lichtanimationen, Reflexionsverläufe und Canvas-Lichtüberlagerungen
+sind entfernt, auch von den acht Hauptlogos. Parallaxbewegung und Rotation
+bleiben erhalten; Banner, Schriftzug, Linien und Logos haben konstante Farben.
+Der zuvor beleuchtete Schriftzug im Banner ist ebenfalls unbeleuchtet.
+
+Das Tapetenstartlogo hat keine cremefarbene Füllung mehr. Die Ornamentmaske
+bleibt auf die bisherige gefüllte Logoform begrenzt, ihre Zwischenräume sind
+transparent. Außen- und Innenkonturen sowie die runden Punkte erhalten die
+statischen Goldränder des Banners, in dessen Bildschirm-Liniendicke; im
+Querformat 0,8 Pixel. Die Mustergröße entspricht weiterhin dem oberen Banner.
+
+Damit Inhalte hinter der Tapete vorbeiscrollen können, ist das Startlogo eine
+feste, transparente Ebene an seiner bisherigen Startposition vor Text und
+Unternehmensbildern. Es hat keine blickdichte Textmaske. Die Startfläche im
+Layout bleibt erhalten. Der obere Banner behält seine separate Textmaske und
+den synchron übernommenen Hintergrundlogo-Ausschnitt; die native Scrollsteuerung
+und der Abbruch von Menüanimationen bleiben erhalten.
+
+Geprüft: SVG mit Ornamenten und Rand gerendert; transparente Zwischenräume in
+der Logoform; feste Position bei verschiedenen Scrollständen und Neumessung;
+Banner-Mustergröße, Randdicke, Dokument-Scrollen und Menüabbruch, Canvas-
+Bannerkopie, Entfernung aller Lichttimer/-gradienten, Syntax und ZIP-Integrität.
+Ein Test auf einem echten iPhone steht noch aus.
 
 ## Änderungen in Version 94
 

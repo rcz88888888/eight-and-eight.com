@@ -1,46 +1,13 @@
-/* White reflection cores, broad soft falloff, 60% viewport reach per side. */
+/* Static gold surfaces, transparent ornaments and native scroll masks. */
 :root {
-  --gold-light-visibility: .68;
-  --content-light-visibility: .68;
-  --shimmer-beam: linear-gradient(180deg,
-    rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
-    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, var(--content-light-visibility)) 50%,
-    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 53%, rgba(255, 244, 218, 0) 58%,
-    rgba(255, 244, 218, 0) 100%);
-  --vertical-shimmer-beam: linear-gradient(180deg,
-    rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
-    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 47%, rgba(255, 244, 218, var(--content-light-visibility)) 50%,
-    rgba(255, 244, 218, calc(.44 * var(--content-light-visibility))) 53%, rgba(255, 244, 218, 0) 58%,
-    rgba(255, 244, 218, 0) 100%);
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
   --wallpaper-sand-gold: #d7c193;
 }
+/* v95: every gold surface is static; no reflection variables or beams. */
 .gold-light-target, .topbar, .wallpaper-end {
-  --gold-radials:
-    radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-left-x, 22vw) var(--gold-light-y, 50%),
-    rgba(255, 255, 255, calc(1.000000 * var(--gold-light-visibility))) 0.0000%,
-    rgba(255, 255, 255, calc(0.968994 * var(--gold-light-visibility))) 12.5000%,
-    rgba(255, 254, 252, calc(0.878906 * var(--gold-light-visibility))) 25.0000%,
-    rgba(255, 253, 244, calc(0.738525 * var(--gold-light-visibility))) 37.5000%,
-    rgba(255, 251, 236, calc(0.562500 * var(--gold-light-visibility))) 50.0000%,
-    rgba(255, 249, 228, calc(0.371338 * var(--gold-light-visibility))) 62.5000%,
-    rgba(255, 247, 221, calc(0.191406 * var(--gold-light-visibility))) 75.0000%,
-    rgba(255, 246, 213, calc(0.054932 * var(--gold-light-visibility))) 87.5000%,
-    rgba(255, 244, 205, calc(0.000000 * var(--gold-light-visibility))) 100.0000%),
-    radial-gradient(ellipse var(--gold-reach, 60vw) var(--gold-reach, 60vw) at var(--gold-right-x, 78vw) var(--gold-light-y, 50%),
-    rgba(255, 255, 255, calc(1.000000 * var(--gold-light-visibility))) 0.0000%,
-    rgba(255, 255, 255, calc(0.968994 * var(--gold-light-visibility))) 12.5000%,
-    rgba(255, 254, 252, calc(0.878906 * var(--gold-light-visibility))) 25.0000%,
-    rgba(255, 253, 244, calc(0.738525 * var(--gold-light-visibility))) 37.5000%,
-    rgba(255, 251, 236, calc(0.562500 * var(--gold-light-visibility))) 50.0000%,
-    rgba(255, 249, 228, calc(0.371338 * var(--gold-light-visibility))) 62.5000%,
-    rgba(255, 247, 221, calc(0.191406 * var(--gold-light-visibility))) 75.0000%,
-    rgba(255, 246, 213, calc(0.054932 * var(--gold-light-visibility))) 87.5000%,
-    rgba(255, 244, 205, calc(0.000000 * var(--gold-light-visibility))) 100.0000%);
-  --gold-reflection: var(--gold-radials),
-    linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold));
+  --gold-surface: var(--wallpaper-sand-gold);
 }
 /* Rounded frames use a hollow mask, so neither text nor the transparent
    field interior receives a coloured fill. No extra DOM children are added. */
@@ -56,7 +23,7 @@
   border-radius: inherit;
   padding: var(--gold-edge-top, 0px) var(--gold-edge-right, 0px)
     var(--gold-edge-bottom, 0px) var(--gold-edge-left, 0px);
-  background: var(--gold-reflection);
+  background: var(--gold-surface);
   pointer-events: none;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -66,7 +33,7 @@
 
 .site-nav a.gold-light-target::after,
 .menu-toggle span.gold-light-target {
-  background: var(--gold-reflection) !important;
+  background: var(--gold-surface) !important;
 }
 
 /* v94: content text has only its constant dark-gold paint, never a light. */
@@ -89,10 +56,6 @@
   letter-spacing: -.03em !important;
   transform: scaleY(1.08);
   transform-origin: center bottom;
-}
-@keyframes line-shimmer {
-  from { background-position: 0 100%; }
-  44.444444%, 100% { background-position: 0 0%; }
 }
 /* Navigation labels retain the banner wordmark's black-gold without light. */
 .site-nav a.gold-text-light,
@@ -137,19 +100,6 @@ em.gold-text-light {
   transition: none !important;
 }
 
-/* Paint the same moving reflection directly over the transparent wordmark
-   silhouette; the source image remains underneath as the black-gold base. */
-.topbar .wordmark.gold-light-target::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: var(--gold-radials);
-  opacity: .2;
-  -webkit-mask: url("eight-and-eight-banner-logo-transparent-v35.png") center / contain no-repeat;
-  mask: url("eight-and-eight-banner-logo-transparent-v35.png") center / contain no-repeat;
-}
 .topbar .wordmark.gold-light-target::before {
   content: "";
   position: absolute;
@@ -166,7 +116,7 @@ em.gold-text-light {
    Keep the smaller v39 repeat scale and the menu's fixed wallpaper origin. */
 .topbar::before,
 .wallpaper-end::before {
-  background: var(--gold-reflection);
+  background: var(--gold-surface);
   opacity: 1;
   mix-blend-mode: normal;
   -webkit-mask-image: url("wallpaper-ornament-mask-v45.png");
@@ -223,16 +173,6 @@ em.gold-text-light {
   height: 2.25px !important;
   min-height: 2.25px !important;
   border-radius: 999px !important;
-}
-.topbar .menu-toggle > span::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: var(--gold-radials);
-  opacity: .2;
-  border-radius: 999px;
 }
 @media (max-width: 900px) {
   /* Centre the complete three-stroke group in the closed banner field. */
@@ -370,66 +310,6 @@ body { height: auto; min-height: 100%; overflow: visible; }
   pointer-events: none;
 }
 
-/* Shared line lighting replaces the old scroll-driven frame reflections.
-   Hollow masks retain the original line widths and transparent interiors. */
-.gold-frame-light:not(.topbar):not(.site-nav)::after,
-.gold-header-edge,
-.site-nav::after,
-.site-nav a.gold-light-target::after,
-.topbar .menu-toggle > span::after {
-  background-image: var(--shimmer-beam),
-    linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold)) !important;
-  background-size: 100% 300%, 100% 100% !important;
-  background-position: 0 100%;
-  background-repeat: no-repeat !important;
-  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
-  animation-name: var(--line-shimmer-name, none);
-  animation-delay: var(--line-shimmer-delay, 0ms);
-}
-.topbar .menu-toggle > span::after {
-  background-image: var(--shimmer-beam) !important;
-  opacity: 1;
-}
-html.text-shimmer-paused .gold-frame-light::after,
-html.text-shimmer-paused .gold-header-edge,
-html.text-shimmer-paused .site-nav::after,
-html.text-shimmer-paused .site-nav a::after,
-html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  .gold-frame-light::after, .gold-header-edge, .site-nav::after,
-  .site-nav a.gold-light-target::after, .topbar .menu-toggle > span::after {
-    animation: none !important;
-  }
-}
-
-
-/* Reflections across the transparent field interiors, below text and frames. */
-.section, .contact-box, .service-grid article, .partner-slot { position: relative; }
-.section::before, .contact-box::before,
-.service-grid article::before, .partner-slot::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: 0;
-  pointer-events: none;
-  background-image: var(--vertical-shimmer-beam);
-  background-size: 100% 300%;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
-  animation-name: var(--line-shimmer-name, none);
-  animation-delay: var(--line-shimmer-delay, 0ms);
-}
-html.text-shimmer-paused .section::before,
-html.text-shimmer-paused .contact-box::before,
-html.text-shimmer-paused .service-grid article::before,
-html.text-shimmer-paused .partner-slot::before { animation-name: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  .section::before, .contact-box::before,
-  .service-grid article::before, .partner-slot::before { animation: none; }
-}
-
 /* Landscape only: preserve which edges exist, but use 0.8px on every edge. */
 @media (orientation: landscape) {
   body .site-shell *, body .site-nav, body .site-nav * {
@@ -449,29 +329,16 @@ html.text-shimmer-paused .partner-slot::before { animation-name: none !important
 .content-scroll .gold-text-light,
 .content-scroll .partner-slot img { position: relative; z-index: 1; }
 .portfolio-shimmer { display: none !important; }
-.topbar::before, .wallpaper-end::before {
-  background-image: var(--vertical-shimmer-beam), linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold));
-  background-size: 100% 300%, 100% 100%;
-  background-position: 0 100%;
-  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
-  animation-name: var(--line-shimmer-name, none);
-  animation-delay: var(--line-shimmer-delay, 0ms);
+
+/* The transparent logo is a fixed ornament plane above the unlit content. */
+.content-scroll .hero-wallpaper-logo {
+  position: fixed;
+  pointer-events: none;
+  background: transparent;
+  overflow: hidden;
 }
-.topbar .wordmark.gold-light-target::after {
-  background-image: var(--vertical-shimmer-beam);
-  background-size: 100% 300%;
-  background-position: 0 100%;
-  opacity: 1;
-  animation: line-shimmer 18s cubic-bezier(.35, 0, .65, 1) infinite;
-  animation-name: var(--line-shimmer-name, none);
-  animation-delay: var(--line-shimmer-delay, 0ms);
-}
-.hero-paper-reflection { opacity: .68; }
-html.text-shimmer-paused .topbar::before,
-html.text-shimmer-paused .wallpaper-end::before,
-html.text-shimmer-paused .topbar .wordmark::after { animation-name: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  .topbar::before, .wallpaper-end::before,
-  .topbar .wordmark.gold-light-target::after { animation: none !important; }
-  .hero-paper-reflection { display: none; }
-}
+.hero-paper-border { stroke-width: var(--hero-border-width, 1.5px); }
+.topbar .wordmark::after,
+.topbar .menu-toggle > span::after,
+.section::before, .contact-box::before,
+.service-grid article::before, .partner-slot::before { content: none !important; }

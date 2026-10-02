@@ -53,16 +53,6 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  const bottomBanner = document.querySelector('.wallpaper-end');
-  const bannerRoots = new Map();
-  for (const element of targets) {
-    const root = element === bottomBanner ? bottomBanner :
-      (element === header || header?.contains(element) || element === nav || nav?.contains(element)) ? header : null;
-    if (root) {
-      bannerRoots.set(element, root);
-      element.classList.add('gold-banner-light');
-    }
-  }
   const hollowMaskSupported = CSS.supports('mask-composite', 'exclude') ||
     CSS.supports('-webkit-mask-composite', 'xor');
   if (header && hollowMaskSupported) {
@@ -71,12 +61,6 @@
     edge.setAttribute('aria-hidden', 'true');
     header.appendChild(edge);
   }
-  let geometry = [];
-  let viewportWidth = 0;
-  let viewportHeight = 0;
-  let headerDocumentTop = 0;
-  let textMaskEdge = 0;
-  let shimmersObserved = false;
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -87,27 +71,13 @@
   }
   function cacheGeometry() {
     const head = header?.getBoundingClientRect();
-    if (contentLayer) paint(contentLayer, '--content-start', `${head?.height || 0}px`);
-    viewportWidth = document.documentElement.clientWidth;
-    viewportHeight = innerHeight;
-    const offset = engine.scrollPosition();
     const menuOpen = header?.classList.contains('menu-expanded');
-    const bannerHeight = (head?.height || 0) +
-      (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
-    // The cream occluder retains the fixed edge, 1px below the v88 edge.
-    const pixelRatio = Math.max(1, devicePixelRatio || 1);
-    textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 3);
-    headerDocumentTop = contentLayer ? head?.top || 0 :
-      (header?.parentElement.getBoundingClientRect().top || 0) + offset;
-    geometry = targets.map(element => {
-      const box = element.getBoundingClientRect();
-      const root = bannerRoots.get(element);
-      return {element, root, left: box.left, width: box.width, height: box.height,
-        top: root === header && head ? box.top - head.top : box.top + offset};
-    });
-    const reach = `${(viewportWidth * 3 / 5).toFixed(1)}px`;
-    lightTargets.forEach(element => paint(element, '--gold-reach', reach));
-    if (contentLayer) paint(contentLayer, '--content-cut', `${textMaskEdge}px`);
+    const height = (head?.height || 0) + (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
+    const ratio = Math.max(1, devicePixelRatio || 1);
+    if (contentLayer) {
+      paint(contentLayer, '--content-start', `${head?.height || 0}px`);
+      paint(contentLayer, '--content-cut', `${Math.max(0, Math.ceil(height * ratio) / ratio - 3)}px`);
+    }
   }
 
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
@@ -142,63 +112,12 @@
     }
   }
 
-  function update(state) {
-    const {scroll, reach, left: leftSource, right: rightSource,
-      y: lightY, extraY: extraLightY, width, height} = state;
-    viewportWidth = width;
-    viewportHeight = height;
-    const headerTop = contentLayer ? headerDocumentTop : Math.max(0, headerDocumentTop - scroll);
-    for (const item of geometry) {
-      const {element, root, left, width, height} = item;
-      const top = root === header ? headerTop + item.top : item.top - scroll;
-      if (!lightTargets.has(element) || !width || !height || top + height < 0 || top > viewportHeight) continue;
-      const extra = element.matches('.wordmark, .wordmark-logo, .menu-toggle span');
-      paint(element, '--gold-left-x', `${((extra ? state.extraLeft : leftSource) - left).toFixed(1)}px`);
-      paint(element, '--gold-right-x', `${((extra ? state.extraRight : rightSource) - left).toFixed(1)}px`);
-      paint(element, '--gold-light-y', `${((extra ? extraLightY : lightY) - top).toFixed(1)}px`);
-    }
-  }
-
-
-  function observeShimmers() {
-    const lineOwners = [...new Set([...frames,
-      ...document.querySelectorAll('.site-nav a, .topbar .menu-toggle > span, .topbar .wordmark')])];
-    const visibleLines = new Set();
-    function setLineVisible(node, visible) {
-      if (visible) {
-        visibleLines.add(node);
-        node.style.setProperty('--line-shimmer-delay', `${-(performance.now() % 18000)}ms`);
-      } else visibleLines.delete(node);
-      node.style.setProperty('--line-shimmer-name', visible ? 'line-shimmer' : 'none');
-    }
-    if ('IntersectionObserver' in window) {
-      const lineObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => setLineVisible(entry.target, entry.isIntersecting));
-      });
-      lineOwners.forEach(node => lineObserver.observe(node));
-    } else lineOwners.forEach(node => setLineVisible(node, true));
-
-    function visibility() {
-      document.documentElement.classList.toggle('text-shimmer-paused', document.hidden);
-      if (!document.hidden) {
-        visibleLines.forEach(node => setLineVisible(node, true));
-      }
-    }
-    document.addEventListener('visibilitychange', visibility);
-    visibility();
-  }
-
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
     measure() {
       measureEdges(); cacheGeometry();
-      if (!shimmersObserved) {
-        observeShimmers();
-        shimmersObserved = true;
-      }
-    },
-    paint: update
+    }
   });
   // Lazy-loaded portfolio images can change their height after initial layout.
   portfolioLogos.forEach(element => {

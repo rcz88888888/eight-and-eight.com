@@ -10,16 +10,11 @@
   const bannerFeed = document.querySelector('.banner-logo-feed');
   const feed = bannerFeed?.getContext('2d');
   let feedHeight = 0;
-  const hero = document.querySelector('.hero-static-logo');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const subscribers = [];
-  const lightPasses = 8;
-  const lightVisibility = .58;
   const image = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
-  const lightSurface = document.createElement('canvas');
-  const light = lightSurface.getContext('2d');
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
@@ -35,16 +30,8 @@
   let particles = [];
   let sprites = [];
   let mainBox;
-  let heroBox;
   let bgRatio = 1;
   let inkRatio = 1;
-  const stops = [
-    [0, 'rgba(255,255,255,1)'], [.125, 'rgba(255,255,255,.969)'],
-    [.25, 'rgba(255,254,252,.879)'], [.375, 'rgba(255,253,244,.739)'],
-    [.5, 'rgba(255,251,236,.5625)'], [.625, 'rgba(255,249,228,.3713)'],
-    [.75, 'rgba(255,247,221,.1914)'], [.875, 'rgba(255,246,213,.0549)'],
-    [1, 'rgba(255,244,205,0)']
-  ];
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
@@ -76,21 +63,16 @@
     // All layout reads happen before the scroll frame's paints.
     pageHeight = Math.max(scrollHeight(), height);
     mainBox = main?.getBoundingClientRect();
-    if (hero) {
-      const box = hero.getBoundingClientRect();
-      heroBox = {left: box.left, top: box.top + scrollPosition(), width: box.width, height: box.height};
-    }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (feed && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
     }
-    if (!bg || !ink || !light || !mainBox) return;
+    if (!bg || !ink || !mainBox) return;
     bgRatio = Math.min(devicePixelRatio || 1, 1.25);
     inkRatio = Math.min(devicePixelRatio || 1, 1.5);
     resizeSurface(background, bg, width, height, bgRatio);
     resizeSurface(logos, ink, width, height, inkRatio);
-    resizeSurface(lightSurface, light, width, height, inkRatio);
     background.style.width = logos.style.width = `${width}px`;
     background.style.height = logos.style.height = `${height}px`;
     const mainWidth = Math.min(mainBox.width, mainBox.height * 922 / 1368) * 1.15;
@@ -119,26 +101,14 @@
   }
   function field(width, height, scroll) {
     const progress = Math.min(1, scroll / Math.max(1, pageHeight - height));
-    const reach = width * .6;
-    const openingHeight = heroBox ? Math.min(heroBox.width / 922, heroBox.height / 1368) * 1368 : 0;
-    const openingY = heroBox
-      ? heroBox.top + (heroBox.height - openingHeight) / 2 + openingHeight * .475 : height * .475;
-    const cycle = height + 2 * reach;
-    const start = height + reach;
-    const offset = Math.max(0, start - openingY);
     const motion = reduced.matches ? 0 : progress;
     const travel = reduced.matches ? 0 : scroll / Math.max(1, height);
-    const left = width * (.22 + .1 * Math.sin(travel * .65));
-    return {width, height, scroll, progress, reach, travel,
-      motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion,
-      left, right: width - left,
-      y: start - ((offset + motion * lightPasses * cycle) % cycle),
-      extraY: start - ((offset + motion * lightPasses * cycle) % cycle),
-      extraLeft: left, extraRight: width - left};
+    return {width, height, scroll, progress, travel,
+      motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
   function paintCanvas(state) {
-    if (!bg || !ink || !light || !mainBox || !sprites.length) return;
-    const {width, height, motionScroll, motionProgress, left, right, y, reach} = state;
+    if (!bg || !ink || !mainBox || !sprites.length) return;
+    const {width, height, motionScroll, motionProgress} = state;
     bg.clearRect(0, 0, width, height);
     let visible = 0;
     for (const mark of particles) {
@@ -150,8 +120,7 @@
       visible++;
     }
     bg.globalAlpha = 1;
-    // Eight logos share one composited light surface: no per-logo SVG masks,
-    // gradient cloning, getScreenCTM or hundreds of DOM writes on scroll.
+    // Eight unlit logos share one canvas; native document scrolling is untouched.
     ink.clearRect(0, 0, width, height);
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
     const w = 922 * scale;
@@ -169,20 +138,6 @@
       ink.drawImage(image, -w / 2, -h / 2, w, h);
       ink.restore();
     }
-    if (y + reach > 0 && y - reach < height) {
-      light.clearRect(0, 0, width, height);
-      for (const x of [left, right]) {
-        const gradient = light.createRadialGradient(x, y, 0, x, y, reach);
-        stops.forEach(([offset, color]) => gradient.addColorStop(offset, color));
-        light.fillStyle = gradient;
-        light.fillRect(0, 0, width, height);
-      }
-      ink.globalCompositeOperation = 'source-atop';
-      ink.globalAlpha = .3 * lightVisibility;
-      ink.drawImage(lightSurface, 0, 0, width, height);
-      ink.globalAlpha = 1;
-      ink.globalCompositeOperation = 'source-over';
-    }
     const count = String(visible);
     if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
     if (!root.classList.contains('canvas-logos-ready')) {
@@ -190,7 +145,7 @@
     }
   }
   // Copy the same rendered frame, cropped to the banner. Do not create or
-  // animate another set of logos: position, rotation, opacity and light match.
+  // animate another set of logos: position, rotation and opacity match.
   function paintBannerFeed(width, height) {
     if (!feed || !bg || !ink || !feedHeight || !width || !height) return;
     feed.clearRect(0, 0, width, feedHeight);
