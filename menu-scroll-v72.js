@@ -6,16 +6,14 @@
   const area = startSpeed / 2 + acceleration / 6;
   const ease = t => (startSpeed * t + (acceleration - startSpeed) * t * t / 2
     - acceleration * t * t * t / 3) / area;
-  const scrollSurface = document.querySelector('.content-scroll');
-  const root = scrollSurface || document.documentElement;
-  const scrollPosition = () => scrollSurface ? scrollSurface.scrollTop : window.scrollY;
-  const scrollTo = options => (scrollSurface || window).scrollTo(options);
+  const root = document.scrollingElement || document.documentElement;
+  const scrollPosition = () => window.scrollY;
+  const scrollTo = options => window.scrollTo(options);
   let active = null;
   let destinationDirty = true;
   if ('ResizeObserver' in window) {
     const observer = new ResizeObserver(() => { destinationDirty = true; });
-    (scrollSurface ? [...scrollSurface.children] : [document.querySelector('.site-shell')])
-      .forEach(node => observer.observe(node));
+    observer.observe(document.querySelector('.site-shell'));
   }
   window.addEventListener('resize', () => { destinationDirty = true; }, {passive: true});
 
@@ -37,7 +35,7 @@
     const headerHeight = header && (position === 'sticky' || position === 'fixed')
       ? header.getBoundingClientRect().height : 0;
     const margin = Math.max(headerHeight + 16, parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
-    const limit = Math.max(0, root.scrollHeight - (scrollSurface ? scrollSurface.clientHeight : window.innerHeight));
+    const limit = Math.max(0, root.scrollHeight - window.innerHeight);
     return Math.min(limit, Math.max(0, scrollPosition() + target.getBoundingClientRect().top - margin));
   };
 
@@ -70,7 +68,9 @@
       };
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
+      const session = active;
       active.frame = requestAnimationFrame(startTime => {
+        if (active !== session) return;
         const start = scrollPosition();
         let destination = destinationFor(target);
         destinationDirty = false;
@@ -82,6 +82,7 @@
         }
         const duration = Math.min(8000, 2400 + Math.abs(distance) * 0.45);
         const step = now => {
+          if (active !== session) return;
           const progress = Math.min(1, Math.max(0, (now - startTime) / duration));
           // Re-read layout only when resizing or loading changed the target.
           if (destinationDirty) {
@@ -98,8 +99,8 @@
   });
 
   // A new gesture or navigation immediately returns control to the visitor.
-  for (const type of ['wheel', 'touchstart', 'pointerdown', 'popstate', 'hashchange']) {
-    window.addEventListener(type, cancel, { passive: true });
+  for (const type of ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'popstate', 'hashchange']) {
+    window.addEventListener(type, cancel, { passive: true, capture: true });
   }
   window.addEventListener('keydown', event => {
     if (event.target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName || '')) return;

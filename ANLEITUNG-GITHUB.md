@@ -1,4 +1,4 @@
-# Eight&Eight – Version 91
+# Eight&Eight – Version 92
 
 ## Website hochladen
 
@@ -34,6 +34,22 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 92
+
+Die Seite verwendet wieder den normalen Dokument-Scrollbereich des Browsers.
+Der zusätzliche feststehende Scrollcontainer und dessen Fokusziel entfallen.
+Der obere Banner und die cremefarbene Maske bleiben fest am Bildschirm;
+Linien und Feldreflexionen liegen weiterhin über der Maske und unter dem Muster.
+Browser-Scrollanker sind deaktiviert, damit Layoutänderungen die Position nicht
+nachführen. Eine Wischbewegung bricht eine laufende Menü-Scrollanimation sofort
+ab; abgebrochene Animationscallbacks dürfen die Position nicht mehr schreiben.
+Alle Lichtwerte, Kontaktdaten und der Abschlussbanner bleiben erhalten.
+
+Geprüft: Dokument-Scrollpositionen und Größenwechsel, feste Maskenkante,
+Abbruch vor und während der Menüanimation einschließlich veralteter Callbacks,
+Menüziele, 800 Lichtzyklen ohne wiederholte Richtung und alle Dateiverweise.
+Ein Test auf einem echten iPhone steht noch aus.
 
 ## Änderungen in Version 91
 

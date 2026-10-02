@@ -1,9 +1,8 @@
 (() => {
   'use strict';
   const root = document.documentElement;
-  const scrollSurface = document.querySelector('.content-scroll');
-  const scrollPosition = () => scrollSurface ? scrollSurface.scrollTop : window.scrollY;
-  const scrollHeight = () => scrollSurface ? scrollSurface.scrollHeight : root.scrollHeight;
+  const scrollPosition = () => window.scrollY;
+  const scrollHeight = () => (document.scrollingElement || root).scrollHeight;
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
@@ -208,7 +207,7 @@
     invalidate();
   }, {once: true});
   image.src = 'eight-and-eight-logo-dark-v18.png';
-  (scrollSurface || window).addEventListener('scroll', schedule, {passive: true});
+  window.addEventListener('scroll', schedule, {passive: true});
   const resize = () => {
     if (root.clientWidth !== lastWidth) layoutDirty = true;
     viewportDirty = true;
@@ -225,8 +224,7 @@
     const observer = new ResizeObserver(() => {
       if (scrollHeight() !== pageHeight) invalidate();
     });
-    (scrollSurface ? [...scrollSurface.children] : [document.querySelector('.site-shell')])
-      .forEach(node => observer.observe(node));
+    observer.observe(document.querySelector('.site-shell'));
   }
   schedule();
 })();

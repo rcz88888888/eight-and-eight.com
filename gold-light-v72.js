@@ -59,7 +59,7 @@
     ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
   ]);
   const targets = [...lightTargets];
-  const scrollSurface = document.querySelector('.content-scroll');
+  const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
   const bottomBanner = document.querySelector('.wallpaper-end');
@@ -96,7 +96,7 @@
   }
   function cacheGeometry() {
     const head = header?.getBoundingClientRect();
-    if (scrollSurface) paint(scrollSurface, '--content-start', `${head?.height || 0}px`);
+    if (contentLayer) paint(contentLayer, '--content-start', `${head?.height || 0}px`);
     // Measure all image boxes together; each mask uses the same contain fit.
     const lightBoxes = portfolioLights.map(({image, light}) => {
       const imageBox = image.getBoundingClientRect();
@@ -122,7 +122,7 @@
     // The cream occluder retains the fixed edge, 1px below the v88 edge.
     const pixelRatio = Math.max(1, devicePixelRatio || 1);
     textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 3);
-    headerDocumentTop = scrollSurface ? head?.top || 0 :
+    headerDocumentTop = contentLayer ? head?.top || 0 :
       (header?.parentElement.getBoundingClientRect().top || 0) + offset;
     geometry = targets.map(element => {
       const box = element.getBoundingClientRect();
@@ -132,7 +132,7 @@
     });
     const reach = `${(viewportWidth * 3 / 5).toFixed(1)}px`;
     lightTargets.forEach(element => paint(element, '--gold-reach', reach));
-    if (scrollSurface) paint(scrollSurface, '--content-cut', `${textMaskEdge}px`);
+    if (contentLayer) paint(contentLayer, '--content-cut', `${textMaskEdge}px`);
   }
 
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
@@ -172,7 +172,7 @@
       y: lightY, extraY: extraLightY, width, height} = state;
     viewportWidth = width;
     viewportHeight = height;
-    const headerTop = scrollSurface ? headerDocumentTop : Math.max(0, headerDocumentTop - scroll);
+    const headerTop = contentLayer ? headerDocumentTop : Math.max(0, headerDocumentTop - scroll);
     for (const item of geometry) {
       const {element, root, left, width, height} = item;
       const top = root === header ? headerTop + item.top : item.top - scroll;
@@ -203,7 +203,7 @@
       lineOwners.forEach(node => lineObserver.observe(node));
     } else lineOwners.forEach(node => setLineVisible(node, true));
 
-    const animated = [...(scrollSurface || document).querySelectorAll('.gold-text-light, .portfolio-shimmer')]
+    const animated = [...(contentLayer || document).querySelectorAll('.gold-text-light, .portfolio-shimmer')]
       .filter(node => !node.closest('.topbar, .site-nav, .logo-stage, .wallpaper-end'));
     // All newly visible elements join the same eight-second clock. Re-entering
     // the viewport does not trigger an extra highlight.
@@ -214,7 +214,7 @@
     if ('IntersectionObserver' in window) {
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => setVisible(entry.target, entry.isIntersecting));
-      }, {root: scrollSurface});
+      }, {root: null});
       animated.forEach(node => observer.observe(node));
     } else animated.forEach(node => setVisible(node, true));
     function visibility() {

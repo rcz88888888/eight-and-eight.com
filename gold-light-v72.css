@@ -345,19 +345,23 @@ body, body * { text-rendering: auto; }
 
 .banner-text-glyphs { display: inline-block; max-width: 100%; }
 
-/* v91: native scrolling with a fixed cream occluder below the frame layers. */
-html, body { height: 100%; overflow: hidden; }
-.site-shell { height: 100%; min-height: 100%; }
+/* v92: let Safari scroll the document, without a fixed nested scrollport. */
+html {
+  height: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+  overflow-anchor: none;
+  scroll-behavior: auto;
+}
+body { height: auto; min-height: 100%; overflow: visible; }
+.site-shell { height: auto; min-height: 100%; overflow: clip; }
+.topbar { position: fixed; top: 0; left: 0; right: 0; }
 .content-scroll {
-  position: fixed;
-  inset: 0;
+  position: relative;
   z-index: 3;
   padding-top: var(--content-start, var(--header-height));
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none;
-  scroll-behavior: auto;
+  overflow: visible;
+  overflow-anchor: none;
   outline: none;
 }
 .banner-content-mask {
