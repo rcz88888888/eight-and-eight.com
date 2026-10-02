@@ -426,3 +426,8 @@ html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !impo
     animation: none !important;
   }
 }
+
+/* v84: the opening contour logo shares the text/partner beam, inside its mask. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-partner-shimmer { display: none; }
+}
