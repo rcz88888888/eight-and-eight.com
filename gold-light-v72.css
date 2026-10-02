@@ -1,6 +1,11 @@
 /* White reflection cores, broad soft falloff, 60% viewport reach per side. */
 :root {
   --gold-light-visibility: .58;
+  --shimmer-beam: linear-gradient(110deg,
+    rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
+    rgba(255, 244, 218, .3) 47%, rgba(255, 244, 218, .68) 50%,
+    rgba(255, 244, 218, .3) 53%, rgba(255, 244, 218, 0) 58%,
+    rgba(255, 244, 218, 0) 100%);
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
@@ -58,14 +63,12 @@
   background: var(--gold-reflection) !important;
 }
 
-/* v80: a separate left-to-right text shimmer, 0.8 seconds of motion once every eight seconds.
-   The broad scroll-driven reflection is reserved for frames and ornaments. */
+/* v82: the same warm beam on text, portfolio artwork and lines;
+   one uninterrupted eight-second sweep followed immediately by the next. */
 .gold-text-light {
-  background-image: linear-gradient(110deg,
-    var(--banner-logo-metal) 0%, var(--banner-logo-metal) 42%,
-    #90794f 47%, #cbb88a 50%, #90794f 53%,
-    var(--banner-logo-metal) 58%, var(--banner-logo-metal) 100%) !important;
-  background-size: 300% 100% !important;
+  background-image: var(--shimmer-beam),
+    linear-gradient(var(--banner-logo-metal), var(--banner-logo-metal)) !important;
+  background-size: 300% 100%, 100% 100% !important;
   background-position: 100% 0;
   background-repeat: no-repeat !important;
   animation: text-shimmer 8s linear infinite;
@@ -89,11 +92,7 @@
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  background-image: linear-gradient(110deg,
-    rgba(255, 244, 218, 0) 0%, rgba(255, 244, 218, 0) 42%,
-    rgba(255, 244, 218, .3) 47%, rgba(255, 244, 218, .68) 50%,
-    rgba(255, 244, 218, .3) 53%, rgba(255, 244, 218, 0) 58%,
-    rgba(255, 244, 218, 0) 100%);
+  background-image: var(--shimmer-beam);
   background-size: 300% 100%;
   background-position: 100% 0;
   background-repeat: no-repeat;
@@ -106,7 +105,7 @@
 .portfolio-shimmer.text-shimmer-visible { animation-play-state: running; }
 @keyframes text-shimmer {
   from { background-position: 100% 0; }
-  10%, 100% { background-position: 0% 0; }
+  to { background-position: 0% 0; }
 }
 html.text-shimmer-paused .gold-text-light,
 html.text-shimmer-paused .portfolio-shimmer { animation-play-state: paused; }
@@ -385,4 +384,36 @@ html.text-shimmer-paused .display-copy .portfolio-shimmer { animation-name: none
 @media (prefers-reduced-motion: reduce) {
   .display-copy .gold-text-light.text-shimmer-visible,
   .display-copy .portfolio-shimmer.text-shimmer-visible { animation: none; }
+}
+
+/* Shared line lighting replaces the old scroll-driven frame reflections.
+   Hollow masks retain the original line widths and transparent interiors. */
+.gold-frame-light:not(.topbar):not(.site-nav)::after,
+.gold-header-edge,
+.site-nav::after,
+.site-nav a.gold-light-target::after,
+.topbar .menu-toggle > span::after {
+  background-image: var(--shimmer-beam),
+    linear-gradient(var(--wallpaper-sand-gold), var(--wallpaper-sand-gold)) !important;
+  background-size: 300% 100%, 100% 100% !important;
+  background-position: 100% 0;
+  background-repeat: no-repeat !important;
+  animation: text-shimmer 8s linear infinite;
+  animation-name: var(--line-shimmer-name, none);
+  animation-delay: var(--line-shimmer-delay, 0ms);
+}
+.topbar .menu-toggle > span::after {
+  background-image: var(--shimmer-beam) !important;
+  opacity: 1;
+}
+html.text-shimmer-paused .gold-frame-light::after,
+html.text-shimmer-paused .gold-header-edge,
+html.text-shimmer-paused .site-nav::after,
+html.text-shimmer-paused .site-nav a::after,
+html.text-shimmer-paused .menu-toggle > span::after { animation-name: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .gold-frame-light::after, .gold-header-edge, .site-nav::after,
+  .site-nav a.gold-light-target::after, .topbar .menu-toggle > span::after {
+    animation: none !important;
+  }
 }

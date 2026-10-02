@@ -287,6 +287,23 @@
     window.visualViewport?.addEventListener('scroll', wake, {passive: true});
     window.visualViewport?.addEventListener('resize', () => { engine.invalidate(); wake(); }, {passive: true});
 
+    const lineOwners = [...new Set([...frames,
+      ...document.querySelectorAll('.site-nav a, .topbar .menu-toggle > span')])];
+    const visibleLines = new Set();
+    function setLineVisible(node, visible) {
+      if (visible) {
+        visibleLines.add(node);
+        node.style.setProperty('--line-shimmer-delay', `${-(performance.now() % 8000)}ms`);
+      } else visibleLines.delete(node);
+      node.style.setProperty('--line-shimmer-name', visible ? 'text-shimmer' : 'none');
+    }
+    if ('IntersectionObserver' in window) {
+      const lineObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => setLineVisible(entry.target, entry.isIntersecting));
+      });
+      lineOwners.forEach(node => lineObserver.observe(node));
+    } else lineOwners.forEach(node => setLineVisible(node, true));
+
     const animated = [...copy.querySelectorAll('.gold-text-light, .portfolio-shimmer')]
       .filter(node => !node.closest('.topbar, .site-nav, .logo-stage, .wallpaper-end'));
     // All newly visible elements join the same eight-second clock. Re-entering
@@ -306,6 +323,7 @@
       if (document.hidden) {
         cancelAnimationFrame(frame); frame = 0; touching = false;
       } else {
+        visibleLines.forEach(node => setLineVisible(node, true));
         animated.filter(node => node.classList.contains('text-shimmer-visible'))
           .forEach(node => setVisible(node, true));
         wake();
