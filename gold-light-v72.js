@@ -74,8 +74,6 @@
   }
   const hollowMaskSupported = CSS.supports('mask-composite', 'exclude') ||
     CSS.supports('-webkit-mask-composite', 'xor');
-  const heroLeft = document.querySelector('#hero-gold-left');
-  const heroRight = document.querySelector('#hero-gold-right');
   if (header && hollowMaskSupported) {
     const edge = document.createElement('span');
     edge.className = 'gold-header-edge';
@@ -83,7 +81,6 @@
     header.appendChild(edge);
   }
   let geometry = [];
-  let heroGeometry = null;
   let viewportWidth = 0;
   let viewportHeight = 0;
   let headerDocumentTop = 0;
@@ -131,10 +128,6 @@
       return {element, root, left: box.left, width: box.width, height: box.height,
         top: root === header && head ? box.top - head.top : box.top + offset};
     });
-    if (hero) {
-      const box = hero.getBoundingClientRect();
-      heroGeometry = {left: box.left, top: box.top + offset, width: box.width, height: box.height};
-    }
     const reach = `${(viewportWidth * 3 / 5).toFixed(1)}px`;
     lightTargets.forEach(element => paint(element, '--gold-reach', reach));
     displayPlane?.measure(textMaskEdge);
@@ -187,28 +180,6 @@
       paint(element, '--gold-left-x', `${((extra ? state.extraLeft : leftSource) - left).toFixed(1)}px`);
       paint(element, '--gold-right-x', `${((extra ? state.extraRight : rightSource) - left).toFixed(1)}px`);
       paint(element, '--gold-light-y', `${((extra ? extraLightY : lightY) - top).toFixed(1)}px`);
-    }
-    if (heroGeometry && heroLeft && heroRight) {
-      const box = heroGeometry;
-      const topOnScreen = box.top - scroll;
-      const scale = Math.min(box.width / 922, box.height / 1368);
-      if (scale > 0 && topOnScreen + box.height >= 0 && topOnScreen <= viewportHeight) {
-        const left = box.left + (box.width - 922 * scale) / 2;
-        const top = topOnScreen + (box.height - 1368 * scale) / 2;
-        const radius = reach / scale;
-        const y = (lightY - top) / scale;
-        // Soft elliptical opening light covers the requested vertical band.
-        // Blend smoothly into the ordinary shared beam as scrolling starts.
-        const openingBlend = Math.min(1, scroll / Math.max(1, viewportHeight * .35));
-        const blend = openingBlend * openingBlend * (3 - 2 * openingBlend);
-        const logoCenterX = left + 922 * scale / 2;
-        for (const [gradient, source] of [[heroLeft, leftSource], [heroRight, rightSource]]) {
-          const lateral = Math.min(.95, Math.abs(logoCenterX - source) / reach);
-          const openingRadiusY = 1368 * .375 / Math.sqrt(1 - lateral * lateral);
-          const radiusY = openingRadiusY + (radius - openingRadiusY) * blend;
-          gradient.setAttribute('gradientTransform', `translate(${((source-left)/scale).toFixed(3)} ${y.toFixed(3)}) scale(${radius.toFixed(3)} ${radiusY.toFixed(3)})`);
-        }
-      }
     }
   }
 
