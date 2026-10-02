@@ -295,7 +295,7 @@
         visibleLines.add(node);
         node.style.setProperty('--line-shimmer-delay', `${-(performance.now() % 8000)}ms`);
       } else visibleLines.delete(node);
-      node.style.setProperty('--line-shimmer-name', visible ? 'text-shimmer' : 'none');
+      node.style.setProperty('--line-shimmer-name', visible ? 'line-shimmer' : 'none');
     }
     if ('IntersectionObserver' in window) {
       const lineObserver = new IntersectionObserver(entries => {
