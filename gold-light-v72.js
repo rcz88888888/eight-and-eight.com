@@ -27,7 +27,7 @@
 
   const textNodes = [...document.querySelectorAll(
     'h1,h2,h3,h4,h5,h6,p,li,a,button,label,small,strong,em,blockquote,figcaption,dt,dd,th,td'
-  )].filter(element => !element.closest('.wordmark, .menu-toggle'));
+  )].filter(element => !element.closest('.wordmark, .menu-toggle') && !element.matches(frameSelector));
   // Include EVERY real text owner, not just a list of semantic tags.
   // This also captures section-label divs, process/principle spans and footer.
   const textOwners = new Set(textNodes);
@@ -119,7 +119,7 @@
     const menuOpen = header?.classList.contains('menu-expanded');
     const bannerHeight = (head?.height || 0) +
       (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
-    // v89: extend the fixed clipping area 1 CSS pixel down from v88.
+    // The cream occluder retains the fixed edge, 1px below the v88 edge.
     const pixelRatio = Math.max(1, devicePixelRatio || 1);
     textMaskEdge = Math.max(0, Math.ceil(bannerHeight * pixelRatio) / pixelRatio - 3);
     headerDocumentTop = scrollSurface ? head?.top || 0 :

@@ -345,8 +345,7 @@ body, body * { text-rendering: auto; }
 
 .banner-text-glyphs { display: inline-block; max-width: 100%; }
 
-/* v89: the browser scrolls the original content inside one fixed clip.
-   Text, frames and portfolio artwork share the same native scroll surface. */
+/* v91: native scrolling with a fixed cream occluder below the frame layers. */
 html, body { height: 100%; overflow: hidden; }
 .site-shell { height: 100%; min-height: 100%; }
 .content-scroll {
@@ -360,9 +359,32 @@ html, body { height: 100%; overflow: hidden; }
   overscroll-behavior-y: none;
   scroll-behavior: auto;
   outline: none;
-  contain: paint;
-  -webkit-clip-path: inset(var(--content-cut, calc(var(--header-height) - 3px)) 0 0 0);
-  clip-path: inset(var(--content-cut, calc(var(--header-height) - 3px)) 0 0 0);
+}
+.banner-content-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--content-cut, calc(var(--header-height) - 3px));
+  z-index: 2;
+  background: var(--page-cream, #fdfcfa);
+  pointer-events: none;
+}
+/* Avoid enclosing text and frames in the same stacking context. Each frame
+   pseudo-element can then paint above the mask while its glyphs stay below. */
+.content-scroll > main,
+.content-scroll > .footer,
+.content-scroll .hero-copy { z-index: auto; }
+.content-scroll .gold-frame-light::after {
+  z-index: 3;
+}
+.content-scroll .section::before,
+.content-scroll .contact-box::before,
+.content-scroll .service-grid article::before,
+.content-scroll .partner-slot::before { z-index: 3; }
+.content-scroll .hero-static-logo {
+  position: relative;
+  z-index: 3;
 }
 /* Offscreen entries restart on the shared clock instead of resuming a stale phase. */
 .content-scroll .gold-text-light, .content-scroll .portfolio-shimmer { animation-name: none; }

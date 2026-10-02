@@ -1,4 +1,4 @@
-# Eight&Eight – Version 90
+# Eight&Eight – Version 91
 
 ## Website hochladen
 
@@ -34,6 +34,20 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 91
+
+Die Ganzflächen-Clippingmaske entfällt. Stattdessen liegt eine feste, cremeweiße
+Abdeckung in der Banner-Hintergrundfarbe über den Texten und Kooperationslogos.
+Rahmen, Feldreflexionen und Startlinienlogo liegen über dieser Abdeckung und
+unter dem Tapetenmuster des oberen Banners. Texte und Linien scrollen weiter
+gemeinsam nativ; es gibt keine per JavaScript nachgeführte Textkopie.
+Die Maskenkante, Lichtwerte, Kontaktdaten und Position des Abschlussbanners
+bleiben erhalten.
+
+Prüfung: JavaScript-Syntax, native Scrollsteuerung bei schnellen und gebrochenen
+Scrollpositionen, Größenwechsel, Menüanker, Maskenkante und Dateiverweise geprüft.
+Die Darstellung auf einem echten iPhone wurde nicht geprüft.
 
 ## Änderungen in Version 90
 
