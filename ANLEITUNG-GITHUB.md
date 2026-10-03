@@ -1,4 +1,4 @@
-# Eight&Eight – Version 98
+# Eight&Eight – Version 99
 
 ## Website hochladen
 
@@ -34,6 +34,24 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 99
+
+Am Seitenanfang strahlt warmes Licht hinter dem Tapetenstartlogo an dessen
+Konturen vorbei. Acht weiche, sich nach außen öffnende Strahlen und ein sanfter
+Randschein liegen vor dem Hintergrund, aber hinter der Tapete und den Goldrändern.
+Eine inverse Silhouettenmaske hält die Strahlen aus der gefüllten Logoform heraus;
+die vorhandenen transparenten Zwischenräume bleiben erhalten.
+
+Die Strahlen verwenden dieselbe Start-Lichtstärke wie Version 98 (88 %) und
+blenden beim Losscrollen über die ersten 88 Pixel aus. Sie kehren beim Zurück-
+scrollen an den Anfang zurück. Es gibt keine neue Zeitschleife oder zusätzliche
+Scrollsteuerung. Texte und Unternehmenslogos bleiben unbeleuchtet.
+
+Geprüft: Strahlen-SVG auf Cremegrund gerendert und visuell kontrolliert;
+Maskierung und Reihenfolge hinter der Tapete; Lichtabnahme/Rückkehr beim
+Scrollen, acht zentrierte Hauptlogos, Scrollsteuerung, Bannerkopie und Dateien.
+Kein echter iPhone-Test.
 
 ## Änderungen in Version 98
 
