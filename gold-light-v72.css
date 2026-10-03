@@ -359,5 +359,3 @@ body { height: auto; min-height: 100%; overflow: visible; }
 }
 .hero-opening-light { opacity: var(--opening-light-opacity); pointer-events: none; }
 
-/* v100: long sunlight shafts from above-right, without a surrounding halo. */
-.hero-opening-sunshafts { opacity: var(--opening-light-opacity); pointer-events: none; }

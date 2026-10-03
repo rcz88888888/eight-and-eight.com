@@ -1,4 +1,4 @@
-# Eight&Eight – Version 100
+# Eight&Eight – Version 102
 
 ## Website hochladen
 
@@ -34,6 +34,37 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 102
+
+Die Sonnenstrahlen aus Version 100/101 sind vollständig entfernt, einschließlich
+Strahlen-Gruppe, Verläufen, Weichzeichnern und CSS-Regel. Das Licht auf dem oberen
+Tapetenbanner und dem Startlogo samt Goldrändern aus Version 98 bleibt erhalten.
+Es erreicht am Seitenanfang weiterhin 88 % und blendet beim Losscrollen aus.
+Transparenz, native Scrollsteuerung und die Zentrierung der acht Hauptlogos
+bleiben unverändert. Geprüft: SVG, entfernte Strahlenelemente, Dateiverweise,
+Skriptsyntax und ZIP-Integrität.
+
+## Änderungen in Version 101
+
+Die schrägen Sonnenstrahlen sind deutlich kräftiger und länger sichtbar.
+Hauptstrahl und Nebenstrahlen reichen über die gesamte Höhe der Startfläche;
+ihre Geometrie beginnt oberhalb und endet unterhalb des SVG-Bildbereichs.
+Die Lichtstärke bleibt über den größten Teil der Länge hoch und fällt erst
+im unteren Abschluss weich auf null. Ein breiter warmer Hauptstrahl, heller
+weißer Kern und diffuse Flanken geben der Lichtbahn mehr Tiefe. Die beiden
+Nebenstrahlen sind ebenfalls breiter und intensiver.
+
+Die gemeinsame Richtung von oben rechts nach unten links, die Start-Lichtstärke
+von 88 % und das Ausblenden über die ersten 88 Scrollpixel bleiben erhalten.
+Keine kurzen Randstrahlen, kein Randschein um das Logo und keine neue Zeitschleife.
+Texte/Unternehmenslogos, Scrollsteuerung, Masken und Hauptlogo-Zentrierung bleiben
+unverändert.
+
+Geprüft: SVG gerendert und visuell mit Version 100 verglichen; deutlich höhere
+Lichtdeckung im unteren Drittel, Strahlengeometrie über volle Bildhöhe und
+weiches Ende. Bestehende Scroll-/Lichtsteuerung und sämtliche anderen Website-
+Dateien unverändert; Syntax, Dateiverweise und ZIP geprüft. Kein iPhone-Test.
 
 ## Änderungen in Version 100
 
