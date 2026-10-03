@@ -1,4 +1,4 @@
-# Eight&Eight – Version 97
+# Eight&Eight – Version 98
 
 ## Website hochladen
 
@@ -34,6 +34,26 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 98
+
+Am Seitenanfang erhalten das obere Bannertapetenmuster und das transparente
+Tapetenstartlogo samt Goldrändern ein breites, warmes Licht mit 88 % Spitzen-
+Sichtbarkeit. Der Lichtbereich reicht von 6 % bis 94 % der jeweiligen Breite
+und bedeckt damit 88 % der Breite. Die genaue Zahl einzelner beleuchteter
+Ornamentpixel beziehungsweise die Konturlänge ist wegen der Logoform verschieden.
+Der Lichtverlauf hat weiche Übergänge und nimmt über die ersten 88 Scrollpixel
+bis auf null ab; bei Rückkehr ganz nach oben erreicht er wieder 88 %.
+
+Die vorhandenen SVG- und Ornamentmasken begrenzen das Licht auf Muster und
+Ränder. Die offenen Zwischenräume bleiben transparent. Texte, Unternehmens-
+logos, Hintergrundlogos, übrige Felder und der untere Banner bleiben unbeleuchtet.
+Es gibt keinen Lichttimer und keine neue dauerhafte Animationsschleife.
+Die acht Hauptlogos sind weiterhin am Seitenanfang hinter dem Startlogo zentriert.
+
+Geprüft: Lichtstärke am Seitenanfang, Abnahme und Rückkehr beim Scrollen,
+Ornament-/Randmasken, Zentrierung der acht Hauptlogos, Scrollsteuerung,
+Bannerübertragung, SVG und ZIP-Integrität. Kein echter iPhone-Test.
 
 ## Änderungen in Version 97
 

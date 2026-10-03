@@ -342,3 +342,19 @@ body { height: auto; min-height: 100%; overflow: visible; }
 .topbar .menu-toggle > span::after,
 .section::before, .contact-box::before,
 .service-grid article::before, .partner-slot::before { content: none !important; }
+
+/* v98: opening-only light, confined to the wallpaper and its gold borders.
+   The illuminated band spans 6%–94%: 88% of each surface's width. */
+:root {
+  --opening-light-opacity: .88;
+  --opening-paper-light: linear-gradient(90deg,
+    rgba(255,249,233,0) 6%,
+    rgba(255,249,233,calc(.85 * var(--opening-light-opacity))) 12%,
+    rgba(255,254,245,var(--opening-light-opacity)) 50%,
+    rgba(255,249,233,calc(.85 * var(--opening-light-opacity))) 88%,
+    rgba(255,249,233,0) 94%);
+}
+.topbar::before, .topbar .gold-header-edge {
+  background: var(--opening-paper-light), linear-gradient(var(--wallpaper-sand-gold),var(--wallpaper-sand-gold));
+}
+.hero-opening-light { opacity: var(--opening-light-opacity); pointer-events: none; }
