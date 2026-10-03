@@ -359,6 +359,5 @@ body { height: auto; min-height: 100%; overflow: visible; }
 }
 .hero-opening-light { opacity: var(--opening-light-opacity); pointer-events: none; }
 
-/* v99: light emerges behind the emblem; its silhouette blocks the ray layer. */
-.hero-opening-rays { opacity: var(--opening-light-opacity); pointer-events: none; }
-.hero-ray-rim { stroke-width: 20px; }
+/* v100: long sunlight shafts from above-right, without a surrounding halo. */
+.hero-opening-sunshafts { opacity: var(--opening-light-opacity); pointer-events: none; }

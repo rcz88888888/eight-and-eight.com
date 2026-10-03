@@ -1,4 +1,4 @@
-# Eight&Eight – Version 99
+# Eight&Eight – Version 100
 
 ## Website hochladen
 
@@ -34,6 +34,26 @@ ist für die Kopien gedacht, die noch im GitHub-Repository liegen. Er ist kein
 Befehl zum Leeren des gesamten Repositorys. Er veröffentlicht selbst keine
 neue Pages-Version; die neuen Website-Dateien zuerst als eigenen Commit
 hochladen, damit der übliche Pages-Build startet.
+
+## Änderungen in Version 100
+
+Die acht kurzen Randstrahlen, die inverse Strahlenmaske und der umlaufende
+Randschein aus Version 99 sind entfernt. Stattdessen ziehen lange Sonnenstrahlen
+wie in der Fotoreferenz aus derselben Richtung von oben rechts nach unten links:
+ein heller, weicher Hauptstrahl mit schmalem Kern und zwei schwache Nebenstrahlen.
+Sie werden nach unten breiter und nehmen in Helligkeit ab. Es gibt keinen
+Strahlenkranz und keine zusätzliche Lichteffekt-Animationsschleife.
+
+Die Strahlen liegen in der Startfläche unter Tapetenornamenten und Goldrändern.
+Sie verwenden weiterhin die Lichtstärke am Seitenanfang und blenden über die
+ersten 88 Scrollpixel aus. Transparenz, ursprüngliche Logoform, Bannermaske,
+Zentrierung der acht Hauptlogos und native Scrollsteuerung bleiben erhalten.
+Texte und Unternehmenslogos bleiben unbeleuchtet.
+
+Geprüft: neue SVG-Strahlen auf Cremegrund gerendert und visuell kontrolliert;
+Entfernung sämtlicher alter Randstrahlen-/Halo-Elemente; Ausblenden beim
+Scrollen, Hauptlogo-Zentrierung, Bannerkopie, Scrollsteuerung und Dateiverweise.
+Kein echter iPhone-Test.
 
 ## Änderungen in Version 99
 
