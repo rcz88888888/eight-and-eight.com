@@ -379,3 +379,21 @@ body { height: auto; min-height: 100%; overflow: visible; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }
+
+/* v104: a single GPU material scene replaces flat gradients when available.
+   Header/nav receive the SAME rendered pixels beneath their lettering. */
+.metal-material-plane, .metal-banner-material, .metal-nav-material {
+  display: none; pointer-events: none; background: transparent;
+}
+.metal-material-plane { position: fixed; left: 0; top: 0; z-index: 4; }
+.metal-banner-material, .metal-nav-material { position: absolute; left: 0; top: 0; z-index: -1; }
+.metal-material-ready .metal-material-plane { display: block; }
+.metal-material-ready .gold-frame-light:not(.topbar)::after,
+.metal-material-ready .gold-header-edge,
+.metal-material-ready .topbar::before,
+.metal-material-ready .wallpaper-end::before,
+.metal-material-ready .hero-wallpaper-logo { opacity: 0 !important; }
+.metal-material-ready .site-nav::after { background: transparent !important; }
+
+:root:not(.metal-material-ready) .metal-banner-material,
+:root:not(.metal-material-ready) .metal-nav-material { display: none !important; }
