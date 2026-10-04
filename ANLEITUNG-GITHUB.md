@@ -1,4 +1,4 @@
-# Eight&Eight – Version 102
+# Eight&Eight – Version 103
 
 ## Website hochladen
 
@@ -328,3 +328,30 @@ jetzt direkt mit `display: none` ausgeblendet. Die ältere Regel
 `visibility: hidden` umgehen. Der Elternbereich behält seine Maße; dadurch
 bleibt die Berechnung der acht bewegten Hauptlogos unverändert. Ohne aktive
 Canvas-Darstellung stehen die Ersatzlogos weiterhin zur Verfügung.
+
+## Metallische Oberflächen in Version 103
+
+Die originale Basisfarbe #d7c193 bleibt unter den Reflexionen erhalten. Licht
+wird nur in die Tapetenmasken und hohlen Konturen gemalt, nicht auf Texte
+oder Unternehmenslogos. Das Startlogo bleibt transparent und scrollt normal.
+
+Am Seitenanfang wird das gesamte Startlogo einschließlich Rand beleuchtet,
+dazu die obere Bannerrandlinie, ein 48% breites Band im oberen Tapetenmuster
+und ein weicher Lichtbereich auf den sichtbaren Feldlinien darunter. Das
+Startlicht blendet über die ersten 88 Scrollpixel aus. Die 48% beziehen sich
+auf die Bannerbreite, nicht auf eine pixelgenaue Zählung der Ornamentfläche.
+
+Eine zweite Lichtquelle bewegt sich unabhängig davon mit zufälligen Zielen,
+12–86% Stärke und wechselnder Ausdehnung. Übergänge dauern zufällig 4–14
+Sekunden; Beschleunigung und Abbremsung sind weich. Beide Banner, die
+Startlogotapete und alle vorhandenen Feldkonturen empfangen dieses Licht.
+Warme Reflexionsschultern und ein schmalerer heller Glanz bilden Metall nach.
+
+Positionen werden bei Layoutänderungen gemessen und beim Scrollen aus den
+gecachten Koordinaten berechnet. Die Lichtanimation arbeitet mit bis zu 30
+Aktualisierungen pro Sekunde, ohne Texte oder Scrollposition zu verschieben.
+Bei ausgeblendeter Seite pausiert sie; reduzierte Bewegung hält das
+Zufallslicht statisch. Es gibt keine Sonnenstrahlen oder Hintergrundglows.
+
+Syntax, Masken, Ressourcen und Lichtverläufe sind lokal geprüft. Ein
+direkter Test auf einem iPhone mit Safari war hier nicht möglich.

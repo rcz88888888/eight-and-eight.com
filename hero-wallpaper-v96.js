@@ -7,7 +7,6 @@
   const pattern = logo.querySelector('#hero-paper-pattern');
   const tileImage = pattern.querySelector('image');
   const header = document.querySelector('.topbar');
-  let previousOpacity;
   engine.subscribe({measure() {
     const box = logo.getBoundingClientRect();
     const border = parseFloat(getComputedStyle(header).borderBottomWidth) ||
@@ -22,12 +21,5 @@
       node.setAttribute('width', tile); node.setAttribute('height', tile);
     }
     pattern.setAttribute('x', (922 - tile) / 2);
-  }, paint(state) {
-    // Full light at the page top, fading gently over the first 88 scroll pixels.
-    const opacity = (.88 * Math.max(0, 1 - Math.max(0, state.scroll) / 88)).toFixed(4);
-    if (opacity !== previousOpacity) {
-      document.documentElement.style.setProperty('--opening-light-opacity', opacity);
-      previousOpacity = opacity;
-    }
   }});
 })();
