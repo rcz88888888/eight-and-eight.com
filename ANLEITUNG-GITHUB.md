@@ -1,4 +1,4 @@
-# Eight&Eight – Version 117
+# Eight&Eight – Version 118
 
 ## Website hochladen
 
@@ -556,3 +556,50 @@ bleiben erhalten. Die Displayebene nimmt keine Eingaben entgegen und bewegt
 keine Layoutboxen. Lokale Prüfungen kontrollieren deckungsgleiche Projektion,
 Ebenenreihenfolge, Pause und Schleifenanschluss. Ein direkter iPhone-Safari-
 Test war in dieser Umgebung nicht möglich.
+
+## Ruhigeres neutrales Licht und zwei Ebenen in Version 118
+
+Eine Sequenz dauert jetzt exakt 48 Sekunden. Das Maximum beträgt 18 Achten
+pro Sekunde nach 24 Sekunden; anschließend bremst das Licht weich bis zum
+Stillstand. Genau 432 Durchläufe sorgen für einen nahtlosen Anschluss. Die
+weiß-cremefarbenen Reflexionen ersetzen die gelben Farben des bewegten Lichts.
+Eine zeitliche Gauß-Glättung verringert bei hoher Geschwindigkeit die sichtbaren
+Sprünge als Bewegungsunschärfe, statt die Bilder scharf flimmern zu lassen.
+
+Die hintere Lichtfläche liegt unter allen Haupt- und Hintergrundlogos. Ihre
+Position rotiert zusätzlich um die tatsächliche Zeichenachse der hintersten
+Hauptlogoebene mit genau deren geglättetem Scrollwinkel. Eine gleiche Licht-
+fläche liegt als oberste Reflexionsebene über den sichtbaren Oberflächen.
+Text, Menüzeichen und Unternehmenslogos werden durch geometrische Aussparungen
+von dieser Vordergrundreflexion ausgenommen. Die Aussparungen werden nur bei
+Scroll-/Layoutänderungen aktualisiert, nicht in jedem Animationsbild.
+
+Das Banner erhält neben dem stehenden Startlicht nur noch diese obere
+bewegte Reflexion. Doppelte Einzelprojektionen des bewegten Lichts auf Banner,
+Feldränder und Start-SVG sind deaktiviert. Die Ornamentmaske des Startlogos ist
+wiederhergestellt: Im Hochformat/Desktop gibt es keine goldene Grundfüllung
+zwischen den Tapetenornamenten. Telefon-Querformat behält die zuvor gewünschte
+deckende Variante. Die Hintergrundreflexion außerhalb des Logos bleibt sichtbar.
+
+Im bewegten Licht werden nur zwei Displayebenen aktualisiert. Bildvorbereitung,
+Scrollglättung, gecachte Geometrie und Pause bei unsichtbarer Seite/reduzierter
+Bewegung bleiben erhalten. Lokale Prüfungen kontrollieren Timing, Achsenbindung,
+Textaussparung, Maskierung, Ebenenfolge und native Scrollbewegung. Ein direkter
+iPhone-Safari-Test und eine Garantie der Bildrate sind nicht möglich.
+
+## Parabolischer Verlauf und Bannerlicht in Version 119
+
+48 Sekunden pro Sequenz, Spitzenwert 18 Achten pro Sekunde. Das Verhältnis
+8:1 bezeichnet Maximum zu Minimum (18 zu 2,25). Die Geschwindigkeit folgt
+einer symmetrischen Parabel; deren analytische Integration ergibt genau
+612 Achten pro Schleife ohne Positionssprung. Zeitliche Glättung bleibt aktiv.
+
+Beide bewegten Lichtquellen beleuchten den Banner, zusätzlich zum bestehenden
+scrollabhängigen Startlicht. Die hintere Quelle wird in den vorhandenen
+Ornament- und Randmasken projiziert; der obere Banner wird nicht mehr aus der
+Vordergrundreflexion ausgespart. Inhaltstext und Unternehmenslogos bleiben
+geschützt. Keine Füllung der transparenten Zwischenräume des Startlogos.
+
+Die rechteckige Antipp-Hervorhebung der Menülinks entfällt. Tastaturfokus
+bleibt durch Unterstreichung erkennbar. Lokale Quell- und Animationstests;
+kein direkter iPhone-Test.

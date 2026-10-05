@@ -345,7 +345,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
 
 /* v103: two projected lights, painted ONLY inside existing surface masks. */
 :root { --opening-light-opacity: 1; }
-.gold-light-target, .topbar, .wallpaper-end, .ambient-eight-light {
+.gold-light-target, .topbar, .wallpaper-end, .ambient-eight-light, .front-eight-light {
   --metal-opening: radial-gradient(circle var(--opening-radius, 660px) at var(--opening-x, 50%) var(--opening-y, 360px),
     rgba(255,243,203,calc(1 * var(--opening-light-opacity))) 0%,
     rgba(255,243,203,calc(0.993 * var(--opening-light-opacity))) 10%,
@@ -377,32 +377,48 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
   --metal-eight: radial-gradient(circle var(--eight-radius, 1px) at var(--eight-x, -10000px) var(--eight-y, -10000px),
     rgba(255,255,255,1) 0%,
-    rgba(255,254,240,1) 12%,
-    rgba(255,245,207,0.96) 26%,
-    rgba(255,229,163,0.7) 48%,
-    rgba(255,241,199,0.25) 72%,
-    rgba(255,241,199,0) 100%);
-  --gold-surface: var(--metal-eight), var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+    rgba(255,254,252,1) 12%,
+    rgba(255,253,248,0.94) 26%,
+    rgba(246,242,233,0.65) 48%,
+    rgba(250,248,243,0.22) 72%,
+    rgba(250,248,243,0) 100%);
+  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
 .topbar::before, .topbar .gold-header-edge { background: var(--gold-surface); }
 .hero-opening-light, .hero-central-light, .hero-specular-light { opacity: var(--opening-light-opacity); pointer-events: none; }
-.hero-eight-light { opacity: 1; pointer-events: none; }
+.hero-eight-light { display: none; pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }
 
 /* v107: circular opening light on the continuing v103-based website. */
 
-/* v117: the same moving reflection reaches the full background display plane.
-   It is above the background canvases and below the original content shell. */
-body > .ambient-eight-light {
+/* v118: rear light below all background logos, matching front reflection above
+   visible surfaces with cached text/image exclusion holes. */
+body { isolation: isolate; }
+body > .ambient-eight-light, body > .front-eight-light {
   position: fixed;
   inset: 0;
-  z-index: 1;
   pointer-events: none;
   background: var(--metal-eight);
   opacity: 1;
-  mix-blend-mode: screen;
 }
+body > .ambient-eight-light { z-index: 0; }
+body > .logo-rain-fallback, body > .background-layers { z-index: 1; }
+body > .parallax-logo, body > .main-logo-canvas { z-index: 2; }
+body > .site-shell { z-index: 3; }
+body > .front-eight-light { z-index: 2000; mix-blend-mode: screen; }
+
+/* v119: both moving sources reach the banner; ornament masks remain intact. */
+.topbar, .wallpaper-end, .site-nav {
+  --banner-rear-light: radial-gradient(circle var(--banner-rear-radius, 1px) at var(--banner-rear-x, -10000px) var(--banner-rear-y, -10000px),
+    #fff 0%, #fffefc 12%, rgba(255,253,248,.94) 26%,
+    rgba(246,242,233,.65) 48%, rgba(250,248,243,.22) 72%, rgba(250,248,243,0) 100%);
+  --gold-surface: var(--banner-rear-light), var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+}
+/* Pointer feedback without a rectangular flash; keyboard focus stays visible. */
+.site-nav a { -webkit-tap-highlight-color: transparent; }
+.site-nav a:focus { outline: none; box-shadow: none; }
+.site-nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }

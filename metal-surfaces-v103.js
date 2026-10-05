@@ -4,6 +4,9 @@
   const root = document.documentElement;
   const logo = document.querySelector('.hero-wallpaper-logo');
   const ambient = document.querySelector('.ambient-eight-light');
+  const front = document.querySelector('.front-eight-light');
+  const protectedNodes = [...document.querySelectorAll('.gold-text-light, .banner-text-glyphs, .partner-slot img')].filter(node => !node.closest('.topbar'));
+  let textBoxes = [];
   const movingGradient = logo?.querySelector('#figure-eight-light');
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
@@ -17,16 +20,18 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let lightVisible = false, lastPaint = -Infinity;
-  const slow = 0, fast = 88;
-  const duration = 18;
-  const average = (slow + fast) / 2, amplitude = (fast - slow) / 2;
-  // The speed curve integrates to exactly 792 complete eights per 18-second loop.
-  // Peak speed is 88 eights per SECOND; drawing remains display-rate limited.
-  // Its value and derivative agree at both ends, avoiding a positional jump.
+  const fast = 18, slow = fast / 8;
+  const duration = 48;
+  const delta = fast - slow;
+  // One symmetric parabola: 2.25 -> 18 -> 2.25 eights per second.
+  // Its analytic integral is 612 full eights in 48 seconds (seamless loop).
+  function figureSpeed(seconds) {
+    const u = 2 * (seconds % duration) / duration - 1;
+    return fast - delta * u * u;
+  }
   function figurePosition(seconds) {
     const t = seconds % duration;
-    const angle = 2 * Math.PI * t / duration;
-    const cycles = average * t - amplitude * duration / (2 * Math.PI) * Math.sin(angle);
+    const cycles = slow * t + delta * (2 * t * t / duration - 4 * t * t * t / (3 * duration * duration));
     const phase = -.813 + cycles * 2 * Math.PI;
     return {x: 521 + 130 * Math.sin(2 * phase), y: 684 + 438 * Math.sin(phase)};
   }
@@ -66,25 +71,55 @@
   function drawFigure() {
     if (!(logoBox?.scale > 0)) return;
     const point = figurePosition(elapsed);
+    // Gaussian shutter response reduces undersampled high-speed oscillation.
+    // Timing/phase stay at 18 Hz; the fast reflection develops motion blur
+    // instead of jumping sharply between unrelated display-frame positions.
+    const frequency = figureSpeed(elapsed);
+    const shutter = .018;
+    point.x = 521 + (point.x - 521) * Math.exp(-.5 * (4 * Math.PI * frequency * shutter) ** 2);
+    point.y = 684 + (point.y - 684) * Math.exp(-.5 * (2 * Math.PI * frequency * shutter) ** 2);
     // One field in viewport pixels, initially registered to the start logo.
     // Keep it on the display as content scrolls through its circle.
     const x = logoBox.left + point.x * logoBox.scale;
     const y = logoBox.top + point.y * logoBox.scale;
     const radius = 920 * logoBox.scale;
-    if (ambient) {
-      property(ambient, '--eight-x', `${x.toFixed(3)}px`);
-      property(ambient, '--eight-y', `${y.toFixed(3)}px`);
-      property(ambient, '--eight-radius', `${radius.toFixed(3)}px`);
+    const axis = engine.logoFrame;
+    const angle = axis?.rotation || 0;
+    const cx = axis?.x ?? width / 2, cy = axis?.y ?? height / 2;
+    const dx = x - cx, dy = y - cy;
+    const rearX = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
+    const rearY = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
+    for (const [plane, px, py] of [[ambient, rearX, rearY], [front, x, y]]) {
+      if (!plane) continue;
+      property(plane, '--eight-x', `${px.toFixed(3)}px`);
+      property(plane, '--eight-y', `${py.toFixed(3)}px`);
+      property(plane, '--eight-radius', `${radius.toFixed(3)}px`);
     }
+    // The rear source also reaches the masked banner ornaments and edges.
+    // Cached layout coordinates keep this projection aligned without tick reads.
     for (const item of surfaces) {
+      if (!item.banner) continue;
       const top = item.top - (item.fixed ? 0 : scroll);
       if (top > height || top + item.height < 0) continue;
-      property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
-      property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
-      property(item.node, '--eight-radius', `${radius.toFixed(3)}px`);
+      property(item.node, '--banner-rear-x', `${(rearX - item.left).toFixed(3)}px`);
+      property(item.node, '--banner-rear-y', `${(rearY - top).toFixed(3)}px`);
+      property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
     }
     // SVG gets the exact same display field, translated back to logo units.
     attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${(point.y + scroll / logoBox.scale).toFixed(3)}) scale(920)`);
+  }
+  function updateFrontMask() {
+    if (!front) return;
+    // Layout is cached once. Only actual scroll/resize updates these exclusions;
+    // the light animation itself never measures or moves text.
+    const holes = textBoxes.map(box => {
+      const y = box.top - (box.fixed ? 0 : scroll);
+      if (y > height || y + box.height < 0) return '';
+      return `<rect x="${box.left.toFixed(2)}" y="${y.toFixed(2)}" width="${box.width.toFixed(2)}" height="${box.height.toFixed(2)}" fill="black"/>`;
+    }).join('');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><mask id="text-cut" style="mask-type:luminance"><rect width="100%" height="100%" fill="white"/>${holes}</mask></defs><rect width="100%" height="100%" fill="white" mask="url(#text-cut)"/></svg>`;
+    const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    property(front, 'mask-image', mask); property(front, '-webkit-mask-image', mask);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {
@@ -99,8 +134,14 @@
     surfaces = nodes.map(node => {
       const box = node.getBoundingClientRect();
       const fixed = node.matches('.topbar, .site-nav') || !!node.closest('.topbar, .site-nav');
-      return {node, fixed, left: box.left, top: box.top + (fixed ? 0 : scroll), height: box.height};
+      return {node, fixed, banner: node.matches('.topbar, .wallpaper-end, .site-nav'), left: box.left, top: box.top + (fixed ? 0 : scroll), height: box.height};
     });
+    textBoxes = protectedNodes.map(node => {
+      const box = node.getBoundingClientRect();
+      const fixed = node.matches('.wordmark, .menu-toggle') || !!node.closest('.topbar, .site-nav');
+      return {left: box.left - 1, top: box.top + (fixed ? 0 : scroll) - 1,
+        width: box.width + 2, height: box.height + 2, fixed};
+    }).filter(box => box.width > 2 && box.height > 2);
     const box = logo.getBoundingClientRect();
     const scale = Math.min(box.width / 922, box.height / 1368);
     logoBox = {scale, left: box.left + (box.width - 922 * scale) / 2,
@@ -120,7 +161,7 @@
       const top = item.top - (item.fixed ? 0 : scroll);
       return top < height && top + item.height > 0;
     });
-    drawOpening(); drawFigure(); syncAnimation();
+    drawOpening(); updateFrontMask(); drawFigure(); syncAnimation();
   }});
   function tick(time) {
     raf = 0;

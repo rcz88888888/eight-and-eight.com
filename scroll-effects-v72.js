@@ -179,6 +179,12 @@
     const startX = openingCenter?.x ?? cx;
     const startY = openingCenter?.y ?? cy;
     const openingTravel = .5 * Math.min(height, mainBox.height);
+    window.EightEightEffects.logoFrame = {
+      rotation,
+      x: cx + (startX - cx) * openingBlend,
+      y: cy + travel * (layers[0]?.speed ?? 1) +
+        (startY - cy - openingTravel * (layers[0]?.speed ?? 1)) * openingBlend
+    };
     for (const layer of layers) {
       ink.save();
       ink.translate(cx + (startX - cx) * openingBlend,
