@@ -1,4 +1,4 @@
-# Eight&Eight – Version 114
+# Eight&Eight – Version 115
 
 ## Website hochladen
 
@@ -493,3 +493,26 @@ Die Bewegung wird zeitabhängig berechnet. Die Zeichenrate bleibt auf höchstens
 können auf Displays mit geringerer Bildrate nicht vollständig sichtbar werden.
 Größe, Lichtstärke, Maskierung und alle sonstigen Funktionen bleiben erhalten.
 Die Spitzenfrequenz und der nahtlose Anschluss wurden lokal überprüft.
+
+## Achtfach vergrößerter Lichtkreis in Version 115
+
+Der wandernde Kreis hat nun einen Radius von 920 statt 115 SVG-Einheiten.
+Der helle Kern und sämtliche Abstände des kreisförmigen Helligkeitsabfalls
+werden gleichmäßig um den Faktor acht vergrößert. Farbe, volle Sichtbarkeit
+und Achterbahn bleiben erhalten.
+
+Die wandernde Lichtfüllung verwendet nur die äußere Logoform als Maske.
+Dadurch werden auch die zuvor transparenten Zwischenräume innerhalb der
+Tapetenornamente mit wanderndem Licht gefüllt. Der Bereich außerhalb der
+Logoform bleibt transparent; die Tapete und übrigen Lichtmasken bleiben erhalten.
+
+Eine vollständige Beschleunigungs-/Bremssequenz dauert exakt 18 Sekunden:
+weich aus dem Stillstand bis maximal 88 vollständige Achten pro Sekunde nach
+9 Sekunden, dann weich zurück. Die integrierte Bewegung enthält exakt 792
+Achten, sodass die Schleife ohne Positionssprung wieder beginnt. Die Bildrate
+begrenzt weiterhin die sichtbare Darstellung. Die Animation pausiert bei
+unsichtbarem Logo, ausgeblendeter Seite oder reduzierter Bewegung.
+
+Lokale Prüfungen kontrollieren achtfachen Kreisradius und Profilabstände,
+18-Sekunden-Schleife, maximale Frequenz, erhaltene Außenmaske und Lichtfüllung
+in den Ornamentzwischenräumen. Kein direkter iPhone-Safari-Test war möglich.

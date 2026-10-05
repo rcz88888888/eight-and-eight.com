@@ -16,10 +16,10 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let logoVisible = false, lastPaint = -Infinity;
-  const slow = 2 / 60, fast = 88;
-  const duration = 2 * 3873 / (slow + fast);
+  const slow = 0, fast = 88;
+  const duration = 18;
   const average = (slow + fast) / 2, amplitude = (fast - slow) / 2;
-  // The speed curve integrates to exactly 3873 complete eights per loop.
+  // The speed curve integrates to exactly 792 complete eights per 18-second loop.
   // Peak speed is 88 eights per SECOND; drawing remains display-rate limited.
   // Its value and derivative agree at both ends, avoiding a positional jump.
   function figurePosition(seconds) {
@@ -65,7 +65,7 @@
   function drawFigure() {
     const point = figurePosition(elapsed);
     // Only this small SVG field moves automatically; no viewport-wide lighting writes.
-    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${point.y.toFixed(3)}) scale(115)`);
+    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${point.y.toFixed(3)}) scale(920)`);
   }
   const canAnimate = () => logoVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {
