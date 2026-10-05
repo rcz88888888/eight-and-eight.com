@@ -5,8 +5,6 @@
   const logo = document.querySelector('.hero-wallpaper-logo');
   const ambient = document.querySelector('.ambient-eight-light');
   const front = document.querySelector('.front-eight-light');
-  const protectedNodes = [...document.querySelectorAll('.gold-text-light, .banner-text-glyphs, .partner-slot img')].filter(node => !node.closest('.topbar'));
-  let textBoxes = [];
   const movingGradient = logo?.querySelector('#figure-eight-light');
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
@@ -20,20 +18,27 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let lightVisible = false, lastPaint = -Infinity;
-  const fast = 18, slow = fast / 8;
-  const duration = 48;
-  const delta = fast - slow;
-  // One symmetric parabola: 2.25 -> 18 -> 2.25 eights per second.
-  // Its analytic integral is 612 full eights in 48 seconds (seamless loop).
+  const duration = 48, fast = 8;
+  // Smooth narrow peak: 88% of the loop stays below 28% of the maximum.
+  // Blend two even sine powers to integrate to exactly 36 full eights.
+  const mean70 = Array.from({length: 35}, (_, i) => (2*i+1)/(2*i+2)).reduce((a,b)=>a*b,1);
+  const mean72 = mean70 * 71 / 72;
+  const blend = (36 / (fast * duration) - mean72) / (mean70 - mean72);
   function figureSpeed(seconds) {
-    const u = 2 * (seconds % duration) / duration - 1;
-    return fast - delta * u * u;
+    const wave = Math.sin(Math.PI * (seconds % duration) / duration);
+    return fast * (blend * wave ** 70 + (1-blend) * wave ** 72);
   }
   function figurePosition(seconds) {
-    const t = seconds % duration;
-    const cycles = slow * t + delta * (2 * t * t / duration - 4 * t * t * t / (3 * duration * duration));
+    const x = Math.PI * (seconds % duration) / duration;
+    const wave = Math.sin(x), cosine = Math.cos(x);
+    let integral = x, integral70;
+    for (let n=2; n<=72; n+=2) {
+      integral = -(wave ** (n-1)) * cosine / n + (n-1) / n * integral;
+      if (n === 70) integral70 = integral;
+    }
+    const cycles = fast * duration / Math.PI * (blend * integral70 + (1-blend) * integral);
     const phase = -.813 + cycles * 2 * Math.PI;
-    return {x: 521 + 130 * Math.sin(2 * phase), y: 684 + 438 * Math.sin(phase)};
+    return {x: 521 + 130 * Math.sin(2 * phase), y: 684 + 438 * Math.sin(phase), rotation: cycles * 2 * Math.PI};
   }
   // Unchanged opening geometry must not invalidate every masked SVG each tick.
   const values = new WeakMap();
@@ -84,7 +89,7 @@
     const y = logoBox.top + point.y * logoBox.scale;
     const radius = 920 * logoBox.scale;
     const axis = engine.logoFrame;
-    const angle = axis?.rotation || 0;
+    const angle = (axis?.rotation || 0) + point.rotation;
     const cx = axis?.x ?? width / 2, cy = axis?.y ?? height / 2;
     const dx = x - cx, dy = y - cy;
     const rearX = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
@@ -95,31 +100,21 @@
       property(plane, '--eight-y', `${py.toFixed(3)}px`);
       property(plane, '--eight-radius', `${radius.toFixed(3)}px`);
     }
-    // The rear source also reaches the masked banner ornaments and edges.
-    // Cached layout coordinates keep this projection aligned without tick reads.
+    // Project both moving sources inside the existing ornament/edge masks.
+    // Foreground text needs no rectangular cutouts: it is above the light plane.
     for (const item of surfaces) {
-      if (!item.banner) continue;
       const top = item.top - (item.fixed ? 0 : scroll);
       if (top > height || top + item.height < 0) continue;
+      property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
+      property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
+      property(item.node, '--eight-radius', `${radius.toFixed(3)}px`);
+      if (!item.banner) continue;
       property(item.node, '--banner-rear-x', `${(rearX - item.left).toFixed(3)}px`);
       property(item.node, '--banner-rear-y', `${(rearY - top).toFixed(3)}px`);
       property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
     }
     // SVG gets the exact same display field, translated back to logo units.
     attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${(point.y + scroll / logoBox.scale).toFixed(3)}) scale(920)`);
-  }
-  function updateFrontMask() {
-    if (!front) return;
-    // Layout is cached once. Only actual scroll/resize updates these exclusions;
-    // the light animation itself never measures or moves text.
-    const holes = textBoxes.map(box => {
-      const y = box.top - (box.fixed ? 0 : scroll);
-      if (y > height || y + box.height < 0) return '';
-      return `<rect x="${box.left.toFixed(2)}" y="${y.toFixed(2)}" width="${box.width.toFixed(2)}" height="${box.height.toFixed(2)}" fill="black"/>`;
-    }).join('');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><mask id="text-cut" style="mask-type:luminance"><rect width="100%" height="100%" fill="white"/>${holes}</mask></defs><rect width="100%" height="100%" fill="white" mask="url(#text-cut)"/></svg>`;
-    const mask = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-    property(front, 'mask-image', mask); property(front, '-webkit-mask-image', mask);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {
@@ -136,12 +131,6 @@
       const fixed = node.matches('.topbar, .site-nav') || !!node.closest('.topbar, .site-nav');
       return {node, fixed, banner: node.matches('.topbar, .wallpaper-end, .site-nav'), left: box.left, top: box.top + (fixed ? 0 : scroll), height: box.height};
     });
-    textBoxes = protectedNodes.map(node => {
-      const box = node.getBoundingClientRect();
-      const fixed = node.matches('.wordmark, .menu-toggle') || !!node.closest('.topbar, .site-nav');
-      return {left: box.left - 1, top: box.top + (fixed ? 0 : scroll) - 1,
-        width: box.width + 2, height: box.height + 2, fixed};
-    }).filter(box => box.width > 2 && box.height > 2);
     const box = logo.getBoundingClientRect();
     const scale = Math.min(box.width / 922, box.height / 1368);
     logoBox = {scale, left: box.left + (box.width - 922 * scale) / 2,
@@ -161,7 +150,7 @@
       const top = item.top - (item.fixed ? 0 : scroll);
       return top < height && top + item.height > 0;
     });
-    drawOpening(); updateFrontMask(); drawFigure(); syncAnimation();
+    drawOpening(); drawFigure(); syncAnimation();
   }});
   function tick(time) {
     raf = 0;

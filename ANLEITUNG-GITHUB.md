@@ -603,3 +603,21 @@ geschützt. Keine Füllung der transparenten Zwischenräume des Startlogos.
 Die rechteckige Antipp-Hervorhebung der Menülinks entfällt. Tastaturfokus
 bleibt durch Unterstreichung erkennbar. Lokale Quell- und Animationstests;
 kein direkter iPhone-Test.
+
+## Kontinuierliche Lichtflächen in Version 120
+
+Die rechteckigen Text-/Bild-Aussparungen wurden vollständig entfernt. Die
+Vordergrundreflexion liegt über den Hintergrund- und Hauptlogos, unter der
+Inhaltsebene. Text und Partnerbilder bleiben unbeleuchtet, ohne dunkle Kästen
+in ihrem Hintergrund. Goldränder und Tapeten erhalten dieselbe Reflexion in
+ihren bestehenden Formmasken. Das transparente Startlogo erhält nur auf
+Ornamenten und Konturen Licht. Beide Quellen erreichen die Banner.
+
+48 Sekunden, Start/Ende im Stillstand, Spitze 8 Achten und Lichtrotationen
+pro Sekunde. Eine glatte Kurve aus Sinuspotenzen hält die Geschwindigkeit
+während mindestens 88 Prozent der Zeit unter 28 Prozent des Maximums.
+Exakt 36 Durchläufe schließen die Schleife ohne Sprung. Die hintere Quelle
+verwendet zusätzlich die Scrollachse der Hauptlogos. Native Scrollbewegung
+und Logozeichenengine bleiben erhalten. Keine Layoutmessungen pro Lichtbild.
+
+Lokale Timing-, Masken- und Scrollprüfungen; kein direkter iPhone-Test.
