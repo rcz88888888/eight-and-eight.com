@@ -687,3 +687,17 @@ Innenbereich und weichem Außenabfall. SVG und CSS verwenden das gleiche Profil.
 Die transparenzmaskierten Ornamente bleiben transparent. Das bestehende
 Achter-Hinterlicht läuft weiterhin mit 16 Sekunden pro Runde, vierfachem
 Durchmesser und der Scrollachse der Hauptlogos. Texte bleiben unbeleuchtet.
+
+## Gelb markierte Fläche statt Konturbeleuchtung in Version 126
+
+Die direkte Aufhellung der goldenen Linien und Ornamentfüllungen ist entfernt.
+Linien und Tapeten behalten ihre Grundfarbe. Das weiche Standlicht liegt nun
+als flächige Reflexion über dem Startlogo und den Hintergrundflächen, unter
+Text und Partnerbildern. Auch transparente Lücken und Bereiche außerhalb
+der Logoform erhalten Licht. Im oberen Banner ergänzt eine entsprechende
+Flächenebene das Licht über dem gesamten Hintergrund statt nur im Muster.
+
+Eine breite weich auslaufende Flächenmaske orientiert sich an der gelben
+Markierung des Screenshots; die rote Linie ist keine Begrenzung. Es gibt keine
+rechteckigen Textaussparungen. Die 88-Prozent-Quelle bleibt beim Scrollen
+aktiv; Achter-Hinterlicht und Logo-Rotationsbindung bleiben unverändert.
