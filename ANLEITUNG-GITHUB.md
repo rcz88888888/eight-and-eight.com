@@ -1,4 +1,4 @@
-# Eight&Eight – Version 110
+# Eight&Eight – Version 111
 
 ## Website hochladen
 
@@ -409,3 +409,24 @@ Die Scrollglättung aus Version 108 und die Imagination-Textänderung aus
 Version 109 bleiben enthalten. Lokale Prüfungen kontrollieren den Geräte- und
 Orientierungswechsel, die gemeinsame Lichtprojektion und die Maskenstruktur.
 Ein direkter iPhone-Safari-Test war in dieser Umgebung nicht möglich.
+
+## Mittelreflexion und 100% Licht in Version 111
+
+Die schwarz markierten oberen und unteren Ecken erhalten am Start weniger
+Kreislicht. Der Radius beträgt nun 115% der ursprünglichen Referenzspanne,
+statt 165%. Eine zusätzliche schmale, hohe Reflexion betont die rot markierte
+Mittelzone vom Banner bis unter die erste Überschrift. Ihre Kanten laufen
+weich aus. Beide Startlichtfelder verwenden dieselben Seitenkoordinaten für
+Tapetenornamente und Konturen; ausschließlich diese Goldflächen werden beleuchtet.
+
+Die Quellen haben 100% Sichtbarkeit: Das Zufallslicht variiert weiterhin Ort,
+Ausdehnung und Geschwindigkeit, aber nicht mehr seine maximale Deckkraft.
+Das Startlicht erreicht am Seitenanfang volle Stärke und blendet wie bisher
+beim Verlassen des Startpunkts aus. Der räumliche Helligkeitsabfall bleibt
+für natürliche Reflexionen erhalten. Text und Unternehmenslogos erhalten
+keine Lichtüberlagerung. Die deckende Telefon-Querformatvariante gilt auch
+für die neue Mittelreflexion; Desktop und Telefon-Hochformat behalten Tapete.
+
+Lokale Prüfungen kontrollieren die gemeinsame CSS/SVG-Geometrie und Profile,
+100% Quellendeckkraft, stärkere Mittelreflexion, geringeres Startlicht an den
+Ecken und erhaltene Maskierung. Kein direkter iPhone-Safari-Test war möglich.
