@@ -1,4 +1,4 @@
-# Eight&Eight – Version 104
+# Eight&Eight – Version 105
 
 ## Website hochladen
 
@@ -329,7 +329,7 @@ jetzt direkt mit `display: none` ausgeblendet. Die ältere Regel
 bleibt die Berechnung der acht bewegten Hauptlogos unverändert. Ohne aktive
 Canvas-Darstellung stehen die Ersatzlogos weiterhin zur Verfügung.
 
-## Goldmaterial und markierte Lichtfelder in Version 104
+## Goldmaterial und markierte Lichtfelder in Version 105
 
 Das Goldmaterial verwendet die unveränderte Basisfarbe #d7c193. Statt nur
 heller Farbverläufe berechnet WebGL gerichtete Glanzreflexionen mit einem
@@ -337,9 +337,10 @@ GGX-Materialmodell, feiner Rauheit und reliefartigen Ornamentkanten. Eine
 leichte Wölbung der Startlogooberfläche erzeugt breitere Reflexionszonen.
 Außerhalb beider Lichtfelder bleibt die ursprüngliche Goldfarbe erhalten.
 
-Das Startlogo hat eine 58% deckende, goldene Materialfläche unter den
-Ornamenten. Sie lässt Hintergrunddetails durchscheinen. Der Bereich außerhalb
-der Logoform und ihre Aussparungen bleiben transparent; Form, ovale Punkte
+Die in Version 104 hinzugefügte Goldfüllung unter den Ornamenten ist entfernt,
+sowohl im Materialrenderer als auch in der SVG-Ersatzdarstellung. Nur die
+Tapetenmuster und Konturen werden gezeichnet; Zwischenräume, Aussparungen
+und der Bereich außerhalb der Logoform sind transparent. Form, ovale Punkte
 und deren ursprüngliche Drehungen bleiben erhalten. Das Logo scrollt normal.
 
 Das Startlicht reicht entlang einer weichen ovalen Hülle vom oberen Banner
@@ -373,3 +374,17 @@ Software-Grafikrenderer, ursprüngliche Goldfarbe ohne Licht, erhaltene
 Transparenz, Lampenbewegung, Lichtgrenze, Bannerempfänger, Cache-Nutzung,
 Scrollmaske, native Navigation, Logoausrichtung sowie Ressourcen und ZIP.
 Ein vollständiger Browser- und iPhone-Safari-Test war hier nicht möglich.
+
+## Korrektur der weißen Ränder in Version 105
+
+Die metallischen Glanzspitzen behalten jetzt ihre Goldfärbung. Logo-, Banner-
+und Feldkonturen werden getrennt von den Mustern behandelt und ihre
+Reflexionsenergie ist reduziert. Helle Konturen nähern sich maximal
+#ecd7a8; Musterreflexionen bleiben unter #f6e6bb. Unbeleuchtete Oberflächen
+behalten #d7c193. Auch die vereinfachten CSS-/SVG-Reflexe verwenden warme
+Goldfarben. Die ursprünglichen Liniendicken und beide Lichtquellen bleiben.
+
+Geprüft mit dem Produktionsshader: Musterzwischenräume sind wieder exakt
+transparent, Beleuchtung verändert den Alphakanal nicht, Glanzfarben
+überschreiten die Goldgrenzen nicht und die Basisfarbe bleibt erhalten.
+Scrollmaske, Layout und Navigation sind ebenfalls lokal geprüft.

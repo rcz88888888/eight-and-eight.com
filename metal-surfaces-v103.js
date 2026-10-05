@@ -131,7 +131,8 @@ void main(){
  float ellipse=length((p-openingField.xy)/openingField.zw);
  float start=opening*(1.-smoothstep(.70,1.0,ellipse));
  // The entire opening logo receives light, while its reflection still has shape.
- start=max(start,opening*mask.g*.56);
+ float inLogo=step(logoBox.x,p.x)*step(logoBox.y,p.y)*step(p.x,logoBox.x+logoBox.z)*step(p.y,logoBox.y+logoBox.w);
+ start=max(start,opening*max(mask.g,mask.r*inLogo)*.56);
  vec2 delta=p-light.xy;
  float ca=cos(lightAngle),sa=sin(lightAngle);
  vec2 rotated=vec2(ca*delta.x+sa*delta.y,-sa*delta.x+ca*delta.y);
@@ -155,10 +156,13 @@ void main(){
  float fine=exp(-pow((reflected-.994)/.0045,2.));
  vec3 ambient=base*(.59+.30*max(dot(normal,l0),0.));
  ambient+=base*windowLight*.48+vec3(.22,.20,.15)*fine*.65;
- vec3 lit=mix(base,ambient,strength)+spec*1.8;
- // Soft shoulder avoids clipping white; unlit material remains the exact base gold.
+ // Contours retain a warm gold highlight instead of an overexposed white rim.
+ float contour=smoothstep(.05,.95,mask.r);
+ vec3 lit=mix(base,ambient,strength)+spec*mix(1.8,.85,contour);
+ vec3 ceiling=toLinear(mix(vec3(246.,230.,187.),vec3(236.,215.,168.),contour)/255.);
+ vec3 room=max(ceiling-base,vec3(.001));
  vec3 excess=max(lit-base,vec3(0.));
- vec3 result=min(lit,base)+excess/(vec3(1.)+excess*.80);
+ vec3 result=min(lit,base)+room*excess/(room+excess);
  gl_FragColor=vec4(toSRGB(result),mask.a);
 }
 `;
@@ -220,12 +224,12 @@ void main(){
     if(!greenTile || !logoBox?.scale) return;
     hero.width=Math.max(1,Math.ceil(logoBox.width*ratio));hero.height=Math.max(1,Math.ceil(logoBox.height*ratio));
     const scale=logoBox.scale;heroCtx.setTransform(ratio*scale,0,0,ratio*scale,0,0);
-    heroCtx.fillStyle='rgba(0,255,0,.58)';heroCtx.fill(shape,'evenodd');
+    // Only ornament pixels and contours receive material; the intervening paper is transparent.
     heroCtx.save();heroCtx.clip(shape,'evenodd');
     const pattern=logo.querySelector('#hero-paper-pattern');const tile=+pattern.getAttribute('width');
     heroCtx.fillStyle=tilePattern(heroCtx,greenTile,tile,+pattern.getAttribute('x'),0);
     heroCtx.fillRect(0,0,922,1368);
-    heroCtx.restore();heroCtx.strokeStyle='#00ff00';
+    heroCtx.restore();heroCtx.strokeStyle='#ff0000';
     heroCtx.lineWidth=logoBox.border/scale;heroCtx.lineJoin='round';heroCtx.stroke(shape);
   }
   function rounded(path,x,y,w,h,radii) {
