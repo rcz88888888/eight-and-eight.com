@@ -358,7 +358,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(246,242,233,0.572) 48%,
     rgba(250,248,243,0.1936) 72%,
     rgba(250,248,243,0.0) 100%);
-  --gold-surface: linear-gradient(#d7c193,#d7c193);
+  --gold-surface: var(--soft-light), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
@@ -389,7 +389,7 @@ body > .site-shell { z-index: 3; }
 
 /* v119: both moving sources reach the banner; ornament masks remain intact. */
 .topbar, .wallpaper-end, .site-nav {
-  --gold-surface: linear-gradient(#d7c193,#d7c193);
+  --gold-surface: var(--soft-light), linear-gradient(#d7c193,#d7c193);
 }
 /* Pointer feedback without a rectangular flash; keyboard focus stays visible. */
 .site-nav a { -webkit-tap-highlight-color: transparent; }
@@ -405,20 +405,5 @@ body > .ambient-eight-light { z-index: 0; }
 /* v125: diffuse illumination only; no metallic streak or specular core. */
 :root { --opening-light-opacity: .88; }
 .hero-central-light, .hero-specular-light { display: none !important; }
-.content-scroll > .steady-soft-light { position: fixed; inset: 0; z-index: 0;
+body > .steady-soft-light { position: fixed; inset: 0; z-index: 0;
   pointer-events: none; background: var(--soft-light); }
-
-/* v126: illuminate the marked area, including gaps, instead of recoloring edges. */
-.hero-opening-light { display: none !important; }
-.content-scroll > .steady-soft-light, .topbar > .banner-area-light {
-  pointer-events: none;
-  background: var(--soft-light);
-  mix-blend-mode: screen;
-  --area-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22soft%22%3E%3CfeGaussianBlur%20stdDeviation%3D%222%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22white%22%20filter%3D%22url%28%23soft%29%22%20d%3D%22M%20-8%2014%20Q%2018%208%2047%20-2%20Q%2072%20-8%20108%2014%20L%20108%2057%20Q%20105%2077%2068%20100%20Q%2052%2089%2034%2068%20Q%2016%2053%20-8%2045%20Z%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: var(--area-mask); -webkit-mask-image: var(--area-mask);
-  mask-size: 100vw 100vh; -webkit-mask-size: 100vw 100vh;
-  mask-position: 0 0; -webkit-mask-position: 0 0;
-  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
-}
-.topbar > .banner-area-light { position: absolute; inset: 0; z-index: 1; }
-.topbar > .wordmark, .topbar > .menu-toggle { position: relative; z-index: 2; }
