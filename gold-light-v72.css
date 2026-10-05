@@ -344,14 +344,8 @@ body { height: auto; min-height: 100%; overflow: visible; }
 .service-grid article::before, .partner-slot::before { content: none !important; }
 
 /* v103: two projected lights, painted ONLY inside existing surface masks. */
-:root { --opening-light-opacity: 1; --random-metal-opacity: 1; }
+:root { --opening-light-opacity: 1; }
 .gold-light-target, .topbar, .wallpaper-end {
-  --metal-random: radial-gradient(ellipse var(--metal-rx, 280px) var(--metal-ry, 440px) at var(--metal-x, -1000px) var(--metal-y, -1000px),
-    rgba(255,253,243,calc(.98 * var(--random-metal-opacity))) 0%,
-    rgba(255,246,218,calc(.9 * var(--random-metal-opacity))) 10%,
-    rgba(242,216,157,calc(.55 * var(--random-metal-opacity))) 24%,
-    rgba(150,115,64,calc(.22 * var(--random-metal-opacity))) 48%,
-    rgba(237,207,145,calc(.14 * var(--random-metal-opacity))) 70%, transparent 100%);
   --metal-opening: radial-gradient(circle var(--opening-radius, 660px) at var(--opening-x, 50%) var(--opening-y, 360px),
     rgba(255,243,203,calc(1 * var(--opening-light-opacity))) 0%,
     rgba(255,243,203,calc(0.993 * var(--opening-light-opacity))) 10%,
@@ -381,13 +375,13 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(247,230,185,calc(0.72 * var(--opening-light-opacity))) 55%,
     rgba(255,242,206,calc(0.2 * var(--opening-light-opacity))) 80%,
     rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
-  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
 .topbar::before, .topbar .gold-header-edge { background: var(--gold-surface); }
 .hero-opening-light, .hero-central-light, .hero-specular-light { opacity: var(--opening-light-opacity); pointer-events: none; }
-.hero-random-metal-light { opacity: var(--random-metal-opacity); pointer-events: none; }
+.hero-eight-light { opacity: 1; pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }

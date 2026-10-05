@@ -1,4 +1,4 @@
-# Eight&Eight – Version 112
+# Eight&Eight – Version 114
 
 ## Website hochladen
 
@@ -454,3 +454,42 @@ Metatags wurden entfernt; Dateiversionen aktualisieren die Ressourcen weiter.
 Lokale Prüfungen kontrollieren einmaligen Start oben, Abbruch durch Benutzung,
 fehlende periodische Navigation, abgestimmte Lichtprojektion und unveränderte
 Scroll-/Inhaltsstruktur. Kein direkter iPhone-Safari-Test war möglich.
+
+## Wandernder Lichtkreis in Version 113
+
+Das bisherige zeitgesteuerte Zufallslicht wurde vollständig entfernt. Das
+bestehende positionsabhängige Startlicht verändert sich weiterhin nur durch
+Scrollen oder Layoutänderungen. Der einzige neue automatische Effekt ist ein
+kräftiger weißgoldener Lichtkreis, der über das Startlogo in einer stehenden
+Acht wandert. Sein Durchmesser von 230 SVG-Einheiten entspricht ungefähr der
+roten Markierung über dem oberen runden Logobereich. Es ist ein echter Kreis
+mit hellem Kern und weichem goldenen Rand, nur auf Ornamenten und Konturen.
+
+Die nicht näher bezifferte Zeiteinheit für „88 Durchläufe“ ist als 88 vollständige
+Achten pro Minute umgesetzt. Die Geschwindigkeit beginnt bei 2 pro Minute,
+steigt 44 Sekunden lang weich auf 88 pro Minute und fällt dann 44 Sekunden
+lang auf den Ausgangswert. Ein 88-Sekunden-Zyklus enthält exakt 66 vollständige
+Achten, sodass die Schleife ohne Positionssprung anschließt. Sichtbarkeit: 100%.
+
+Nur die Transformation des kleinen Lichtfeldes im Start-SVG wird animiert.
+Außerhalb des sichtbaren Startlogos und bei ausgeblendeter Seite pausiert der
+Zeitverlauf. Bei reduzierter Bewegung bleibt der Lichtkreis statisch. Scrollen,
+Bannerposition, Texte und Unternehmenslogos werden nicht durch den neuen
+Zeitverlauf geändert. Die deckende Telefon-Querformatvariante bleibt erhalten.
+
+Lokale Prüfungen kontrollieren Geschwindigkeitsmaximum und Schleifenanschluss,
+kreisförmige Projektion, Achterbahn, Pause/Weiterlauf, erhaltene Maskierung und
+fehlende alte Zufallsanimation. Kein direkter iPhone-Safari-Test war möglich.
+
+## Spitzengeschwindigkeit in Version 114
+
+Das Maximum beträgt nun 88 vollständige Achten pro Sekunde. Der langsame
+Start bei 2 Achten pro Minute und die weiche Beschleunigungs-/Bremskurve
+bleiben bestehen. Für einen nahtlosen Anschluss enthält die Schleife exakt
+3873 vollständige Achten; ihre Dauer liegt bei etwa 87,9894 Sekunden.
+
+Die Bewegung wird zeitabhängig berechnet. Die Zeichenrate bleibt auf höchstens
+60 Aktualisierungen pro Sekunde begrenzt; einzelne 88 Durchläufe pro Sekunde
+können auf Displays mit geringerer Bildrate nicht vollständig sichtbar werden.
+Größe, Lichtstärke, Maskierung und alle sonstigen Funktionen bleiben erhalten.
+Die Spitzenfrequenz und der nahtlose Anschluss wurden lokal überprüft.
