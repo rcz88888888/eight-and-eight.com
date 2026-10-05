@@ -719,3 +719,9 @@ aus 93471 goldenen Randpixeln des Sonnenbereichs im bereitgestellten Foto.
 Die RGB-Werte sind um 20 Prozent abgedunkelt, damit die Farbe sichtbar und
 nicht zu hell bleibt. Cremehintergrund und dunkle Textfarbe bleiben erhalten.
 Alle Farben sind statisch. Es gibt weiterhin keine Lichteffekte.
+
+## Gelberes Sonnengold in Version 129
+
+Der Goldton für Feldränder, Linien und Tapetenmuster ist auf #C8B77D angepasst.
+Weniger Blau verstärkt den gelben Sonnencharakter bei ähnlich gedämpfter
+Helligkeit. Statische Farben; Text, Transparenz und Scrollbewegung bleiben.

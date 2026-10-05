@@ -3,7 +3,7 @@
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
-  --wallpaper-sand-gold: #c2b594;
+  --wallpaper-sand-gold: #c8b77d;
 }
 /* v95: every gold surface is static; no reflection variables or beams. */
 .gold-light-target, .topbar, .wallpaper-end {
@@ -197,7 +197,7 @@ em.gold-text-light {
     bottom: 0;
     height: 1.5px;
     /* Match the closed banner's bottom border exactly. */
-    background: var(--metallic-gold, #c2b594) !important;
+    background: var(--metallic-gold, #c8b77d) !important;
     pointer-events: none;
   }
 }
@@ -353,4 +353,4 @@ body > .site-shell { z-index: 3; }
 .site-nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }
 
 /* v128: moderated sun gold sampled from the supplied photograph. */
-:root { --wallpaper-sand-gold: #c2b594; --metallic-gold: #c2b594; --line: #c2b594; }
+:root { --wallpaper-sand-gold: #c8b77d; --metallic-gold: #c8b77d; --line: #c8b77d; }
