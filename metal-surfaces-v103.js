@@ -6,8 +6,6 @@
   const ambient = document.querySelector('.ambient-eight-light');
   const front = document.querySelector('.front-eight-light');
   const movingGradient = logo?.querySelector('#figure-eight-light');
-  const secondGradient = logo?.querySelector('#figure-eight-light-2');
-  let routes = [];
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
   const specularGradient = logo?.querySelector('#specular-paper-light');
@@ -20,40 +18,27 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let lightVisible = false, lastPaint = -Infinity;
-  const duration = 28, slow = 1 / 8, fast = 1 / .8;
-  const average = (slow + fast) / 2, amplitude = (fast - slow) / 2;
-  function orbitSpeed(seconds) {
-    return average - amplitude * Math.cos(2 * Math.PI * seconds / duration);
+  const duration = 48, fast = 8;
+  // Smooth narrow peak: 88% of the loop stays below 28% of the maximum.
+  // Blend two even sine powers to integrate to exactly 36 full eights.
+  const mean70 = Array.from({length: 35}, (_, i) => (2*i+1)/(2*i+2)).reduce((a,b)=>a*b,1);
+  const mean72 = mean70 * 71 / 72;
+  const blend = (36 / (fast * duration) - mean72) / (mean70 - mean72);
+  function figureSpeed(seconds) {
+    const wave = Math.sin(Math.PI * (seconds % duration) / duration);
+    return fast * (blend * wave ** 70 + (1-blend) * wave ** 72);
   }
-  function orbitCycles(seconds) {
-    return average * seconds - amplitude * duration / (2*Math.PI) * Math.sin(2*Math.PI*seconds/duration);
-  }
-  function prepareRoutes() {
-    // Sample the two actual large bass-clef outlines only on layout passes.
-    const paths = [...logo.querySelectorAll('#hero-paper-shape path')]
-      .map(path => ({path, length:path.getTotalLength(), box:path.getBBox()}))
-      .sort((a,b)=>b.length-a.length).slice(0,2)
-      .sort((a,b)=>(a.box.y+a.box.height/2)-(b.box.y+b.box.height/2));
-    routes = paths.map(({path,length}) => {
-      const points = Array.from({length:512},(_,i)=>path.getPointAtLength(length*i/512));
-      const area=points.reduce((sum,a,i)=>{const b=points[(i+1)%512];return sum+a.x*b.y-b.x*a.y;},0);
-      if(area<0) points.reverse(); // Matching winding makes opposite phases counterrotate.
-      const closest = points.reduce((best,p,i)=>Math.hypot(p.x-461,p.y-684)<Math.hypot(points[best].x-461,points[best].y-684)?i:best,0);
-      return points.map((_,i)=>points[(i+closest)%512]);
-    });
-  }
-  function orbitPoints(seconds) {
-    const phase = ((orbitCycles(seconds)%1)+1)%1;
-    return routes.map((route,index)=> {
-      const q = index ? (1-phase)%1 : phase;
-      const cursor=q*route.length, i=Math.floor(cursor), blend=cursor-i;
-      const a=route[i], b=route[(i+1)%route.length];
-      const distance=Math.min(phase,1-phase);
-      const u=Math.min(1,distance/.06), join=u*u*(3-2*u);
-      // Both contour routes meet at exactly the same center once per round.
-      return {x:461+((a.x+(b.x-a.x)*blend)-461)*join,
-              y:684+((a.y+(b.y-a.y)*blend)-684)*join};
-    });
+  function figurePosition(seconds) {
+    const x = Math.PI * (seconds % duration) / duration;
+    const wave = Math.sin(x), cosine = Math.cos(x);
+    let integral = x, integral70;
+    for (let n=2; n<=72; n+=2) {
+      integral = -(wave ** (n-1)) * cosine / n + (n-1) / n * integral;
+      if (n === 70) integral70 = integral;
+    }
+    const cycles = fast * duration / Math.PI * (blend * integral70 + (1-blend) * integral);
+    const phase = -.813 + cycles * 2 * Math.PI;
+    return {x: 521 + 130 * Math.sin(2 * phase), y: 684 + 438 * Math.sin(phase), rotation: cycles * 2 * Math.PI};
   }
   // Unchanged opening geometry must not invalidate every masked SVG each tick.
   const values = new WeakMap();
@@ -66,7 +51,7 @@
   const property = (element, key, value) => cached(element, key, value, () => element.style.setProperty(key, value));
   const attribute = (element, key, value) => cached(element, key, value, () => element.setAttribute(key, value));
   function drawOpening() {
-    const opening = .88 * Math.max(0, 1 - Math.max(0, scroll) / 88);
+    const opening = Math.max(0, 1 - Math.max(0, scroll) / 88);
     property(root, '--opening-light-opacity', opening.toFixed(4));
     for (const item of surfaces) {
       const top = item.top - (item.fixed ? 0 : scroll);
@@ -89,38 +74,47 @@
     }
   }
   function drawFigure() {
-    if (!(logoBox?.scale > 0) || routes.length !== 2) return;
-    const points=orbitPoints(elapsed);
-    const radius=460*logoBox.scale; // Half of the former diameter/falloff.
-    const axis=engine.logoFrame, angle=axis?.rotation || 0;
-    const cx=axis?.x ?? width/2, cy=axis?.y ?? height/2;
-    points.forEach((point,index)=> {
-      const suffix=index ? '-2' : '';
-      const x=logoBox.left+point.x*logoBox.scale;
-      const y=logoBox.top+point.y*logoBox.scale;
-      const dx=x-cx, dy=y-cy;
-      const rearX=cx+dx*Math.cos(angle)-dy*Math.sin(angle);
-      const rearY=cy+dx*Math.sin(angle)+dy*Math.cos(angle);
-      for (const [plane,px,py] of [[ambient,rearX,rearY],[front,x,y]]) {
-        if (!plane) continue;
-        property(plane, '--eight-x'+suffix, `${px.toFixed(3)}px`);
-        property(plane, '--eight-y'+suffix, `${py.toFixed(3)}px`);
-        property(plane, '--eight-radius'+suffix, `${radius.toFixed(3)}px`);
-      }
-      for (const item of surfaces) {
-        const top=item.top-(item.fixed?0:scroll);
-        if(top>height || top+item.height<0) continue;
-        property(item.node,'--eight-x'+suffix,`${(x-item.left).toFixed(3)}px`);
-        property(item.node,'--eight-y'+suffix,`${(y-top).toFixed(3)}px`);
-        property(item.node,'--eight-radius'+suffix,`${radius.toFixed(3)}px`);
-        if (!item.banner) continue;
-        property(item.node,'--banner-rear-x'+suffix,`${(rearX-item.left).toFixed(3)}px`);
-        property(item.node,'--banner-rear-y'+suffix,`${(rearY-top).toFixed(3)}px`);
-        property(item.node,'--banner-rear-radius'+suffix,`${radius.toFixed(3)}px`);
-      }
-      const gradient=index?secondGradient:movingGradient;
-      if(gradient) attribute(gradient,'gradientTransform',`translate(${point.x.toFixed(3)} ${(point.y+scroll/logoBox.scale).toFixed(3)}) scale(460)`);
-    });
+    if (!(logoBox?.scale > 0)) return;
+    const point = figurePosition(elapsed);
+    // Gaussian shutter response reduces undersampled high-speed oscillation.
+    // Timing/phase stay at 18 Hz; the fast reflection develops motion blur
+    // instead of jumping sharply between unrelated display-frame positions.
+    const frequency = figureSpeed(elapsed);
+    const shutter = .018;
+    point.x = 521 + (point.x - 521) * Math.exp(-.5 * (4 * Math.PI * frequency * shutter) ** 2);
+    point.y = 684 + (point.y - 684) * Math.exp(-.5 * (2 * Math.PI * frequency * shutter) ** 2);
+    // One field in viewport pixels, initially registered to the start logo.
+    // Keep it on the display as content scrolls through its circle.
+    const x = logoBox.left + point.x * logoBox.scale;
+    const y = logoBox.top + point.y * logoBox.scale;
+    const radius = 920 * logoBox.scale;
+    const axis = engine.logoFrame;
+    const angle = (axis?.rotation || 0) + point.rotation;
+    const cx = axis?.x ?? width / 2, cy = axis?.y ?? height / 2;
+    const dx = x - cx, dy = y - cy;
+    const rearX = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
+    const rearY = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
+    for (const [plane, px, py] of [[ambient, rearX, rearY], [front, x, y]]) {
+      if (!plane) continue;
+      property(plane, '--eight-x', `${px.toFixed(3)}px`);
+      property(plane, '--eight-y', `${py.toFixed(3)}px`);
+      property(plane, '--eight-radius', `${radius.toFixed(3)}px`);
+    }
+    // Project both moving sources inside the existing ornament/edge masks.
+    // Foreground text needs no rectangular cutouts: it is above the light plane.
+    for (const item of surfaces) {
+      const top = item.top - (item.fixed ? 0 : scroll);
+      if (top > height || top + item.height < 0) continue;
+      property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
+      property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
+      property(item.node, '--eight-radius', `${radius.toFixed(3)}px`);
+      if (!item.banner) continue;
+      property(item.node, '--banner-rear-x', `${(rearX - item.left).toFixed(3)}px`);
+      property(item.node, '--banner-rear-y', `${(rearY - top).toFixed(3)}px`);
+      property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
+    }
+    // SVG gets the exact same display field, translated back to logo units.
+    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${(point.y + scroll / logoBox.scale).toFixed(3)}) scale(920)`);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {
@@ -132,7 +126,6 @@
   }
   engine.subscribe({measure() {
     width = innerWidth; height = innerHeight; scroll = engine.scrollPosition();
-    prepareRoutes();
     surfaces = nodes.map(node => {
       const box = node.getBoundingClientRect();
       const fixed = node.matches('.topbar, .site-nav') || !!node.closest('.topbar, .site-nav');
@@ -162,7 +155,7 @@
   function tick(time) {
     raf = 0;
     if (!canAnimate()) { previousTime = undefined; return; }
-    if (previousTime !== undefined) elapsed += Math.min(100, Math.max(0, time - previousTime)) / 1000;
+    if (previousTime !== undefined) elapsed = (elapsed + Math.min(100, Math.max(0, time - previousTime)) / 1000) % duration;
     previousTime = time;
     if (time - lastPaint >= 1000 / 60 - .5) { drawFigure(); lastPaint = time; }
     raf = requestAnimationFrame(tick);

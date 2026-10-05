@@ -621,18 +621,3 @@ verwendet zusätzlich die Scrollachse der Hauptlogos. Native Scrollbewegung
 und Logozeichenengine bleiben erhalten. Keine Layoutmessungen pro Lichtbild.
 
 Lokale Timing-, Masken- und Scrollprüfungen; kein direkter iPhone-Test.
-
-## Zwei Konturlichter in Version 121
-
-Zwei Lichtkreise mit halbem früherem Durchmesser folgen den beiden großen
-Bassschlüsselkonturen in entgegengesetzten Richtungen. Die Original-SVG-Pfade
-werden im Layoutdurchlauf abgetastet, nicht pro Bild. Beide Routen treffen
-sich pro Umlauf gleichzeitig in der Mitte über einen weichen Übergang.
-
-Die Umlauffrequenz variiert sinusförmig mit einer 28-Sekunden-Welle von
-1/8 bis 1/0,8 Umläufen pro Sekunde. Die angegebenen Dauergrenzen ergeben
-10:1, daher haben sie Vorrang vor der widersprüchlichen Angabe 8:1.
-Die Phase wird ohne Reset integriert; kein Sprung am Ende der Welle.
-Alle Lichtquellen haben 88 Prozent Quellensichtbarkeit. Das metallische
-Standlicht bleibt am obersten Scrollpunkt aktiv und nimmt beim Scrollen ab.
-Textschutz, transparente Ornamentmasken und native Scrollbewegung bleiben.
