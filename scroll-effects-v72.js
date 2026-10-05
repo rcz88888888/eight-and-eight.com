@@ -29,6 +29,10 @@
   let sceneKey = '';
   let sceneViewportHeight = 0;
   let particles = [];
+  let rain = [], rainWidth = 0, rainHeight = 0, rainMaxWidth = 0;
+  let rainTime = 0, lastRainTime;
+  let lastMainPaint = '';
+  let lastFeedPaint = '';
   let sprites = [];
   let mainBox;
   let openingCenter;
@@ -44,7 +48,7 @@
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
     for (const layer of layers) layer.sprite = spriteFor(922 * scale * layer.scale * inkRatio);
-    for (const mark of particles) mark.sprite = spriteFor(mark.width * bgRatio);
+    for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
     if (reset || logoProgress === undefined || target === 0 || reduced.matches) {
@@ -112,7 +116,7 @@
     const mainWidth = Math.min(mainBox.width, mainBox.height * 922 / 1368) * 1.15;
     const portrait = matchMedia('(orientation: portrait)').matches;
     const key = `${width}:${Math.round(pageHeight)}:${portrait}:${mainWidth.toFixed(1)}`;
-    if (key === sceneKey) { cacheSpriteChoices(); return; }
+    if (key === sceneKey) { rainWidth=width;rainHeight=height;cacheSpriteChoices(); return; }
     sceneKey = key;
     const rand = randomFrom(88888888);
     const count = portrait ? 2222 : 8888;
@@ -131,8 +135,30 @@
         speed: .16 + rand() * .56
       };
     });
-    background.dataset.logoCount = String(count);
+    rainWidth=width;rainHeight=height;rainMaxWidth=mainWidth;
+    const poolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
+    rain=Array.from({length:poolSize},()=>spawnRain(true));
+    lastRainTime=undefined;
+    background.dataset.logoCount = String(poolSize);
     cacheSpriteChoices();
+  }
+  function spawnRain(initial=false) {
+    const width=rainMaxWidth*(.008+.872*Math.random()**2.6);
+    const duration=1+7*Math.random();
+    return {x:Math.random()*rainWidth-width/2,width,height:width*1368/922,
+      opacity:(.08+Math.random()*.24)*.2206456,duration,
+      progress:initial?Math.random():0,sprite:spriteFor(width*bgRatio)};
+  }
+  function advanceRain(time,width,height) {
+    if(lastRainTime!==undefined && time-lastRainTime<1000/60-.5)return;
+    const dt=lastRainTime===undefined?0:Math.min(.1,Math.max(0,(time-lastRainTime)/1000));
+    lastRainTime=time;
+    if(reduced.matches)return;
+    rainTime+=dt;
+    for(let i=0;i<rain.length;i++) {
+      const mark=rain[i];mark.progress+=dt/mark.duration;
+      if(mark.progress>=1)rain[i]=spawnRain();
+    }
   }
   function field(width, height, scroll) {
     const progress = Math.min(1, scroll / Math.max(1, pageHeight - height));
@@ -145,12 +171,12 @@
     if (!bg || !ink || !mainBox || !sprites.length) return;
     const {width, height, motionScroll} = state;
     const motionProgress = easedProgress;
-    const backgroundKey = `${sceneKey}:${width}:${height}:${motionScroll}`;
+    const backgroundKey = `${sceneKey}:${width}:${height}:${rainTime}`;
     if (backgroundKey !== lastBackgroundPaint) {
       bg.clearRect(0, 0, width, height);
       let visible = 0;
-      for (const mark of particles) {
-        const top = mark.y - motionScroll * (1 - mark.speed);
+      for (const mark of rain) {
+        const top = -mark.height + mark.progress * (height + mark.height);
         if (top + mark.height < 0 || top > height || mark.x + mark.width < 0 || mark.x > width) continue;
         const sprite = mark.sprite;
         bg.globalAlpha = mark.opacity;
@@ -162,6 +188,9 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${easedProgress}`;
+    if(mainPaintKey===lastMainPaint)return;
+    lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
     ink.clearRect(0, 0, width, height);
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
@@ -203,6 +232,9 @@
   // animate another set of logos: position, rotation and opacity match.
   function paintBannerFeed(width, height) {
     if (!feed || !bg || !ink || !feedHeight || !width || !height) return;
+    const feedKey=`${lastBackgroundPaint}:${lastMainPaint}:${width}:${height}:${feedHeight}`;
+    if(feedKey===lastFeedPaint)return;
+    lastFeedPaint=feedKey;
     feed.clearRect(0, 0, width, feedHeight);
     for (const source of [background, logos]) {
       if (!source.width || !source.height) continue;
@@ -224,14 +256,15 @@
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion);
+    advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);
     const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}`;
-    if (geometryDirty || subscriberState !== lastSubscriberState || !logoAnimating) {
+    if (geometryDirty || subscriberState !== lastSubscriberState) {
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (logoAnimating) schedule();
+    if (logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -240,6 +273,11 @@
       canvas.height = Math.round(width * 1368 / 922);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      // Tint the existing alpha silhouette once, while building cached sprites.
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = '#bd967d';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalCompositeOperation = 'source-over';
       return canvas;
     });
     invalidate();
@@ -255,7 +293,7 @@
   window.visualViewport?.addEventListener('resize', resize, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', schedule);
+  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;schedule(); });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {

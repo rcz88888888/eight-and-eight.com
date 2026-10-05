@@ -719,3 +719,45 @@ aus 93471 goldenen Randpixeln des Sonnenbereichs im bereitgestellten Foto.
 Die RGB-Werte sind um 20 Prozent abgedunkelt, damit die Farbe sichtbar und
 nicht zu hell bleibt. Cremehintergrund und dunkle Textfarbe bleiben erhalten.
 Alle Farben sind statisch. Es gibt weiterhin keine Lichteffekte.
+
+## Gelberes Sonnengold in Version 129
+
+Der Goldton für Feldränder, Linien und Tapetenmuster ist auf #C8B77D angepasst.
+Weniger Blau verstärkt den gelben Sonnencharakter bei ähnlich gedämpfter
+Helligkeit. Statische Farben; Text, Transparenz und Scrollbewegung bleiben.
+
+## Neue Fotopalette in Version 130
+
+Die Farben aus den Innenbereichen der blauen Markierungen sind verteilt:
+Weiß #FFFFFF als Seitengrund, Creme #FFFAF0 als Menübasis, Champagner
+#FCEDC5 für die obere Bannertapete, helles Pfirsich #F8E0BF für Feldtönungen,
+Pfirsich #E9CFB8 für das transparente Start-Tapetenlogo, Grünbeige #E1D8B8
+für Kontakt/Footer und Grün #DAE1B7 für Portfolio und untere Bannertapete.
+Linien verwenden die dunklere Champagnerabstufung #CBB58A. Für lesbare
+Schrift und Menüzeichen dient die dunkle Pfirsichabstufung #624B3E.
+Hintergrund-/Hauptlogos sind in abgetöntem Pfirsich #BD967D eingefärbt.
+
+Die blaue Markierungsfarbe ist kein Bestandteil der Palette. Es gibt keine
+Lichteffekte. Logoformen, transparente Aussparungen und Scrollbewegung bleiben.
+Das Logo-Canvas färbt vorbereitete Sprites einmal per Alpha-Maske; keine
+zusätzliche Farbberechnung pro Scrollbild. Partnerbilder behalten Markenfarben.
+
+## Scrolllicht, Browserfarbe und Logoregen in Version 131
+
+Cremeweiß #FDFCFA ist Seitengrund und Browser-Themefarbe. Das weiche Startlicht
+hat maximal 88 Prozent Quellensichtbarkeit. Es blendet ab dem Wiedererscheinen
+des Tapetenlogos kontinuierlich ein und ist am obersten Scrollpunkt vollständig
+eingeblendet. Das Logo-Zentrum entspricht dem roten Bereich; ein großer weicher
+elliptischer Auslauf reicht entsprechend der blauen Markierung über Banner und
+erstes Feld. Rot/Blau dienen als Hinweise, nicht als Lichtfarben. Kein Metallkern.
+Die Lichtfläche liegt über dem Tapetenlogo, unter Text und Partnerbildern.
+
+Hintergrundlogos fallen zeitgesteuert senkrecht von oberhalb bis unterhalb des
+Displays. Bei jedem Wiederbeginn entstehen zufällige Position, Größe, Sichtbarkeit
+und Dauer zwischen 1 und 8 Sekunden. Größenbereich: 0,008 bis 0,88 der bisherigen
+mainWidth; Opazität: 0,017651648 bis 0,070606592 (unveränderte Grenzen).
+Ein begrenzter sichtbarer Canvas-Pool erhält die vorherige ungefähre Dichte,
+statt tausende außerhalb des Displays liegende Logos je Bild neu zu berechnen.
+Sprites bleiben gecacht. Hauptlogo-Rotation folgt weiter dem Scrollen; eigene
+Zeitbewegung erhalten nur die Hintergrundlogos. Pausen bei verstecktem Tab und
+reduzierter Bewegung. Keine automatische Navigation oder Scrollpositionsänderung.
