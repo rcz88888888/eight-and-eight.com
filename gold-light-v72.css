@@ -3,7 +3,7 @@
   --banner-logo-metal: #4b3a1f;
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
-  --wallpaper-sand-gold: #c8b77d;
+  --wallpaper-sand-gold: #c2b594;
 }
 /* v95: every gold surface is static; no reflection variables or beams. */
 .gold-light-target, .topbar, .wallpaper-end {
@@ -197,7 +197,7 @@ em.gold-text-light {
     bottom: 0;
     height: 1.5px;
     /* Match the closed banner's bottom border exactly. */
-    background: var(--metallic-gold, #c8b77d) !important;
+    background: var(--metallic-gold, #c2b594) !important;
     pointer-events: none;
   }
 }
@@ -353,42 +353,7 @@ body > .site-shell { z-index: 3; }
 .site-nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }
 
 /* v128: moderated sun gold sampled from the supplied photograph. */
-:root { --wallpaper-sand-gold: #c8b77d; --metallic-gold: #c8b77d; --line: #c8b77d; }
-
-/* v130: unified palette from the interiors of the reference circles. */
-:root {
-  --palette-white: #ffffff;
-  --palette-cream: #fffaf0;
-  --palette-champagne: #fcedc5;
-  --palette-peach-light: #f8e0bf;
-  --palette-peach: #e9cfb8;
-  --palette-green-beige: #e1d8b8;
-  --palette-green: #dae1b7;
-  --palette-line: #cbb58a;
-  --palette-text: #624b3e;
-  --page-cream: var(--palette-white);
-  --field-cream: var(--palette-peach-light);
-  --expanded-menu-ground: var(--palette-cream);
-  --banner-logo-metal: var(--palette-text);
-  --site-dark-gold: var(--palette-text);
-  --banner-logo-ink: var(--palette-text);
-  --wallpaper-sand-gold: var(--palette-line);
-  --metallic-gold: var(--palette-line);
-  --dark-gold-line: var(--palette-line);
-  --gold-accent: var(--palette-line);
-  --line: var(--palette-line);
-}
-.topbar { --gold-surface: var(--palette-champagne); }
-.topbar .gold-header-edge { background: var(--palette-line); }
-.wallpaper-end { --gold-surface: var(--palette-green); }
-.site-nav { --gold-surface: var(--palette-line); }
-.hero-card, .section, .contact-panel { background: rgba(248,224,191,.08) !important; }
-#work { background: rgba(218,225,183,.12) !important; }
-.contact-box, .footer { background: rgba(225,216,184,.12) !important; }
-/* Original partner brand images retain their corporate colours. */
-
-/* Match the non-canvas fallback to the same cached-sprite colour. */
-.parallax-logo .main-logo-layer, .logo-rain-fallback { filter: url(#palette-logo-tint); }
+:root { --wallpaper-sand-gold: #c2b594; --metallic-gold: #c2b594; --line: #c2b594; }
 
 /* v131: cream browser ground and a soft start light, excluding content glyphs. */
 :root { --page-cream: #fdfcfa; --start-light-alpha: 0; }

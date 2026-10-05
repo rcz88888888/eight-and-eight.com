@@ -136,7 +136,8 @@
       };
     });
     rainWidth=width;rainHeight=height;rainMaxWidth=mainWidth;
-    const poolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
+    const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
+    const poolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
     rain=Array.from({length:poolSize},()=>spawnRain(true));
     lastRainTime=undefined;
     background.dataset.logoCount = String(poolSize);
@@ -273,11 +274,6 @@
       canvas.height = Math.round(width * 1368 / 922);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      // Tint the existing alpha silhouette once, while building cached sprites.
-      ctx.globalCompositeOperation = 'source-in';
-      ctx.fillStyle = '#bd967d';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'source-over';
       return canvas;
     });
     invalidate();
