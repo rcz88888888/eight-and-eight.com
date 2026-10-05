@@ -18,27 +18,11 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let lightVisible = false, lastPaint = -Infinity;
-  const duration = 48, fast = 8;
-  // Smooth narrow peak: 88% of the loop stays below 28% of the maximum.
-  // Blend two even sine powers to integrate to exactly 36 full eights.
-  const mean70 = Array.from({length: 35}, (_, i) => (2*i+1)/(2*i+2)).reduce((a,b)=>a*b,1);
-  const mean72 = mean70 * 71 / 72;
-  const blend = (36 / (fast * duration) - mean72) / (mean70 - mean72);
-  function figureSpeed(seconds) {
-    const wave = Math.sin(Math.PI * (seconds % duration) / duration);
-    return fast * (blend * wave ** 70 + (1-blend) * wave ** 72);
-  }
+  const duration = 8;
+  function figureSpeed() { return 1 / duration; }
   function figurePosition(seconds) {
-    const x = Math.PI * (seconds % duration) / duration;
-    const wave = Math.sin(x), cosine = Math.cos(x);
-    let integral = x, integral70;
-    for (let n=2; n<=72; n+=2) {
-      integral = -(wave ** (n-1)) * cosine / n + (n-1) / n * integral;
-      if (n === 70) integral70 = integral;
-    }
-    const cycles = fast * duration / Math.PI * (blend * integral70 + (1-blend) * integral);
-    const phase = -.813 + cycles * 2 * Math.PI;
-    return {x: 521 + 130 * Math.sin(2 * phase), y: 684 + 438 * Math.sin(phase), rotation: cycles * 2 * Math.PI};
+    const phase = -.813 + (seconds % duration) / duration * 2 * Math.PI;
+    return {x:521 + 130*Math.sin(2*phase), y:684 + 438*Math.sin(phase)};
   }
   // Unchanged opening geometry must not invalidate every masked SVG each tick.
   const values = new WeakMap();
@@ -76,13 +60,6 @@
   function drawFigure() {
     if (!(logoBox?.scale > 0)) return;
     const point = figurePosition(elapsed);
-    // Gaussian shutter response reduces undersampled high-speed oscillation.
-    // Timing/phase retain the v120 speed curve; the fast reflection develops motion blur
-    // instead of jumping sharply between unrelated display-frame positions.
-    const frequency = figureSpeed(elapsed);
-    const shutter = .018;
-    point.x = 521 + (point.x - 521) * Math.exp(-.5 * (4 * Math.PI * frequency * shutter) ** 2);
-    point.y = 684 + (point.y - 684) * Math.exp(-.5 * (2 * Math.PI * frequency * shutter) ** 2);
     // Center the figure-eight in the foremost logo's actual rendered frame.
     // Rotate its local offsets only with scrolling, never with its own phase.
     const radius = 920 * logoBox.scale;
@@ -95,11 +72,11 @@
     const x = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
     const y = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
     const rearX = x, rearY = y;
-    for (const [plane, px, py] of [[ambient, rearX, rearY], [front, x, y]]) {
+    for (const [plane, px, py, size] of [[ambient, rearX, rearY, radius], [front, x, y, radius / 8]]) {
       if (!plane) continue;
       property(plane, '--eight-x', `${px.toFixed(3)}px`);
       property(plane, '--eight-y', `${py.toFixed(3)}px`);
-      property(plane, '--eight-radius', `${radius.toFixed(3)}px`);
+      property(plane, '--eight-radius', `${size.toFixed(3)}px`);
     }
     // Project both moving sources inside the existing ornament/edge masks.
     // Foreground text needs no rectangular cutouts: it is above the light plane.
@@ -108,14 +85,14 @@
       if (top > height || top + item.height < 0) continue;
       property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
       property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
-      property(item.node, '--eight-radius', `${radius.toFixed(3)}px`);
+      property(item.node, '--eight-radius', `${(radius / 8).toFixed(3)}px`);
       if (!item.banner) continue;
       property(item.node, '--banner-rear-x', `${(rearX - item.left).toFixed(3)}px`);
       property(item.node, '--banner-rear-y', `${(rearY - top).toFixed(3)}px`);
       property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
     }
     // SVG gets the exact same display field, translated back to logo units.
-    attribute(movingGradient, 'gradientTransform', `translate(${((x - logoBox.left) / logoBox.scale).toFixed(3)} ${((y + scroll - logoBox.top) / logoBox.scale).toFixed(3)}) scale(920)`);
+    attribute(movingGradient, 'gradientTransform', `translate(${((x - logoBox.left) / logoBox.scale).toFixed(3)} ${((y + scroll - logoBox.top) / logoBox.scale).toFixed(3)}) scale(115)`);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {

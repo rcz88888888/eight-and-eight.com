@@ -388,7 +388,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
    frame and the start logo. No separate banner band or uniform edge light. */
 .topbar::before, .topbar .gold-header-edge { background: var(--gold-surface); }
 .hero-opening-light, .hero-central-light, .hero-specular-light { opacity: var(--opening-light-opacity); pointer-events: none; }
-.hero-eight-light { display: inline; pointer-events: none; }
+.hero-eight-light { display: none; pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }
@@ -398,7 +398,7 @@ body .site-nav::after { background: var(--gold-surface) !important; }
 /* v118: rear light below all background logos, matching front reflection above
    visible surfaces with cached text/image exclusion holes. */
 body { isolation: isolate; }
-body > .ambient-eight-light, body > .front-eight-light {
+body > .ambient-eight-light, .content-scroll > .front-eight-light {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -409,7 +409,8 @@ body > .ambient-eight-light { z-index: 0; }
 body > .logo-rain-fallback, body > .background-layers { z-index: 1; }
 body > .parallax-logo, body > .main-logo-canvas { z-index: 1; }
 body > .site-shell { z-index: 3; }
-body > .front-eight-light { z-index: 2; mix-blend-mode: screen; }
+.content-scroll > .front-eight-light { z-index: 0; mix-blend-mode: screen; }
+.content-scroll .hero-wallpaper-logo { z-index: 0; }
 
 /* v119: both moving sources reach the banner; ornament masks remain intact. */
 .topbar, .wallpaper-end, .site-nav {
@@ -422,3 +423,7 @@ body > .front-eight-light { z-index: 2; mix-blend-mode: screen; }
 .site-nav a { -webkit-tap-highlight-color: transparent; }
 .site-nav a:focus { outline: none; box-shadow: none; }
 .site-nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }
+
+/* v123: unmasked foreground light above the wallpaper logo, below text/images.
+   Its fixed plane reaches ornament gaps and the area outside the silhouette. */
+.content-scroll > .front-eight-light { mask: none; -webkit-mask: none; }

@@ -638,3 +638,22 @@ verwenden denselben achsengebundenen Punkt. Keine neuen Layoutmessungen je Bild.
 Das bewegte Achterlicht hat überall 88 Prozent Quellensichtbarkeit. Das
 metallische Standlicht und die übrigen Eigenschaften von v120 bleiben erhalten.
 Lokale Prüfungen kontrollieren Pivot, Scrollbindung, Timing und Transparenz.
+
+## Ruhige Achterbewegung und freie Vordergrundreflexion in Version 123
+
+Die letzte Geschwindigkeitsangabe hat Vorrang: konstant eine vollständige
+Acht in 8 Sekunden, ohne Beschleunigungswelle oder Stillstand. Die frühere
+88-Sekunden-Angabe wird damit ersetzt. Richtung, Phase, Scrollachse und
+88 Prozent Quellensichtbarkeit stimmen für beide Lichtebenen überein.
+
+Der vordere Lichtkreis hat ein Achtel des hinteren Durchmessers und liegt
+in der Inhaltsebene über dem Tapetenlogo, unter Text und Partnerbildern.
+Er ist nicht an die Logoform oder die Tapetenornamente maskiert: Auch die
+transparenten Zwischenräume und Bereiche außerhalb des Logorands werden
+beleuchtet. Die zusätzliche bewegte SVG-Ornamentprojektion ist deaktiviert,
+damit sie die Fläche nicht doppelt aufhellt. Das Startlogo selbst bleibt
+transparent. Der hintere Kreis bleibt hinter allen Hauptlogos mit deren
+Scrollachse verbunden. Standlicht und Bannerprojektionen bleiben erhalten.
+
+Die Animation pausiert weiterhin bei unsichtbarem Browser-Tab oder aktivierter
+Systemeinstellung für reduzierte Bewegung. Keine neuen Layoutmessungen pro Bild.
