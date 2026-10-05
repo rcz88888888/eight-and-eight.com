@@ -240,11 +240,6 @@
       canvas.height = Math.round(width * 1368 / 922);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      // Tint the existing alpha silhouette once, while building cached sprites.
-      ctx.globalCompositeOperation = 'source-in';
-      ctx.fillStyle = '#bd967d';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'source-over';
       return canvas;
     });
     invalidate();
