@@ -1,4 +1,4 @@
-# Eight&Eight – Version 105
+# Eight&Eight – Version 103
 
 ## Website hochladen
 
@@ -329,62 +329,29 @@ jetzt direkt mit `display: none` ausgeblendet. Die ältere Regel
 bleibt die Berechnung der acht bewegten Hauptlogos unverändert. Ohne aktive
 Canvas-Darstellung stehen die Ersatzlogos weiterhin zur Verfügung.
 
-## Goldmaterial und markierte Lichtfelder in Version 105
+## Metallische Oberflächen in Version 103
 
-Das Goldmaterial verwendet die unveränderte Basisfarbe #d7c193. Statt nur
-heller Farbverläufe berechnet WebGL gerichtete Glanzreflexionen mit einem
-GGX-Materialmodell, feiner Rauheit und reliefartigen Ornamentkanten. Eine
-leichte Wölbung der Startlogooberfläche erzeugt breitere Reflexionszonen.
-Außerhalb beider Lichtfelder bleibt die ursprüngliche Goldfarbe erhalten.
+Die originale Basisfarbe #d7c193 bleibt unter den Reflexionen erhalten. Licht
+wird nur in die Tapetenmasken und hohlen Konturen gemalt, nicht auf Texte
+oder Unternehmenslogos. Das Startlogo bleibt transparent und scrollt normal.
 
-Die in Version 104 hinzugefügte Goldfüllung unter den Ornamenten ist entfernt,
-sowohl im Materialrenderer als auch in der SVG-Ersatzdarstellung. Nur die
-Tapetenmuster und Konturen werden gezeichnet; Zwischenräume, Aussparungen
-und der Bereich außerhalb der Logoform sind transparent. Form, ovale Punkte
-und deren ursprüngliche Drehungen bleiben erhalten. Das Logo scrollt normal.
+Am Seitenanfang wird das gesamte Startlogo einschließlich Rand beleuchtet,
+dazu die obere Bannerrandlinie, ein 48% breites Band im oberen Tapetenmuster
+und ein weicher Lichtbereich auf den sichtbaren Feldlinien darunter. Das
+Startlicht blendet über die ersten 88 Scrollpixel aus. Die 48% beziehen sich
+auf die Bannerbreite, nicht auf eine pixelgenaue Zählung der Ornamentfläche.
 
-Das Startlicht reicht entlang einer weichen ovalen Hülle vom oberen Banner
-über das komplette Logo bis 12 Pixel unter die erste Eight&Eight-Überschrift.
-Das ersetzt die frühere Beschränkung auf ein 48% breites Bannerband und den
-kürzeren Lichtbereich unter dem Logo gemäß den markierten Referenzkurven.
-Auch Feldkanten im unteren Teil dieser Hülle empfangen das Licht. Seine
-Stärke bleibt am Seitenanfang 88%; über die ersten 88 Scrollpixel blendet
-diese Lichtquelle aus. Die zweite Lichtquelle wandert unabhängig davon mit
-zufälliger Position, Richtung, Ausdehnung, 12–86% Stärke und wechselnden
-Übergangsgeschwindigkeiten. Einzelne Übergänge dauern 5–16 Sekunden.
+Eine zweite Lichtquelle bewegt sich unabhängig davon mit zufälligen Zielen,
+12–86% Stärke und wechselnder Ausdehnung. Übergänge dauern zufällig 4–14
+Sekunden; Beschleunigung und Abbremsung sind weich. Beide Banner, die
+Startlogotapete und alle vorhandenen Feldkonturen empfangen dieses Licht.
+Warme Reflexionsschultern und ein schmalerer heller Glanz bilden Metall nach.
 
-Obere und untere Bannermuster, die Startlogotapete, Bannerkanten und alle
-vorhandenen Feldkonturen empfangen das Materiallicht. Der gemeinsame
-Materialrender wird im oberen Banner unter dessen Beschriftung angezeigt.
-Texte, Unternehmenslogos und die acht Hintergrundlogos werden nicht
-beleuchtet. Es gibt keine Sonnenstrahlen oder Lichtfläche über den Texten.
+Positionen werden bei Layoutänderungen gemessen und beim Scrollen aus den
+gecachten Koordinaten berechnet. Die Lichtanimation arbeitet mit bis zu 30
+Aktualisierungen pro Sekunde, ohne Texte oder Scrollposition zu verschieben.
+Bei ausgeblendeter Seite pausiert sie; reduzierte Bewegung hält das
+Zufallslicht statisch. Es gibt keine Sonnenstrahlen oder Hintergrundglows.
 
-Die vorhandene Scrollmaske und das native Scrollen bleiben erhalten.
-Geometrie wird bei Layoutänderungen gelesen, beim Scrollen aus dem Cache
-verschoben und ausschließlich für die Materialmaske verwendet. Lichtbewegung
-aktualisiert nur die Shaderwerte mit bis zu 30 Bildern pro Sekunde. Die
-Renderauflösung ist auf das 1,5-Fache der CSS-Auflösung begrenzt. Hintergrund
-und ursprünglicher Scrollablauf bekommen keine zusätzlichen Animationsschleifen.
-Bei ausgeblendeter Seite pausiert das Licht; reduzierte Bewegung hält die
-Zufallslichtbewegung an. Bei fehlendem WebGL oder Kontextverlust bleibt die
-vereinfachte CSS-Darstellung nutzbar, ohne die Scrollposition zu ändern.
-
-Geprüft: Shaderkompilierung und echte Materialbilder auf einem lokalen
-Software-Grafikrenderer, ursprüngliche Goldfarbe ohne Licht, erhaltene
-Transparenz, Lampenbewegung, Lichtgrenze, Bannerempfänger, Cache-Nutzung,
-Scrollmaske, native Navigation, Logoausrichtung sowie Ressourcen und ZIP.
-Ein vollständiger Browser- und iPhone-Safari-Test war hier nicht möglich.
-
-## Korrektur der weißen Ränder in Version 105
-
-Die metallischen Glanzspitzen behalten jetzt ihre Goldfärbung. Logo-, Banner-
-und Feldkonturen werden getrennt von den Mustern behandelt und ihre
-Reflexionsenergie ist reduziert. Helle Konturen nähern sich maximal
-#ecd7a8; Musterreflexionen bleiben unter #f6e6bb. Unbeleuchtete Oberflächen
-behalten #d7c193. Auch die vereinfachten CSS-/SVG-Reflexe verwenden warme
-Goldfarben. Die ursprünglichen Liniendicken und beide Lichtquellen bleiben.
-
-Geprüft mit dem Produktionsshader: Musterzwischenräume sind wieder exakt
-transparent, Beleuchtung verändert den Alphakanal nicht, Glanzfarben
-überschreiten die Goldgrenzen nicht und die Basisfarbe bleibt erhalten.
-Scrollmaske, Layout und Navigation sind ebenfalls lokal geprüft.
+Syntax, Masken, Ressourcen und Lichtverläufe sind lokal geprüft. Ein
+direkter Test auf einem iPhone mit Safari war hier nicht möglich.
