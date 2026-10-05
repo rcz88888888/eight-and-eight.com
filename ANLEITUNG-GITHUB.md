@@ -1,4 +1,4 @@
-# Eight&Eight – Version 111
+# Eight&Eight – Version 112
 
 ## Website hochladen
 
@@ -430,3 +430,27 @@ für die neue Mittelreflexion; Desktop und Telefon-Hochformat behalten Tapete.
 Lokale Prüfungen kontrollieren die gemeinsame CSS/SVG-Geometrie und Profile,
 100% Quellendeckkraft, stärkere Mittelreflexion, geringeres Startlicht an den
 Ecken und erhaltene Maskierung. Kein direkter iPhone-Safari-Test war möglich.
+
+## Seitenstart und schmale Metallreflexion in Version 112
+
+Ein frühes Startskript schaltet die automatische Scrollwiederherstellung ab
+und entfernt beim frischen Seitenaufruf einen alten Abschnittsanker. Die Seite
+startet oben. Ein begrenzter Abschluss beim Laden berücksichtigt die fertige
+Seitengeometrie; nach einer Eingabe wird die Position nicht mehr zurückgesetzt.
+Es gibt keinen dauerhaften Scrollzwang und keinen Intervall für diese Aktion.
+
+Innerhalb der Mittelreflexion liegt ein deutlich schmalerer Glanzstreifen mit
+weißgoldenem Kern und champagnerfarbenem Auslauf. Geometrie und Profile sind
+in SVG und CSS gleich, auf die Goldflächen und Konturen begrenzt und folgen
+der bestehenden Startlichtstärke. Telefon-Querformat bleibt deckend gefüllt.
+
+Die Quellprüfung findet keinen Reload-Aufruf, Refresh-Metatag, Service Worker
+oder Timer für Navigation. Die tatsächliche Ursache des gemeldeten erneuten
+Ladens lässt sich ohne Browser-/Geräteprotokoll nicht eindeutig feststellen.
+Unnötige identische CSS-/SVG-Schreibzugriffe des laufenden Lichts werden nun
+unterdrückt, um Neuzeichnungen und Browserlast zu reduzieren. Alte Cache-
+Metatags wurden entfernt; Dateiversionen aktualisieren die Ressourcen weiter.
+
+Lokale Prüfungen kontrollieren einmaligen Start oben, Abbruch durch Benutzung,
+fehlende periodische Navigation, abgestimmte Lichtprojektion und unveränderte
+Scroll-/Inhaltsstruktur. Kein direkter iPhone-Safari-Test war möglich.

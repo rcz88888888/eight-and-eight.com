@@ -374,12 +374,19 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(255,253,240,calc(0.4 * var(--opening-light-opacity))) 70%,
     rgba(255,253,240,calc(0.12 * var(--opening-light-opacity))) 85%,
     rgba(255,253,240,calc(0 * var(--opening-light-opacity))) 100%);
-  --gold-surface: var(--metal-core), var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+  --metal-specular: radial-gradient(ellipse var(--opening-specular-rx, 14px) var(--opening-core-ry, 700px) at var(--opening-x, 50%) var(--opening-y, 360px),
+    rgba(255,255,255,calc(1 * var(--opening-light-opacity))) 0%,
+    rgba(255,254,245,calc(1 * var(--opening-light-opacity))) 12%,
+    rgba(255,249,219,calc(0.94 * var(--opening-light-opacity))) 30%,
+    rgba(247,230,185,calc(0.72 * var(--opening-light-opacity))) 55%,
+    rgba(255,242,206,calc(0.2 * var(--opening-light-opacity))) 80%,
+    rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
+  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
 .topbar::before, .topbar .gold-header-edge { background: var(--gold-surface); }
-.hero-opening-light, .hero-central-light { opacity: var(--opening-light-opacity); pointer-events: none; }
+.hero-opening-light, .hero-central-light, .hero-specular-light { opacity: var(--opening-light-opacity); pointer-events: none; }
 .hero-random-metal-light { opacity: var(--random-metal-opacity); pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
