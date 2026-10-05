@@ -345,7 +345,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
 
 /* v103: two projected lights, painted ONLY inside existing surface masks. */
 :root { --opening-light-opacity: 1; }
-.gold-light-target, .topbar, .wallpaper-end {
+.gold-light-target, .topbar, .wallpaper-end, .ambient-eight-light {
   --metal-opening: radial-gradient(circle var(--opening-radius, 660px) at var(--opening-x, 50%) var(--opening-y, 360px),
     rgba(255,243,203,calc(1 * var(--opening-light-opacity))) 0%,
     rgba(255,243,203,calc(0.993 * var(--opening-light-opacity))) 10%,
@@ -394,3 +394,15 @@ body { height: auto; min-height: 100%; overflow: visible; }
 body .site-nav::after { background: var(--gold-surface) !important; }
 
 /* v107: circular opening light on the continuing v103-based website. */
+
+/* v117: the same moving reflection reaches the full background display plane.
+   It is above the background canvases and below the original content shell. */
+body > .ambient-eight-light {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--metal-eight);
+  opacity: 1;
+  mix-blend-mode: screen;
+}

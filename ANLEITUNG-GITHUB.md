@@ -1,4 +1,4 @@
-# Eight&Eight – Version 116
+# Eight&Eight – Version 117
 
 ## Website hochladen
 
@@ -536,3 +536,23 @@ Bei ausgeblendeter Seite oder reduzierter Bewegung pausiert die Animation.
 Lokale Prüfungen kontrollieren identische CSS/SVG-Projektion für feste und
 scrollende Elemente sowie Licht am unteren Banner und die bestehende Schleife.
 Kein direkter iPhone-Safari-Test war möglich.
+
+## Reflexion außerhalb des Startlogos in Version 117
+
+Eine eigene feste Displayebene zeigt das gemeinsame wandernde Kreislicht
+jetzt auch außerhalb des Startlogos und der Goldkonturen auf der gesamten
+Hintergrundfläche. Sie liegt über den kleinen Hintergrundlogos und den acht
+Hauptlogos und unter der ursprünglichen Inhaltsebene. So sind die Reflexionen
+auch in den transparenten Bereichen hinter den Textfeldern sichtbar.
+
+Diese Ebene verwendet dasselbe Kreisprofil, dieselben Positionen und denselben
+Radius wie die Banner und das Start-SVG. Der Screen-Mischmodus hellt die
+Hintergründe auf. Es gibt keinen zusätzlichen Lichtzeitlauf, keine weitere
+Logoanimation und keine Scrollbewegung durch die Displayebene. Texte und
+Unternehmenslogos behalten die bisherige Vordergrunddarstellung.
+
+Achtfache Kreisgröße, 18-Sekunden-Sequenz und maximal 88 Achten pro Sekunde
+bleiben erhalten. Die Displayebene nimmt keine Eingaben entgegen und bewegt
+keine Layoutboxen. Lokale Prüfungen kontrollieren deckungsgleiche Projektion,
+Ebenenreihenfolge, Pause und Schleifenanschluss. Ein direkter iPhone-Safari-
+Test war in dieser Umgebung nicht möglich.

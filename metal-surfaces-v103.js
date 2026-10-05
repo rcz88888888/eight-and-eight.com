@@ -3,6 +3,7 @@
   const engine = window.EightEightEffects;
   const root = document.documentElement;
   const logo = document.querySelector('.hero-wallpaper-logo');
+  const ambient = document.querySelector('.ambient-eight-light');
   const movingGradient = logo?.querySelector('#figure-eight-light');
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
@@ -70,6 +71,11 @@
     const x = logoBox.left + point.x * logoBox.scale;
     const y = logoBox.top + point.y * logoBox.scale;
     const radius = 920 * logoBox.scale;
+    if (ambient) {
+      property(ambient, '--eight-x', `${x.toFixed(3)}px`);
+      property(ambient, '--eight-y', `${y.toFixed(3)}px`);
+      property(ambient, '--eight-radius', `${radius.toFixed(3)}px`);
+    }
     for (const item of surfaces) {
       const top = item.top - (item.fixed ? 0 : scroll);
       if (top > height || top + item.height < 0) continue;
