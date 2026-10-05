@@ -345,36 +345,12 @@ body { height: auto; min-height: 100%; overflow: visible; }
 
 /* v103: two projected lights, painted ONLY inside existing surface masks. */
 :root { --opening-light-opacity: 1; }
-.gold-light-target, .topbar, .wallpaper-end, .ambient-eight-light {
-  --metal-opening: radial-gradient(circle var(--opening-radius, 660px) at var(--opening-x, 50%) var(--opening-y, 360px),
-    rgba(255,243,203,calc(1 * var(--opening-light-opacity))) 0%,
-    rgba(255,243,203,calc(0.993 * var(--opening-light-opacity))) 10%,
-    rgba(255,243,203,calc(0.97 * var(--opening-light-opacity))) 20%,
-    rgba(255,243,203,calc(0.932 * var(--opening-light-opacity))) 30%,
-    rgba(255,243,203,calc(0.875 * var(--opening-light-opacity))) 40%,
-    rgba(255,243,203,calc(0.795 * var(--opening-light-opacity))) 50%,
-    rgba(255,243,203,calc(0.69 * var(--opening-light-opacity))) 60%,
-    rgba(255,243,203,calc(0.55 * var(--opening-light-opacity))) 70%,
-    rgba(255,243,203,calc(0.36 * var(--opening-light-opacity))) 80%,
-    rgba(255,243,203,calc(0.24 * var(--opening-light-opacity))) 85%,
-    rgba(255,243,203,calc(0.12 * var(--opening-light-opacity))) 90%,
-    rgba(255,243,203,calc(0.035 * var(--opening-light-opacity))) 95%,
-    rgba(255,243,203,calc(0 * var(--opening-light-opacity))) 100%);
-  --metal-core: radial-gradient(ellipse var(--opening-core-rx, 70px) var(--opening-core-ry, 700px) at var(--opening-x, 50%) var(--opening-y, 360px),
-    rgba(255,253,240,calc(1 * var(--opening-light-opacity))) 0%,
-    rgba(255,253,240,calc(0.98 * var(--opening-light-opacity))) 12%,
-    rgba(255,253,240,calc(0.9 * var(--opening-light-opacity))) 30%,
-    rgba(255,253,240,calc(0.72 * var(--opening-light-opacity))) 50%,
-    rgba(255,253,240,calc(0.4 * var(--opening-light-opacity))) 70%,
-    rgba(255,253,240,calc(0.12 * var(--opening-light-opacity))) 85%,
-    rgba(255,253,240,calc(0 * var(--opening-light-opacity))) 100%);
-  --metal-specular: radial-gradient(ellipse var(--opening-specular-rx, 14px) var(--opening-core-ry, 700px) at var(--opening-x, 50%) var(--opening-y, 360px),
-    rgba(255,255,255,calc(1 * var(--opening-light-opacity))) 0%,
-    rgba(255,254,245,calc(1 * var(--opening-light-opacity))) 12%,
-    rgba(255,249,219,calc(0.94 * var(--opening-light-opacity))) 30%,
-    rgba(247,230,185,calc(0.72 * var(--opening-light-opacity))) 55%,
-    rgba(255,242,206,calc(0.2 * var(--opening-light-opacity))) 80%,
-    rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
+.gold-light-target, .topbar, .wallpaper-end, .ambient-eight-light, .steady-soft-light {
+  --soft-light: radial-gradient(circle var(--opening-radius, 1200px) at var(--opening-x, 50%) var(--opening-y, 45%),
+    rgba(255,254,250,var(--opening-light-opacity)) 0%,
+    rgba(255,254,250,var(--opening-light-opacity)) 55%,
+    rgba(255,254,250,calc(.7 * var(--opening-light-opacity))) 75%,
+    rgba(255,254,250,0) 100%);
   --metal-eight: radial-gradient(circle var(--eight-radius, 1px) at var(--eight-x, -10000px) var(--eight-y, -10000px),
     rgba(255,255,255,0.88) 0%,
     rgba(255,254,252,0.88) 12%,
@@ -382,7 +358,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(246,242,233,0.572) 48%,
     rgba(250,248,243,0.1936) 72%,
     rgba(250,248,243,0.0) 100%);
-  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+  --gold-surface: var(--soft-light), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
@@ -413,10 +389,7 @@ body > .site-shell { z-index: 3; }
 
 /* v119: both moving sources reach the banner; ornament masks remain intact. */
 .topbar, .wallpaper-end, .site-nav {
-  --banner-rear-light: radial-gradient(circle var(--banner-rear-radius, 1px) at var(--banner-rear-x, -10000px) var(--banner-rear-y, -10000px),
-    rgba(255,255,255,0.88) 0%, rgba(255,254,252,0.88) 12%, rgba(255,253,248,0.8272) 26%,
-    rgba(246,242,233,0.572) 48%, rgba(250,248,243,0.1936) 72%, rgba(250,248,243,0.0) 100%);
-  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+  --gold-surface: var(--soft-light), linear-gradient(#d7c193,#d7c193);
 }
 /* Pointer feedback without a rectangular flash; keyboard focus stays visible. */
 .site-nav a { -webkit-tap-highlight-color: transparent; }
@@ -428,3 +401,9 @@ body > .site-shell { z-index: 3; }
 
 /* v124: one enlarged backlight between the base and all logo/content layers. */
 body > .ambient-eight-light { z-index: 0; }
+
+/* v125: diffuse illumination only; no metallic streak or specular core. */
+:root { --opening-light-opacity: .88; }
+.hero-central-light, .hero-specular-light { display: none !important; }
+body > .steady-soft-light { position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; background: var(--soft-light); }
