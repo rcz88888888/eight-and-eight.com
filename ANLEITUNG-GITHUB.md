@@ -672,18 +672,3 @@ auf 3680. Eine vollständige Acht dauert konstant 16 statt 8 Sekunden.
 Sichtbarkeit 88 Prozent. Der geglättete Drehwinkel und das tatsächliche
 Zentrum des vordersten Hauptlogos bleiben die Achse der Achterbahn.
 Das separate positionsabhängige metallische Standlicht bleibt erhalten.
-
-## Reines weiches Licht in Version 125
-
-Metallische Glanzstreifen und der schmale Reflexionskern sind deaktiviert.
-Goldflächen erhalten nur eine breite, diffuse weiß-cremefarbene Beleuchtung.
-Die Basisfarbe bleibt erhalten. Ein festes weiches Hintergrundlicht deckt den
-gelb markierten Bereich vom Banner über das Startlogo bis zum ersten Feld
-dauerhaft ab; die rote Markierung wird nicht als Grenze verwendet. Das Licht
-wird weder beim Scrollen noch durch die Achterbewegung ausgeschaltet.
-
-Die feste Lichtquelle hat 88 Prozent Sichtbarkeit mit breitem gleichmäßigem
-Innenbereich und weichem Außenabfall. SVG und CSS verwenden das gleiche Profil.
-Die transparenzmaskierten Ornamente bleiben transparent. Das bestehende
-Achter-Hinterlicht läuft weiterhin mit 16 Sekunden pro Runde, vierfachem
-Durchmesser und der Scrollachse der Hauptlogos. Texte bleiben unbeleuchtet.

@@ -4,7 +4,6 @@
   const root = document.documentElement;
   const logo = document.querySelector('.hero-wallpaper-logo');
   const ambient = document.querySelector('.ambient-eight-light');
-  const steady = document.querySelector('.steady-soft-light');
   const movingGradient = logo?.querySelector('#figure-eight-light');
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
@@ -35,26 +34,26 @@
   const property = (element, key, value) => cached(element, key, value, () => element.style.setProperty(key, value));
   const attribute = (element, key, value) => cached(element, key, value, () => element.setAttribute(key, value));
   function drawOpening() {
-    const opening = .88;
+    const opening = Math.max(0, 1 - Math.max(0, scroll) / 88);
     property(root, '--opening-light-opacity', opening.toFixed(4));
     for (const item of surfaces) {
       const top = item.top - (item.fixed ? 0 : scroll);
       if (top > height || top + item.height < 0) continue;
       property(item.node, '--opening-x', `${(openingField.x - item.left).toFixed(2)}px`);
-      property(item.node, '--opening-y', `${(openingField.y - top).toFixed(2)}px`);
+      property(item.node, '--opening-y', `${(openingField.y - scroll - top).toFixed(2)}px`);
       property(item.node, '--opening-radius', `${openingField.radius.toFixed(2)}px`);
-    }
-    if (steady) {
-      property(steady, '--opening-x', `${openingField.x.toFixed(2)}px`);
-      property(steady, '--opening-y', `${openingField.y.toFixed(2)}px`);
-      property(steady, '--opening-radius', `${openingField.radius.toFixed(2)}px`);
+      property(item.node, '--opening-core-rx', `${openingField.coreRx.toFixed(2)}px`);
+      property(item.node, '--opening-core-ry', `${openingField.coreRy.toFixed(2)}px`);
+      property(item.node, '--opening-specular-rx', `${openingField.specularRx.toFixed(2)}px`);
     }
     if (logoBox?.scale > 0) {
       const ox = (openingField.x - logoBox.left) / logoBox.scale;
-      const oy = (openingField.y + scroll - logoBox.top) / logoBox.scale;
+      const oy = (openingField.y - logoBox.top) / logoBox.scale;
       const radius = openingField.radius / logoBox.scale;
       // Uniform scale: a circle in SVG space is the same circle in CSS pixels.
       attribute(openingGradient, 'gradientTransform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${radius.toFixed(2)})`);
+      attribute(centralGradient, 'gradientTransform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${(openingField.coreRx / logoBox.scale).toFixed(2)} ${(openingField.coreRy / logoBox.scale).toFixed(2)})`);
+      attribute(specularGradient, 'gradientTransform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${(openingField.specularRx / logoBox.scale).toFixed(2)} ${(openingField.coreRy / logoBox.scale).toFixed(2)})`);
     }
   }
   function drawFigure() {
@@ -97,8 +96,15 @@
     const scale = Math.min(box.width / 922, box.height / 1368);
     logoBox = {scale, left: box.left + (box.width - 922 * scale) / 2,
       top: box.top + scroll + (box.height - 1368 * scale) / 2};
-    // A broad stationary viewport light keeps the complete marked start area lit.
-    openingField = {x:width/2, y:height*.45, radius:Math.max(height,width)*1.4};
+    // The opening circle falls off before the marked corners. A taller,
+    // narrower specular reflection reaches from the banner through the middle.
+    // Document anchors keep both fields stable when browser bars resize.
+    const top = -(header?.getBoundingClientRect().height || 88) * .27;
+    const heading = firstHeading?.getBoundingClientRect();
+    const bottom = heading ? heading.bottom + scroll + 64 : logoBox.top + 1368 * scale + 160;
+    openingField = {x: width / 2, y: (top + bottom) / 2,
+      radius: Math.max((bottom - top) / 2, width / 2) * 1.15,
+      coreRx: Math.max(44, width * .18), specularRx: Math.max(12, width * .035), coreRy: (bottom - top) * 1.2};
   }, paint(state) {
     scroll = state.scroll;
     lightVisible = logoBox.scale > 0 && surfaces.some(item => {
