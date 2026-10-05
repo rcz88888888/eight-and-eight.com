@@ -1,4 +1,4 @@
-# Eight&Eight – Version 115
+# Eight&Eight – Version 116
 
 ## Website hochladen
 
@@ -516,3 +516,23 @@ unsichtbarem Logo, ausgeblendeter Seite oder reduzierter Bewegung.
 Lokale Prüfungen kontrollieren achtfachen Kreisradius und Profilabstände,
 18-Sekunden-Schleife, maximale Frequenz, erhaltene Außenmaske und Lichtfüllung
 in den Ornamentzwischenräumen. Kein direkter iPhone-Safari-Test war möglich.
+
+## Gemeinsames Acht-Licht für alle Goldflächen in Version 116
+
+Der bisher nur im Start-SVG dargestellte wandernde Lichtkreis ist nun ein
+gemeinsames Lichtfeld für Tapetenmuster im oberen und unteren Banner, Menü-
+Tapete, das Startlogo sowie sämtliche vorhandenen Goldkonturen und Feldränder.
+CSS und SVG verwenden dieselbe Position, denselben Radius und dasselbe Profil.
+Das Licht liegt im Displayraum, anfangs exakt passend zum Startlogo. Beim
+Scrollen ziehen weitere Goldflächen durch das Feld; auch nach Verlassen des
+Startlogos läuft die gemeinsame Lichtanimation weiter. Die Elementpositionen
+werden im vorhandenen Layoutdurchlauf gemessen, nicht in jedem Lichtbild.
+
+18-Sekunden-Schleife, achtfache Größe/Reichweite, innere Lichtfüllung des
+Startlogos und 88 Achten pro Sekunde als Maximum bleiben erhalten. Die
+Lichtebenen sind weiter auf Goldflächen und Konturen maskiert; Texte und
+Unternehmenslogos behalten die zuvor festgelegte Darstellung ohne Licht.
+Bei ausgeblendeter Seite oder reduzierter Bewegung pausiert die Animation.
+Lokale Prüfungen kontrollieren identische CSS/SVG-Projektion für feste und
+scrollende Elemente sowie Licht am unteren Banner und die bestehende Schleife.
+Kein direkter iPhone-Safari-Test war möglich.

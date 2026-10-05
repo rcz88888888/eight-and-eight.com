@@ -15,7 +15,7 @@
   const nodes = [...document.querySelectorAll('.gold-light-target, .topbar, .wallpaper-end, .site-nav, .site-nav a')].filter(node => !node.closest('.wordmark, .menu-toggle'));
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
-  let logoVisible = false, lastPaint = -Infinity;
+  let lightVisible = false, lastPaint = -Infinity;
   const slow = 0, fast = 88;
   const duration = 18;
   const average = (slow + fast) / 2, amplitude = (fast - slow) / 2;
@@ -63,11 +63,24 @@
     }
   }
   function drawFigure() {
+    if (!(logoBox?.scale > 0)) return;
     const point = figurePosition(elapsed);
-    // Only this small SVG field moves automatically; no viewport-wide lighting writes.
-    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${point.y.toFixed(3)}) scale(920)`);
+    // One field in viewport pixels, initially registered to the start logo.
+    // Keep it on the display as content scrolls through its circle.
+    const x = logoBox.left + point.x * logoBox.scale;
+    const y = logoBox.top + point.y * logoBox.scale;
+    const radius = 920 * logoBox.scale;
+    for (const item of surfaces) {
+      const top = item.top - (item.fixed ? 0 : scroll);
+      if (top > height || top + item.height < 0) continue;
+      property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
+      property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
+      property(item.node, '--eight-radius', `${radius.toFixed(3)}px`);
+    }
+    // SVG gets the exact same display field, translated back to logo units.
+    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${(point.y + scroll / logoBox.scale).toFixed(3)}) scale(920)`);
   }
-  const canAnimate = () => logoVisible && !document.hidden && !reduced.matches;
+  const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {
     if (!canAnimate()) {
       if (raf) cancelAnimationFrame(raf);
@@ -97,8 +110,10 @@
       coreRx: Math.max(44, width * .18), specularRx: Math.max(12, width * .035), coreRy: (bottom - top) * 1.2};
   }, paint(state) {
     scroll = state.scroll;
-    const top = logoBox.top - scroll;
-    logoVisible = logoBox.scale > 0 && top < height && top + 1368 * logoBox.scale > 0;
+    lightVisible = logoBox.scale > 0 && surfaces.some(item => {
+      const top = item.top - (item.fixed ? 0 : scroll);
+      return top < height && top + item.height > 0;
+    });
     drawOpening(); drawFigure(); syncAnimation();
   }});
   function tick(time) {

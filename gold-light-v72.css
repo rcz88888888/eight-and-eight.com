@@ -375,7 +375,14 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(247,230,185,calc(0.72 * var(--opening-light-opacity))) 55%,
     rgba(255,242,206,calc(0.2 * var(--opening-light-opacity))) 80%,
     rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
-  --gold-surface: var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
+  --metal-eight: radial-gradient(circle var(--eight-radius, 1px) at var(--eight-x, -10000px) var(--eight-y, -10000px),
+    rgba(255,255,255,1) 0%,
+    rgba(255,254,240,1) 12%,
+    rgba(255,245,207,0.96) 26%,
+    rgba(255,229,163,0.7) 48%,
+    rgba(255,241,199,0.25) 72%,
+    rgba(255,241,199,0) 100%);
+  --gold-surface: var(--metal-eight), var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
    frame and the start logo. No separate banner band or uniform edge light. */
