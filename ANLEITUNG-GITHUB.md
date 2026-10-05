@@ -725,3 +725,19 @@ Alle Farben sind statisch. Es gibt weiterhin keine Lichteffekte.
 Der Goldton für Feldränder, Linien und Tapetenmuster ist auf #C8B77D angepasst.
 Weniger Blau verstärkt den gelben Sonnencharakter bei ähnlich gedämpfter
 Helligkeit. Statische Farben; Text, Transparenz und Scrollbewegung bleiben.
+
+## Neue Fotopalette in Version 130
+
+Die Farben aus den Innenbereichen der blauen Markierungen sind verteilt:
+Weiß #FFFFFF als Seitengrund, Creme #FFFAF0 als Menübasis, Champagner
+#FCEDC5 für die obere Bannertapete, helles Pfirsich #F8E0BF für Feldtönungen,
+Pfirsich #E9CFB8 für das transparente Start-Tapetenlogo, Grünbeige #E1D8B8
+für Kontakt/Footer und Grün #DAE1B7 für Portfolio und untere Bannertapete.
+Linien verwenden die dunklere Champagnerabstufung #CBB58A. Für lesbare
+Schrift und Menüzeichen dient die dunkle Pfirsichabstufung #624B3E.
+Hintergrund-/Hauptlogos sind in abgetöntem Pfirsich #BD967D eingefärbt.
+
+Die blaue Markierungsfarbe ist kein Bestandteil der Palette. Es gibt keine
+Lichteffekte. Logoformen, transparente Aussparungen und Scrollbewegung bleiben.
+Das Logo-Canvas färbt vorbereitete Sprites einmal per Alpha-Maske; keine
+zusätzliche Farbberechnung pro Scrollbild. Partnerbilder behalten Markenfarben.
