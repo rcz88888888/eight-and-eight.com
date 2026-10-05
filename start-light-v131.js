@@ -15,7 +15,7 @@
   },paint(state){
     const t=Math.min(1,Math.max(0,1-state.scroll/revealScroll));
     const amount=t*t*(3-2*t);
-    property('--start-light-alpha',(.88*amount).toFixed(5));
+    property('--start-light-alpha',(.78*amount).toFixed(5));
     property('--start-light-x',centerX.toFixed(2)+'px');
     property('--start-light-y',(centerY-state.scroll).toFixed(2)+'px');
     property('--start-light-rx',rx.toFixed(2)+'px');

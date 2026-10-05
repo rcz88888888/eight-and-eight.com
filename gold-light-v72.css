@@ -370,3 +370,33 @@ body > .site-shell { z-index: 3; }
     rgba(255,254,248,1) 0%, rgba(255,254,248,.95) 40%,
     rgba(255,254,248,.60) 65%, rgba(255,254,248,.24) 85%, rgba(255,254,248,0) 100%);
 }
+
+/* v134: landscape opening logos follow the marked visible height (62vh).
+   SVG artwork has clear margins; canvas copies retain their depth scales. */
+@media (orientation: landscape) {
+  .content-scroll .logo-stage { position: relative; overflow: visible; }
+  .content-scroll .hero-static-logo.hero-wallpaper-logo {
+    position: absolute;
+    top: 37vh;
+    left: 50%;
+    width: 53.92vh;
+    height: 80vh;
+    max-width: none;
+    max-height: none;
+    transform: translate(-50%, -50%);
+  }
+  body > .parallax-logo {
+    width: 37.68vh;
+    height: 55.91vh;
+    max-width: none;
+    max-height: none;
+  }
+  @supports (height: 100svh) {
+    .content-scroll .hero-static-logo.hero-wallpaper-logo {
+      top: 37svh;
+      width: 53.92svh;
+      height: 80svh;
+    }
+    body > .parallax-logo { width: 37.68svh; height: 55.91svh; }
+  }
+}
