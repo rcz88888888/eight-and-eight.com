@@ -77,23 +77,24 @@
     if (!(logoBox?.scale > 0)) return;
     const point = figurePosition(elapsed);
     // Gaussian shutter response reduces undersampled high-speed oscillation.
-    // Timing/phase stay at 18 Hz; the fast reflection develops motion blur
+    // Timing/phase retain the v120 speed curve; the fast reflection develops motion blur
     // instead of jumping sharply between unrelated display-frame positions.
     const frequency = figureSpeed(elapsed);
     const shutter = .018;
     point.x = 521 + (point.x - 521) * Math.exp(-.5 * (4 * Math.PI * frequency * shutter) ** 2);
     point.y = 684 + (point.y - 684) * Math.exp(-.5 * (2 * Math.PI * frequency * shutter) ** 2);
-    // One field in viewport pixels, initially registered to the start logo.
-    // Keep it on the display as content scrolls through its circle.
-    const x = logoBox.left + point.x * logoBox.scale;
-    const y = logoBox.top + point.y * logoBox.scale;
+    // Center the figure-eight in the foremost logo's actual rendered frame.
+    // Rotate its local offsets only with scrolling, never with its own phase.
     const radius = 920 * logoBox.scale;
     const axis = engine.logoFrame;
-    const angle = (axis?.rotation || 0) + point.rotation;
-    const cx = axis?.x ?? width / 2, cy = axis?.y ?? height / 2;
-    const dx = x - cx, dy = y - cy;
-    const rearX = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
-    const rearY = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
+    const angle = axis?.rotation || 0;
+    const cx = axis?.x ?? logoBox.left + 521 * logoBox.scale;
+    const cy = axis?.y ?? logoBox.top + 684 * logoBox.scale;
+    const dx = (point.x - 521) * logoBox.scale;
+    const dy = (point.y - 684) * logoBox.scale;
+    const x = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
+    const y = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
+    const rearX = x, rearY = y;
     for (const [plane, px, py] of [[ambient, rearX, rearY], [front, x, y]]) {
       if (!plane) continue;
       property(plane, '--eight-x', `${px.toFixed(3)}px`);
@@ -114,7 +115,7 @@
       property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
     }
     // SVG gets the exact same display field, translated back to logo units.
-    attribute(movingGradient, 'gradientTransform', `translate(${point.x.toFixed(3)} ${(point.y + scroll / logoBox.scale).toFixed(3)}) scale(920)`);
+    attribute(movingGradient, 'gradientTransform', `translate(${((x - logoBox.left) / logoBox.scale).toFixed(3)} ${((y + scroll - logoBox.top) / logoBox.scale).toFixed(3)}) scale(920)`);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {

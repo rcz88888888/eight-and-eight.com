@@ -182,8 +182,8 @@
     window.EightEightEffects.logoFrame = {
       rotation,
       x: cx + (startX - cx) * openingBlend,
-      y: cy + travel * (layers[0]?.speed ?? 1) +
-        (startY - cy - openingTravel * (layers[0]?.speed ?? 1)) * openingBlend
+      y: cy + travel * (layers[layers.length - 1]?.speed ?? 1) +
+        (startY - cy - openingTravel * (layers[layers.length - 1]?.speed ?? 1)) * openingBlend
     };
     for (const layer of layers) {
       ink.save();

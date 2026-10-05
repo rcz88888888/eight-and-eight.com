@@ -621,3 +621,20 @@ verwendet zusätzlich die Scrollachse der Hauptlogos. Native Scrollbewegung
 und Logozeichenengine bleiben erhalten. Keine Layoutmessungen pro Lichtbild.
 
 Lokale Timing-, Masken- und Scrollprüfungen; kein direkter iPhone-Test.
+
+## Zurück auf Version 120: achsengebundenes Achterlicht in Version 122
+
+Diese Ausgabe basiert vollständig auf Version 120. Die zwei Konturlichter
+und das Timing aus Version 121 sind nicht enthalten. Die bestehende
+48-Sekunden-Kurve mit maximal 8 Achten pro Sekunde bleibt erhalten.
+
+Die Mitte der Achterbahn folgt nun dem tatsächlichen gezeichneten Zentrum
+des vordersten Hauptlogos. Die lokale Achterbahn rotiert ausschließlich mit
+dem geglätteten Scrollwinkel aller acht Hauptlogos. Die zusätzliche Rotation
+durch die zeitliche Lichtphase entfällt. Die hintere Lichtebene bleibt hinter
+dem hintersten Hauptlogo. Vordergrundreflexion, Bannerprojektion und Start-SVG
+verwenden denselben achsengebundenen Punkt. Keine neuen Layoutmessungen je Bild.
+
+Das bewegte Achterlicht hat überall 88 Prozent Quellensichtbarkeit. Das
+metallische Standlicht und die übrigen Eigenschaften von v120 bleiben erhalten.
+Lokale Prüfungen kontrollieren Pivot, Scrollbindung, Timing und Transparenz.

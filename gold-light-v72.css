@@ -376,12 +376,12 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(255,242,206,calc(0.2 * var(--opening-light-opacity))) 80%,
     rgba(255,242,206,calc(0 * var(--opening-light-opacity))) 100%);
   --metal-eight: radial-gradient(circle var(--eight-radius, 1px) at var(--eight-x, -10000px) var(--eight-y, -10000px),
-    rgba(255,255,255,1) 0%,
-    rgba(255,254,252,1) 12%,
-    rgba(255,253,248,0.94) 26%,
-    rgba(246,242,233,0.65) 48%,
-    rgba(250,248,243,0.22) 72%,
-    rgba(250,248,243,0) 100%);
+    rgba(255,255,255,0.88) 0%,
+    rgba(255,254,252,0.88) 12%,
+    rgba(255,253,248,0.8272) 26%,
+    rgba(246,242,233,0.572) 48%,
+    rgba(250,248,243,0.1936) 72%,
+    rgba(250,248,243,0.0) 100%);
   --gold-surface: var(--metal-eight), var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every
@@ -414,8 +414,8 @@ body > .front-eight-light { z-index: 2; mix-blend-mode: screen; }
 /* v119: both moving sources reach the banner; ornament masks remain intact. */
 .topbar, .wallpaper-end, .site-nav {
   --banner-rear-light: radial-gradient(circle var(--banner-rear-radius, 1px) at var(--banner-rear-x, -10000px) var(--banner-rear-y, -10000px),
-    #fff 0%, #fffefc 12%, rgba(255,253,248,.94) 26%,
-    rgba(246,242,233,.65) 48%, rgba(250,248,243,.22) 72%, rgba(250,248,243,0) 100%);
+    rgba(255,255,255,0.88) 0%, rgba(255,254,252,0.88) 12%, rgba(255,253,248,0.8272) 26%,
+    rgba(246,242,233,0.572) 48%, rgba(250,248,243,0.1936) 72%, rgba(250,248,243,0.0) 100%);
   --gold-surface: var(--metal-eight), var(--banner-rear-light), var(--metal-specular), var(--metal-core), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* Pointer feedback without a rectangular flash; keyboard focus stays visible. */
