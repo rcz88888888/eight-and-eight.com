@@ -4,7 +4,6 @@
   const root = document.documentElement;
   const logo = document.querySelector('.hero-wallpaper-logo');
   const ambient = document.querySelector('.ambient-eight-light');
-  const front = document.querySelector('.front-eight-light');
   const movingGradient = logo?.querySelector('#figure-eight-light');
   const openingGradient = logo?.querySelector('#opening-paper-light');
   const centralGradient = logo?.querySelector('#central-paper-light');
@@ -18,7 +17,7 @@
   let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, elapsed = 0, previousTime;
   let lightVisible = false, lastPaint = -Infinity;
-  const duration = 8;
+  const duration = 16;
   function figureSpeed() { return 1 / duration; }
   function figurePosition(seconds) {
     const phase = -.813 + (seconds % duration) / duration * 2 * Math.PI;
@@ -62,7 +61,7 @@
     const point = figurePosition(elapsed);
     // Center the figure-eight in the foremost logo's actual rendered frame.
     // Rotate its local offsets only with scrolling, never with its own phase.
-    const radius = 920 * logoBox.scale;
+    const radius = 3680 * logoBox.scale;
     const axis = engine.logoFrame;
     const angle = axis?.rotation || 0;
     const cx = axis?.x ?? logoBox.left + 521 * logoBox.scale;
@@ -71,28 +70,12 @@
     const dy = (point.y - 684) * logoBox.scale;
     const x = cx + dx * Math.cos(angle) - dy * Math.sin(angle);
     const y = cy + dx * Math.sin(angle) + dy * Math.cos(angle);
-    const rearX = x, rearY = y;
-    for (const [plane, px, py, size] of [[ambient, rearX, rearY, radius], [front, x, y, radius / 8]]) {
-      if (!plane) continue;
-      property(plane, '--eight-x', `${px.toFixed(3)}px`);
-      property(plane, '--eight-y', `${py.toFixed(3)}px`);
-      property(plane, '--eight-radius', `${size.toFixed(3)}px`);
+    // A single backlight above the base background and below every logo/frame.
+    if (ambient) {
+      property(ambient, '--eight-x', `${x.toFixed(3)}px`);
+      property(ambient, '--eight-y', `${y.toFixed(3)}px`);
+      property(ambient, '--eight-radius', `${radius.toFixed(3)}px`);
     }
-    // Project both moving sources inside the existing ornament/edge masks.
-    // Foreground text needs no rectangular cutouts: it is above the light plane.
-    for (const item of surfaces) {
-      const top = item.top - (item.fixed ? 0 : scroll);
-      if (top > height || top + item.height < 0) continue;
-      property(item.node, '--eight-x', `${(x - item.left).toFixed(3)}px`);
-      property(item.node, '--eight-y', `${(y - top).toFixed(3)}px`);
-      property(item.node, '--eight-radius', `${(radius / 8).toFixed(3)}px`);
-      if (!item.banner) continue;
-      property(item.node, '--banner-rear-x', `${(rearX - item.left).toFixed(3)}px`);
-      property(item.node, '--banner-rear-y', `${(rearY - top).toFixed(3)}px`);
-      property(item.node, '--banner-rear-radius', `${radius.toFixed(3)}px`);
-    }
-    // SVG gets the exact same display field, translated back to logo units.
-    attribute(movingGradient, 'gradientTransform', `translate(${((x - logoBox.left) / logoBox.scale).toFixed(3)} ${((y + scroll - logoBox.top) / logoBox.scale).toFixed(3)}) scale(115)`);
   }
   const canAnimate = () => lightVisible && !document.hidden && !reduced.matches;
   function syncAnimation() {

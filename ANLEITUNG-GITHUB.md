@@ -657,3 +657,18 @@ Scrollachse verbunden. Standlicht und Bannerprojektionen bleiben erhalten.
 
 Die Animation pausiert weiterhin bei unsichtbarem Browser-Tab oder aktivierter
 Systemeinstellung für reduzierte Bewegung. Keine neuen Layoutmessungen pro Bild.
+
+## Einzelnes großes Achter-Hinterlicht in Version 124
+
+Das bewegte Licht liegt ausschließlich auf einer festen Ebene über dem
+untersten Seitenhintergrund und unter sämtlichen Hintergrund-/Hauptlogos,
+Tapetenlogo, Bannern, Konturen und Texten. Vorderlicht und direkte bewegte
+Reflexionsprojektionen auf den Goldflächen entfallen. Dadurch kommt das
+Achterlicht nun von hinten; deckende Oberflächen verdecken es entsprechend.
+Die transparenten Bereiche und dünnen Konturen liegen vor dem Lichtfeld.
+
+Der bisherige hintere Kreisradius von 920 SVG-Einheiten ist vervierfacht
+auf 3680. Eine vollständige Acht dauert konstant 16 statt 8 Sekunden.
+Sichtbarkeit 88 Prozent. Der geglättete Drehwinkel und das tatsächliche
+Zentrum des vordersten Hauptlogos bleiben die Achse der Achterbahn.
+Das separate positionsabhängige metallische Standlicht bleibt erhalten.
