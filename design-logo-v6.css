@@ -1155,10 +1155,10 @@ main#top:focus { outline: none; }
 /* v37: transparent fields, dark gold text and a smooth outlined opening emblem. */
 :root {
   --site-dark-gold: #80632f;
-  --metallic-gold: #d7c193;
-  --dark-gold-line: #d7c193;
-  --line: #d7c193;
-  --gold-accent: #d7c193;
+  --metallic-gold: #c2b594;
+  --dark-gold-line: #c2b594;
+  --line: #c2b594;
+  --gold-accent: #c2b594;
 }
 .topbar .wordmark {
   position: absolute;

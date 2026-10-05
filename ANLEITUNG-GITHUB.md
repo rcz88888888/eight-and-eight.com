@@ -710,3 +710,12 @@ Das Licht-Animationsskript wird nicht mehr geladen und ist nicht im ZIP.
 Die Goldfarben sind statisch; Transparenz, Tapeten, Konturen, Textdarstellung,
 Scrollmasken und scrollabhängige Logo-Rotation bleiben erhalten. Das vorhandene
 Rahmen-/Maskenskript dient nur noch der statischen Darstellung und Geometrie.
+
+## Sonnengold aus dem Foto in Version 128
+
+Feldränder, Linien, Bannerkonturen sowie die Tapetenornamente im Banner und
+Startlogo verwenden #C2B594. Ausgangspunkt ist die Medianfarbe RGB(243,226,185)
+aus 93471 goldenen Randpixeln des Sonnenbereichs im bereitgestellten Foto.
+Die RGB-Werte sind um 20 Prozent abgedunkelt, damit die Farbe sichtbar und
+nicht zu hell bleibt. Cremehintergrund und dunkle Textfarbe bleiben erhalten.
+Alle Farben sind statisch. Es gibt weiterhin keine Lichteffekte.
