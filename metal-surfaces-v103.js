@@ -4,11 +4,14 @@
   const root = document.documentElement;
   const logo = document.querySelector('.hero-wallpaper-logo');
   const gradient = logo?.querySelector('#random-metal-light');
-  if (!engine || !logo || !gradient) return;
+  const openingGradient = logo?.querySelector('#opening-paper-light');
+  const header = document.querySelector('.topbar');
+  const firstHeading = document.querySelector('#about h2');
+  if (!engine || !logo || !gradient || !openingGradient) return;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   // Read geometry only during the existing layout pass. Never move content or scroll.
   const nodes = [...document.querySelectorAll('.gold-light-target, .topbar, .wallpaper-end, .site-nav, .site-nav a')].filter(node => !node.closest('.wordmark, .menu-toggle'));
-  let surfaces = [], logoBox, width = innerWidth, height = innerHeight;
+  let surfaces = [], logoBox, openingField, width = innerWidth, height = innerHeight;
   let scroll = engine.scrollPosition(), raf = 0, lastFrame = -Infinity, elapsed = 0, previousTime;
   const between = (a, b) => a + Math.random() * (b - a);
   const choose = () => ({x: between(-.15, 1.15), y: between(-.15, 1.15),
@@ -32,14 +35,18 @@
       property(item.node, '--metal-y', `${(y - top).toFixed(2)}px`);
       property(item.node, '--metal-rx', `${rx.toFixed(2)}px`);
       property(item.node, '--metal-ry', `${ry.toFixed(2)}px`);
-      property(item.node, '--opening-x', `${(width * .5 - item.left).toFixed(2)}px`);
-      property(item.node, '--opening-y', `${(height * .82 - top).toFixed(2)}px`);
-      property(item.node, '--opening-rx', `${width * .75}px`);
-      property(item.node, '--opening-ry', `${height * .42}px`);
+      property(item.node, '--opening-x', `${(openingField.x - item.left).toFixed(2)}px`);
+      property(item.node, '--opening-y', `${(openingField.y - scroll - top).toFixed(2)}px`);
+      property(item.node, '--opening-radius', `${openingField.radius.toFixed(2)}px`);
     }
     if (logoBox?.scale > 0) {
       const lx = (x - logoBox.left) / logoBox.scale;
       const ly = (y - logoBox.top + scroll) / logoBox.scale;
+      const ox = (openingField.x - logoBox.left) / logoBox.scale;
+      const oy = (openingField.y - logoBox.top) / logoBox.scale;
+      const radius = openingField.radius / logoBox.scale;
+      // Uniform scale: a circle in SVG space is the same circle in CSS pixels.
+      openingGradient.setAttribute('gradientTransform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${radius.toFixed(2)})`);
       gradient.setAttribute('gradientTransform', `translate(${lx.toFixed(2)} ${ly.toFixed(2)}) scale(${(rx / logoBox.scale).toFixed(2)} ${(ry / logoBox.scale).toFixed(2)})`);
     }
   }
@@ -54,6 +61,13 @@
     const scale = Math.min(box.width / 922, box.height / 1368);
     logoBox = {scale, left: box.left + (box.width - 922 * scale) / 2,
       top: box.top + scroll + (box.height - 1368 * scale) / 2};
+    // The screenshot's arc starts slightly above the banner and ends below
+    // the first heading. Use document anchors so browser-bar changes do not drift it.
+    const top = -(header?.getBoundingClientRect().height || 88) * .27;
+    const heading = firstHeading?.getBoundingClientRect();
+    const bottom = heading ? heading.bottom + scroll + 64 : logoBox.top + 1368 * scale + 160;
+    openingField = {x: width / 2, y: (top + bottom) / 2,
+      radius: Math.max((bottom - top) / 2, width / 2)};
   }, paint(state) { scroll = state.scroll; draw(); }});
   function tick(time) {
     raf = 0;

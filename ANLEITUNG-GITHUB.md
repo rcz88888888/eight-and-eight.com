@@ -1,4 +1,4 @@
-# Eight&Eight – Version 106
+# Eight&Eight – Version 109
 
 ## Website hochladen
 
@@ -329,44 +329,63 @@ jetzt direkt mit `display: none` ausgeblendet. Die ältere Regel
 bleibt die Berechnung der acht bewegten Hauptlogos unverändert. Ohne aktive
 Canvas-Darstellung stehen die Ersatzlogos weiterhin zur Verfügung.
 
-## Metallische Oberflächen in Version 103
+## Kreisförmiges Startlicht in Version 107
 
-Die originale Basisfarbe #d7c193 bleibt unter den Reflexionen erhalten. Licht
-wird nur in die Tapetenmasken und hohlen Konturen gemalt, nicht auf Texte
-oder Unternehmenslogos. Das Startlogo bleibt transparent und scrollt normal.
+Die Website setzt die aus ZIP 103 fortgeführte Version 106 fort. Am
+Seitenanfang beleuchtet ein gemeinsames Kreislicht die Tapetenmuster des
+Banners, das Startlogo und die vorhandenen Feld-/Bannerkonturen. Alle diese
+Flächen verwenden denselben Mittelpunkt, denselben Radius und dieselbe
+Helligkeitskurve in Seitenkoordinaten. Das Startlogo hat keine Flächenfüllung
+unter der Tapete; die Musterzwischenräume bleiben transparent.
 
-Am Seitenanfang wird das gesamte Startlogo einschließlich Rand beleuchtet,
-dazu die obere Bannerrandlinie, ein 48% breites Band im oberen Tapetenmuster
-und ein weicher Lichtbereich auf den sichtbaren Feldlinien darunter. Das
-Startlicht blendet über die ersten 88 Scrollpixel aus. Die 48% beziehen sich
-auf die Bannerbreite, nicht auf eine pixelgenaue Zählung der Ornamentfläche.
+Die schwarze Umrandung des Referenzbildes bestimmt die vertikale Ausdehnung:
+Der Lichtkreis beginnt etwas oberhalb des oberen Banners und reicht bis
+64 CSS-Pixel unter die erste Eight&Eight-Überschrift. Der Mittelpunkt liegt
+auf der horizontalen Seitenmitte. Der Radius entspricht der halben
+vertikalen Spanne, mindestens jedoch der halben Bildschirmbreite. Es ist
+ein echter Kreis, der durch den Bildschirmrand seitlich beschnitten werden
+kann, keine an die Bildschirmform verzerrte Ellipse. Größenänderungen und
+Schriftladung aktualisieren die Geometrie anhand der Seitenelemente.
 
-Eine zweite Lichtquelle bewegt sich unabhängig davon mit zufälligen Zielen,
-12–86% Stärke und wechselnder Ausdehnung. Übergänge dauern zufällig 4–14
-Sekunden; Beschleunigung und Abbremsung sind weich. Beide Banner, die
-Startlogotapete und alle vorhandenen Feldkonturen empfangen dieses Licht.
-Warme Reflexionsschultern und ein schmalerer heller Glanz bilden Metall nach.
+Das Zentrum ist am hellsten (100% Stärke, warmes Champagnerlicht). Die
+Helligkeit nimmt in einer fein abgestuften, angenäherten Gaußkurve zum
+Rand ab und endet dort weich bei null. Die Farbe des Goldmaterials bleibt
+außerhalb des Lichtkegels erhalten. Der Mittelpunkt ist an die Startposition
+der Seite gebunden; die gemeinsame Reflexion bleibt beim Scrollen auf allen
+Oberflächen deckungsgleich und blendet über die ersten 88 Scrollpixel aus.
 
-Positionen werden bei Layoutänderungen gemessen und beim Scrollen aus den
-gecachten Koordinaten berechnet. Die Lichtanimation arbeitet mit bis zu 30
-Aktualisierungen pro Sekunde, ohne Texte oder Scrollposition zu verschieben.
-Bei ausgeblendeter Seite pausiert sie; reduzierte Bewegung hält das
-Zufallslicht statisch. Es gibt keine Sonnenstrahlen oder Hintergrundglows.
+Das bisherige unabhängige Zufallslicht wandert weiter. Texte, Menüschrift,
+Unternehmenslogos und Hintergrundlogos bleiben ohne zusätzliche Beleuchtung.
+Liniendicken, Scrollmaske, Navigation, Logoausrichtung und Inhalte sind
+unverändert. Es gibt keine Lichtfläche über den transparenten Feldinnenräumen.
 
-Syntax, Masken, Ressourcen und Lichtverläufe sind lokal geprüft. Ein
-direkter Test auf einem iPhone mit Safari war hier nicht möglich.
+Die Geometrie wird bei Layoutänderungen gemessen und bei Scrollbewegungen
+aus dem Cache berechnet. Lokale Prüfungen bestätigen identische Kreis-
+koordinaten und Helligkeitsprofile in CSS und SVG, natürlichen monotonen
+Helligkeitsabfall, erhaltene Transparenz, unabhängiges Zufallslicht sowie
+Pause bei ausgeblendeter Seite und reduzierter Bewegung.
+Ein direkter iPhone-Safari-Test war in dieser Umgebung nicht möglich.
 
-## Mehr Startlicht in Version 106 – Ausgangspunkt ist ZIP 103
+## Sanfter Rotationsbeginn in Version 108
 
-Diese Version wurde direkt aus der Website-ZIP 103 erstellt. Das Licht am
-Seitenanfang hat jetzt 100% statt 88% Spitzenstärke; die seitlichen und
-breiteren Reflexionsbereiche sind ebenfalls stärker beleuchtet. Die
-ursprüngliche Ausdehnung der Lichtfelder und das 48% breite Lichtband im
-oberen Banner bleiben erhalten. Der Lichtverlauf blendet weiter über die
-ersten 88 Scrollpixel aus und erreicht seine volle Stärke wieder ganz oben.
+Der Übergang aus der zentrierten Startposition verwendet eine Kurve mit
+sanftem Beginn und Ende. Eine zeitabhängige Glättung mit 42 ms Zeitkonstante
+wirkt ausschließlich auf die acht Hauptlogos. Das native Scrollen der Seite,
+Texte, Bannermaske und Lichtberechnung folgen weiterhin der echten Scrollposition.
+Bei Rückkehr zum Seitenanfang sind alle acht Logos wieder exakt ausgerichtet.
 
-Das unabhängige Zufallslicht, die transparenten Musterzwischenräume,
-Liniendicken, Scrollmaske, Texte, Navigation und Hintergrundlogos stammen
-aus Version 103. Texte und Unternehmenslogos bleiben unbeleuchtet.
+Vorbereitete Bildgrößen und pro Logo gespeicherte Bildauswahl reduzieren den
+Zeichenaufwand. Während des kurzen Nachlaufs werden ruhende Hintergrundebenen
+und unveränderte Abonnenten nicht laufend neu gezeichnet. Die Animation endet
+selbstständig nach dem Einschwingen. Anzahl, Größen, Sichtbarkeit und acht
+Umdrehungen der Hauptlogos bleiben erhalten.
 
-Lichtstärke, Verlauf, Transparenz, Ressourcen und ZIP sind lokal geprüft.
+Lokale Prüfungen bestätigen sanften Anlauf, monotones Einschwingen ohne
+Überschwingen, synchronisierte Logos, zwischengespeicherte Zeichenbilder,
+korrekte Bannerkopien, unverändertes natives Scrollen und feste Maskengeometrie.
+Ein direkter iPhone-Safari-Test war in dieser Umgebung nicht möglich.
+
+## Textänderung in Version 109
+
+Im Dreiklang Strategy / Imagination / Creativity ersetzt „Imagination“ das
+bisherige „Mathematics“. „CREATES STRUCTURE.“ und die Gestaltung bleiben erhalten.

@@ -34,6 +34,32 @@
   let openingCenter;
   let bgRatio = 1;
   let inkRatio = 1;
+  let logoProgress;
+  let logoAnimating = false;
+  let lastLogoTime;
+  let lastBackgroundPaint = '';
+  let lastSubscriberState = '';
+  const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
+  function cacheSpriteChoices() {
+    if (!sprites.length || !mainBox) return;
+    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
+    for (const layer of layers) layer.sprite = spriteFor(922 * scale * layer.scale * inkRatio);
+    for (const mark of particles) mark.sprite = spriteFor(mark.width * bgRatio);
+  }
+  function easeLogoProgress(target, time, reset) {
+    if (reset || logoProgress === undefined || target === 0 || reduced.matches) {
+      logoProgress = target;
+    } else {
+      // Time-based damping fills the gaps between touch-scroll events. Only
+      // the eight-logo drawing is eased; document scrolling and masks stay native.
+      const dt = logoAnimating && lastLogoTime !== undefined ? Math.max(0, Math.min(64, time - lastLogoTime)) : 1000 / 60;
+      logoProgress += (target - logoProgress) * (1 - Math.exp(-dt / 42));
+    }
+    lastLogoTime = time;
+    logoAnimating = Math.abs(target - logoProgress) > .00001;
+    if (!logoAnimating) logoProgress = target;
+    return logoProgress;
+  }
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
@@ -56,6 +82,7 @@
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
       canvas.height = h;
+      lastBackgroundPaint = '';
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = 'low';
@@ -85,7 +112,7 @@
     const mainWidth = Math.min(mainBox.width, mainBox.height * 922 / 1368) * 1.15;
     const portrait = matchMedia('(orientation: portrait)').matches;
     const key = `${width}:${Math.round(pageHeight)}:${portrait}:${mainWidth.toFixed(1)}`;
-    if (key === sceneKey) return;
+    if (key === sceneKey) { cacheSpriteChoices(); return; }
     sceneKey = key;
     const rand = randomFrom(88888888);
     const count = portrait ? 2222 : 8888;
@@ -105,6 +132,7 @@
       };
     });
     background.dataset.logoCount = String(count);
+    cacheSpriteChoices();
   }
   function field(width, height, scroll) {
     const progress = Math.min(1, scroll / Math.max(1, pageHeight - height));
@@ -113,20 +141,27 @@
     return {width, height, scroll, progress, travel,
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
-  function paintCanvas(state) {
+  function paintCanvas(state, easedProgress) {
     if (!bg || !ink || !mainBox || !sprites.length) return;
-    const {width, height, motionScroll, motionProgress} = state;
-    bg.clearRect(0, 0, width, height);
-    let visible = 0;
-    for (const mark of particles) {
-      const top = mark.y - motionScroll * (1 - mark.speed);
-      if (top + mark.height < 0 || top > height || mark.x + mark.width < 0 || mark.x > width) continue;
-      const sprite = sprites.find(item => item.width >= mark.width * bgRatio) || sprites[sprites.length - 1];
-      bg.globalAlpha = mark.opacity;
-      bg.drawImage(sprite, mark.x, top, mark.width, mark.height);
-      visible++;
+    const {width, height, motionScroll} = state;
+    const motionProgress = easedProgress;
+    const backgroundKey = `${sceneKey}:${width}:${height}:${motionScroll}`;
+    if (backgroundKey !== lastBackgroundPaint) {
+      bg.clearRect(0, 0, width, height);
+      let visible = 0;
+      for (const mark of particles) {
+        const top = mark.y - motionScroll * (1 - mark.speed);
+        if (top + mark.height < 0 || top > height || mark.x + mark.width < 0 || mark.x > width) continue;
+        const sprite = mark.sprite;
+        bg.globalAlpha = mark.opacity;
+        bg.drawImage(sprite, mark.x, top, mark.width, mark.height);
+        visible++;
+      }
+      bg.globalAlpha = 1;
+      const count = String(visible);
+      if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
+      lastBackgroundPaint = backgroundKey;
     }
-    bg.globalAlpha = 1;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
     ink.clearRect(0, 0, width, height);
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
@@ -139,7 +174,8 @@
     // All eight centers coincide with the opening emblem at scroll zero.
     // Fade this correction smoothly during the first quarter of the page,
     // retaining the established depth-dependent movement further down.
-    const openingBlend = Math.max(0, 1 - motionProgress * 4) ** 2;
+    const startPhase = Math.min(1, Math.max(0, motionProgress * 4));
+    const openingBlend = 1 - startPhase ** 3 * (startPhase * (startPhase * 6 - 15) + 10);
     const startX = openingCenter?.x ?? cx;
     const startY = openingCenter?.y ?? cy;
     const openingTravel = .5 * Math.min(height, mainBox.height);
@@ -150,11 +186,9 @@
       ink.rotate(rotation);
       ink.scale(layer.scale, layer.scale);
       ink.globalAlpha = layer.opacity;
-      ink.drawImage(image, -w / 2, -h / 2, w, h);
+      ink.drawImage(layer.sprite, -w / 2, -h / 2, w, h);
       ink.restore();
     }
-    const count = String(visible);
-    if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
     if (!root.classList.contains('canvas-logos-ready')) {
       root.classList.add('logo-rain-ready', 'canvas-logos-ready');
     }
@@ -170,23 +204,31 @@
         0, 0, width, feedHeight);
     }
   }
-  function render() {
+  function render(time = performance.now()) {
     raf = 0;
     if (document.hidden) return;
     const width = root.clientWidth;
     const height = innerHeight;
-    if (layoutDirty || viewportDirty) {
+    const geometryDirty = layoutDirty || viewportDirty;
+    const resetMotion = width !== lastWidth;
+    if (geometryDirty) {
       measure(width, height);
       layoutDirty = viewportDirty = false;
       lastWidth = width;
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
-    paintCanvas(state);
+    const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion);
+    paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);
-    subscribers.forEach(item => item.paint?.(state));
+    const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}`;
+    if (geometryDirty || subscriberState !== lastSubscriberState || !logoAnimating) {
+      subscribers.forEach(item => item.paint?.(state));
+      lastSubscriberState = subscriberState;
+    }
+    if (logoAnimating) schedule();
   }
   image.addEventListener('load', () => {
-    sprites = [8, 16, 32, 64, 128, 256, 512, 922].map(width => {
+    sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = Math.round(width * 1368 / 922);

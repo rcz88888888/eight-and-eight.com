@@ -352,32 +352,29 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(242,216,157,calc(.55 * var(--random-metal-opacity))) 24%,
     rgba(150,115,64,calc(.22 * var(--random-metal-opacity))) 48%,
     rgba(237,207,145,calc(.14 * var(--random-metal-opacity))) 70%, transparent 100%);
-  --metal-opening: radial-gradient(ellipse var(--opening-rx, 500px) var(--opening-ry, 300px) at var(--opening-x, 0px) var(--opening-y, 0px),
-    rgba(255,253,243,var(--opening-light-opacity)) 0%,
-    rgba(249,231,187,calc(.9 * var(--opening-light-opacity))) 38%,
-    rgba(197,162,100,calc(.5 * var(--opening-light-opacity))) 54%, transparent 100%);
+  --metal-opening: radial-gradient(circle var(--opening-radius, 400px) at var(--opening-x, 50%) var(--opening-y, 360px),
+    rgba(255,246,218,calc(1 * var(--opening-light-opacity))) 0%,
+    rgba(255,246,218,calc(0.977 * var(--opening-light-opacity))) 10%,
+    rgba(255,246,218,calc(0.911 * var(--opening-light-opacity))) 20%,
+    rgba(255,246,218,calc(0.809 * var(--opening-light-opacity))) 30%,
+    rgba(255,246,218,calc(0.683 * var(--opening-light-opacity))) 40%,
+    rgba(255,246,218,calc(0.545 * var(--opening-light-opacity))) 50%,
+    rgba(255,246,218,calc(0.406 * var(--opening-light-opacity))) 60%,
+    rgba(255,246,218,calc(0.278 * var(--opening-light-opacity))) 70%,
+    rgba(255,246,218,calc(0.165 * var(--opening-light-opacity))) 80%,
+    rgba(255,246,218,calc(0.116 * var(--opening-light-opacity))) 85%,
+    rgba(255,246,218,calc(0.054 * var(--opening-light-opacity))) 90%,
+    rgba(255,246,218,calc(0.009 * var(--opening-light-opacity))) 95%,
+    rgba(255,246,218,calc(0 * var(--opening-light-opacity))) 100%);
   --gold-surface: var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
-/* A 48%-wide lit band. The other 52% keeps its original base gold. */
-.topbar::before {
-  background: var(--metal-random), linear-gradient(90deg, transparent 26%,
-    rgba(245,223,168,calc(.65 * var(--opening-light-opacity))) 28%,
-    rgba(249,231,187,calc(.9 * var(--opening-light-opacity))) 43%,
-    rgba(255,253,242,var(--opening-light-opacity)) 50%,
-    rgba(197,162,100,calc(.55 * var(--opening-light-opacity))) 56%,
-    rgba(245,223,168,calc(.75 * var(--opening-light-opacity))) 72%, transparent 74%),
-    linear-gradient(#d7c193,#d7c193);
-}
-.topbar .gold-header-edge {
-  background: var(--metal-random), linear-gradient(110deg,
-    rgba(245,223,168,calc(.75 * var(--opening-light-opacity))),
-    rgba(255,253,242,var(--opening-light-opacity)),
-    rgba(249,231,187,calc(.82 * var(--opening-light-opacity)))), linear-gradient(#d7c193,#d7c193);
-}
+/* v107: banner pattern and border receive the same circular field as every
+   frame and the start logo. No separate banner band or uniform edge light. */
+.topbar::before, .topbar .gold-header-edge { background: var(--gold-surface); }
 .hero-opening-light { opacity: var(--opening-light-opacity); pointer-events: none; }
 .hero-random-metal-light { opacity: var(--random-metal-opacity); pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }
 
-/* v106: stronger opening light, based directly on the v103 ZIP. */
+/* v107: circular opening light on the continuing v103-based website. */
