@@ -344,7 +344,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
 .service-grid article::before, .partner-slot::before { content: none !important; }
 
 /* v103: two projected lights, painted ONLY inside existing surface masks. */
-:root { --opening-light-opacity: .88; --random-metal-opacity: 0; }
+:root { --opening-light-opacity: 1; --random-metal-opacity: 0; }
 .gold-light-target, .topbar, .wallpaper-end {
   --metal-random: radial-gradient(ellipse var(--metal-rx, 280px) var(--metal-ry, 440px) at var(--metal-x, -1000px) var(--metal-y, -1000px),
     rgba(255,253,243,calc(.98 * var(--random-metal-opacity))) 0%,
@@ -354,28 +354,30 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(237,207,145,calc(.14 * var(--random-metal-opacity))) 70%, transparent 100%);
   --metal-opening: radial-gradient(ellipse var(--opening-rx, 500px) var(--opening-ry, 300px) at var(--opening-x, 0px) var(--opening-y, 0px),
     rgba(255,253,243,var(--opening-light-opacity)) 0%,
-    rgba(249,231,187,calc(.7 * var(--opening-light-opacity))) 38%,
-    rgba(197,162,100,calc(.35 * var(--opening-light-opacity))) 54%, transparent 100%);
+    rgba(249,231,187,calc(.9 * var(--opening-light-opacity))) 38%,
+    rgba(197,162,100,calc(.5 * var(--opening-light-opacity))) 54%, transparent 100%);
   --gold-surface: var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* A 48%-wide lit band. The other 52% keeps its original base gold. */
 .topbar::before {
   background: var(--metal-random), linear-gradient(90deg, transparent 26%,
-    rgba(245,223,168,calc(.45 * var(--opening-light-opacity))) 28%,
-    rgba(249,231,187,calc(.7 * var(--opening-light-opacity))) 43%,
+    rgba(245,223,168,calc(.65 * var(--opening-light-opacity))) 28%,
+    rgba(249,231,187,calc(.9 * var(--opening-light-opacity))) 43%,
     rgba(255,253,242,var(--opening-light-opacity)) 50%,
-    rgba(197,162,100,calc(.4 * var(--opening-light-opacity))) 56%,
-    rgba(245,223,168,calc(.55 * var(--opening-light-opacity))) 72%, transparent 74%),
+    rgba(197,162,100,calc(.55 * var(--opening-light-opacity))) 56%,
+    rgba(245,223,168,calc(.75 * var(--opening-light-opacity))) 72%, transparent 74%),
     linear-gradient(#d7c193,#d7c193);
 }
 .topbar .gold-header-edge {
   background: var(--metal-random), linear-gradient(110deg,
-    rgba(245,223,168,calc(.55 * var(--opening-light-opacity))),
+    rgba(245,223,168,calc(.75 * var(--opening-light-opacity))),
     rgba(255,253,242,var(--opening-light-opacity)),
-    rgba(249,231,187,calc(.65 * var(--opening-light-opacity)))), linear-gradient(#d7c193,#d7c193);
+    rgba(249,231,187,calc(.82 * var(--opening-light-opacity)))), linear-gradient(#d7c193,#d7c193);
 }
 .hero-opening-light { opacity: var(--opening-light-opacity); pointer-events: none; }
 .hero-random-metal-light { opacity: var(--random-metal-opacity); pointer-events: none; }
 /* No projected light on lettering, wordmark or hamburger artwork. */
 .topbar .wordmark.gold-light-target::before { background: var(--banner-logo-metal); }
 body .site-nav::after { background: var(--gold-surface) !important; }
+
+/* v106: stronger opening light, based directly on the v103 ZIP. */

@@ -20,7 +20,7 @@
   function draw() {
     const t = smooth(Math.min(1, elapsed / duration));
     const light = Object.fromEntries(Object.keys(from).map(key => [key, interpolate(from[key], to[key], t)]));
-    const opening = .88 * Math.max(0, 1 - Math.max(0, scroll) / 88);
+    const opening = Math.max(0, 1 - Math.max(0, scroll) / 88);
     property(root, '--opening-light-opacity', opening.toFixed(4));
     property(root, '--random-metal-opacity', light.opacity.toFixed(4));
     const x = light.x * width, y = light.y * height;

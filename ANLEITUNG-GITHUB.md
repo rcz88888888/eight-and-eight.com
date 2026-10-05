@@ -1,4 +1,4 @@
-# Eight&Eight – Version 103
+# Eight&Eight – Version 106
 
 ## Website hochladen
 
@@ -355,3 +355,18 @@ Zufallslicht statisch. Es gibt keine Sonnenstrahlen oder Hintergrundglows.
 
 Syntax, Masken, Ressourcen und Lichtverläufe sind lokal geprüft. Ein
 direkter Test auf einem iPhone mit Safari war hier nicht möglich.
+
+## Mehr Startlicht in Version 106 – Ausgangspunkt ist ZIP 103
+
+Diese Version wurde direkt aus der Website-ZIP 103 erstellt. Das Licht am
+Seitenanfang hat jetzt 100% statt 88% Spitzenstärke; die seitlichen und
+breiteren Reflexionsbereiche sind ebenfalls stärker beleuchtet. Die
+ursprüngliche Ausdehnung der Lichtfelder und das 48% breite Lichtband im
+oberen Banner bleiben erhalten. Der Lichtverlauf blendet weiter über die
+ersten 88 Scrollpixel aus und erreicht seine volle Stärke wieder ganz oben.
+
+Das unabhängige Zufallslicht, die transparenten Musterzwischenräume,
+Liniendicken, Scrollmaske, Texte, Navigation und Hintergrundlogos stammen
+aus Version 103. Texte und Unternehmenslogos bleiben unbeleuchtet.
+
+Lichtstärke, Verlauf, Transparenz, Ressourcen und ZIP sind lokal geprüft.
