@@ -61,13 +61,15 @@
     const scale = Math.min(box.width / 922, box.height / 1368);
     logoBox = {scale, left: box.left + (box.width - 922 * scale) / 2,
       top: box.top + scroll + (box.height - 1368 * scale) / 2};
-    // The screenshot's arc starts slightly above the banner and ends below
+    // Extend the soft falloff beyond the marked arc so the banner sides and
+    // lower frame still receive visible light. The reference starts above
+    // the banner and ends below
     // the first heading. Use document anchors so browser-bar changes do not drift it.
     const top = -(header?.getBoundingClientRect().height || 88) * .27;
     const heading = firstHeading?.getBoundingClientRect();
     const bottom = heading ? heading.bottom + scroll + 64 : logoBox.top + 1368 * scale + 160;
     openingField = {x: width / 2, y: (top + bottom) / 2,
-      radius: Math.max((bottom - top) / 2, width / 2)};
+      radius: Math.max((bottom - top) / 2, width / 2) * 1.65};
   }, paint(state) { scroll = state.scroll; draw(); }});
   function tick(time) {
     raf = 0;

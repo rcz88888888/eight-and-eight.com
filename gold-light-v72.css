@@ -352,20 +352,20 @@ body { height: auto; min-height: 100%; overflow: visible; }
     rgba(242,216,157,calc(.55 * var(--random-metal-opacity))) 24%,
     rgba(150,115,64,calc(.22 * var(--random-metal-opacity))) 48%,
     rgba(237,207,145,calc(.14 * var(--random-metal-opacity))) 70%, transparent 100%);
-  --metal-opening: radial-gradient(circle var(--opening-radius, 400px) at var(--opening-x, 50%) var(--opening-y, 360px),
-    rgba(255,246,218,calc(1 * var(--opening-light-opacity))) 0%,
-    rgba(255,246,218,calc(0.977 * var(--opening-light-opacity))) 10%,
-    rgba(255,246,218,calc(0.911 * var(--opening-light-opacity))) 20%,
-    rgba(255,246,218,calc(0.809 * var(--opening-light-opacity))) 30%,
-    rgba(255,246,218,calc(0.683 * var(--opening-light-opacity))) 40%,
-    rgba(255,246,218,calc(0.545 * var(--opening-light-opacity))) 50%,
-    rgba(255,246,218,calc(0.406 * var(--opening-light-opacity))) 60%,
-    rgba(255,246,218,calc(0.278 * var(--opening-light-opacity))) 70%,
-    rgba(255,246,218,calc(0.165 * var(--opening-light-opacity))) 80%,
-    rgba(255,246,218,calc(0.116 * var(--opening-light-opacity))) 85%,
-    rgba(255,246,218,calc(0.054 * var(--opening-light-opacity))) 90%,
-    rgba(255,246,218,calc(0.009 * var(--opening-light-opacity))) 95%,
-    rgba(255,246,218,calc(0 * var(--opening-light-opacity))) 100%);
+  --metal-opening: radial-gradient(circle var(--opening-radius, 660px) at var(--opening-x, 50%) var(--opening-y, 360px),
+    rgba(255,243,203,calc(1 * var(--opening-light-opacity))) 0%,
+    rgba(255,243,203,calc(0.993 * var(--opening-light-opacity))) 10%,
+    rgba(255,243,203,calc(0.97 * var(--opening-light-opacity))) 20%,
+    rgba(255,243,203,calc(0.932 * var(--opening-light-opacity))) 30%,
+    rgba(255,243,203,calc(0.875 * var(--opening-light-opacity))) 40%,
+    rgba(255,243,203,calc(0.795 * var(--opening-light-opacity))) 50%,
+    rgba(255,243,203,calc(0.69 * var(--opening-light-opacity))) 60%,
+    rgba(255,243,203,calc(0.55 * var(--opening-light-opacity))) 70%,
+    rgba(255,243,203,calc(0.36 * var(--opening-light-opacity))) 80%,
+    rgba(255,243,203,calc(0.24 * var(--opening-light-opacity))) 85%,
+    rgba(255,243,203,calc(0.12 * var(--opening-light-opacity))) 90%,
+    rgba(255,243,203,calc(0.035 * var(--opening-light-opacity))) 95%,
+    rgba(255,243,203,calc(0 * var(--opening-light-opacity))) 100%);
   --gold-surface: var(--metal-random), var(--metal-opening), linear-gradient(#d7c193,#d7c193);
 }
 /* v107: banner pattern and border receive the same circular field as every

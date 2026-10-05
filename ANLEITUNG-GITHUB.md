@@ -1,4 +1,4 @@
-# Eight&Eight – Version 109
+# Eight&Eight – Version 110
 
 ## Website hochladen
 
@@ -389,3 +389,23 @@ Ein direkter iPhone-Safari-Test war in dieser Umgebung nicht möglich.
 
 Im Dreiklang Strategy / Imagination / Creativity ersetzt „Imagination“ das
 bisherige „Mathematics“. „CREATES STRUCTURE.“ und die Gestaltung bleiben erhalten.
+
+## Erweitertes Startlicht und Telefon-Querformat in Version 110
+
+Das gemeinsame Kreislicht hat einen um 65% größeren Radius und einen breiteren,
+kräftigeren Helligkeitsverlauf in warmem Goldlicht. Die markierte Zone bis zur
+ersten Überschrift und die seitlichen Muster im oberen Banner erhalten so
+sichtbare Reflexionen, bevor das Licht außerhalb weich ausläuft. CSS und SVG
+verwenden weiterhin identische Kreisgeometrie und Helligkeitsstufen.
+
+Nur auf als Telefon erkannten Geräten im Querformat wird die Ornamentmaske
+des Startlogos aufgehoben: Die exakte Logoform einschließlich der Punkte ist
+deckend in #d7c193 gefüllt, ohne Tapetenmuster. Die Reflexionen treffen diese
+Füllung. Bei Rückkehr ins Hochformat wird die Ornamentmaske wiederhergestellt.
+Desktopbrowser behalten das Muster auch bei schmalen oder breiten Fenstern.
+Die transparente Fläche außerhalb der Logoform bleibt in allen Modi erhalten.
+
+Die Scrollglättung aus Version 108 und die Imagination-Textänderung aus
+Version 109 bleiben enthalten. Lokale Prüfungen kontrollieren den Geräte- und
+Orientierungswechsel, die gemeinsame Lichtprojektion und die Maskenstruktur.
+Ein direkter iPhone-Safari-Test war in dieser Umgebung nicht möglich.
