@@ -446,7 +446,7 @@ body > .site-shell { z-index: 3; }
   --reflection-soft: #c2b594;
   --reflection-peak: #c2b594;
   --reflection-shade: #c2b594;
-  --reflection-paint: linear-gradient(113deg,
+  --reflection-paint: linear-gradient(90deg,
     var(--reflection-base) 0%, var(--reflection-base) 20%,
     var(--reflection-soft) 29%, var(--reflection-peak) 32%,
     var(--reflection-soft) 34%, var(--reflection-base) 38%,

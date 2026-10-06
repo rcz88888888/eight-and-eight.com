@@ -7,7 +7,7 @@
   const sheen=document.createElementNS(ns,'linearGradient');
   sheen.id='opening-surface-reflection';
   sheen.setAttribute('x1','0%');sheen.setAttribute('y1','0%');
-  sheen.setAttribute('x2','100%');sheen.setAttribute('y2','34%');
+  sheen.setAttribute('x2','100%');sheen.setAttribute('y2','0%');
   for(const [offset,tone] of [[0,'base'],[.2,'base'],[.29,'soft'],[.32,'peak'],[.34,'soft'],[.38,'base'],[.46,'soft'],[.48,'peak'],[.495,'peak'],[.515,'shade'],[.54,'base'],[.64,'soft'],[.68,'peak'],[.71,'soft'],[.79,'base'],[1,'base']]) {
     const stop=document.createElementNS(ns,'stop');stop.setAttribute('offset',offset);
     stop.setAttribute('stop-color',`var(--reflection-${tone})`);sheen.append(stop);
@@ -39,8 +39,8 @@
     }
   },paint(state){
     const visible=Math.min(1,Math.max(0,1-state.scroll/reveal));
-    // Light starts as soon as the opening artwork re-enters, then grows to 68%.
-    const alpha=.68*Math.pow(visible,.8);
+    // Light starts as soon as the opening artwork re-enters, then grows to 58%.
+    const alpha=.58*Math.pow(visible,.8);
     property('--opening-alpha',alpha.toFixed(5));
     property('--reflection-base',colour(peak,0));
     property('--reflection-soft',colour(peak,alpha*.55));
