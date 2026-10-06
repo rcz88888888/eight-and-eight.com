@@ -60,7 +60,7 @@
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
-    if (reset || logoProgress === undefined || target === 0 || reduced.matches) {
+    if (reset || logoProgress === undefined || reduced.matches) {
       logoProgress = target;
     } else {
       // Time-based damping fills the gaps between touch-scroll events. Only
@@ -280,6 +280,7 @@
   function render(time = performance.now()) {
     raf = 0;
     if (document.hidden) return;
+    const controlledScroll=frameDrivers.size>0;
     for(const driver of [...frameDrivers])driver(time);
     const width = root.clientWidth;
     const height = innerHeight;
@@ -291,8 +292,8 @@
       lastWidth = width;
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
-    state.lightScroll=easeLightScroll(state.scroll,time,resetMotion);
-    const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion);
+    state.lightScroll=easeLightScroll(state.scroll,time,resetMotion || controlledScroll);
+    const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);

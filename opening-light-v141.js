@@ -40,7 +40,7 @@
   if(rim){rim.setAttribute('class','hero-circle-rim');rim.setAttribute('stroke','url(#opening-circle-outer)');rim.style.opacity='var(--opening-alpha,0)';logo.append(rim);}
   let circleX=0,circleY=0,circleRx=0,circleRy=0;
   const base=[194,181,148],peak=[255,251,227],shade=[150,134,99];
-  const colour=(target,strength)=>'rgb('+base.map((v,i)=>Math.round(v+(target[i]-v)*strength)).join(',')+')';
+  const colour=(target,strength)=>'rgb('+base.map((v,i)=>(v+(target[i]-v)*strength).toFixed(3)).join(',')+')';
   let x=0,y=0,rx=0,ry=0,reveal=1,headerLeft=0;
   const contentLight=document.querySelector('.circle-content-light');
   let scopes=[logo,header,contentLight].filter(Boolean);
@@ -99,10 +99,13 @@
   },paint(state){
     const visible=Math.min(1,Math.max(0,1-(state.lightScroll ?? state.scroll)/reveal));
     // Light starts as soon as the opening artwork re-enters, then grows to 58%.
-    const alpha=.58*Math.pow(visible,.8);
+    // Zero velocity at both fade endpoints prevents the first visible
+    // light frame and the final arrival at the top from popping.
+    const fade=visible*visible*(3-2*visible);
+    const alpha=.58*fade;
     // Scope changing properties to the illuminated surfaces; changing
     // inherited variables on the root used to restyle the entire document.
-    const values=[['--opening-alpha',alpha.toFixed(5)],
+    const values=[['--opening-alpha',alpha.toFixed(7)],
       ['--reflection-soft',colour(peak,alpha*.55)],
       ['--reflection-peak',colour(peak,alpha)],
       ['--reflection-shade',colour(shade,alpha*.18)]];

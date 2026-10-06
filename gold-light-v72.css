@@ -446,6 +446,11 @@ body > .site-shell { z-index: 3; }
   --reflection-soft: #c2b594;
   --reflection-peak: #c2b594;
   --reflection-shade: #c2b594;
+}
+/* Resolve nested gradient variables on the painted element itself, using
+   its locally scoped light colours rather than inherited root defaults. */
+.topbar::before, .wallpaper-end::before,
+.gold-frame-light:not(.topbar)::after, .gold-header-edge {
   --reflection-paint: linear-gradient(90deg,
     var(--reflection-base) 0%, var(--reflection-base) 20%,
     var(--reflection-soft) 29%, var(--reflection-peak) 32%,
@@ -466,7 +471,7 @@ body > .site-shell { z-index: 3; }
 }
 
 /* v150: extra elliptical start light; both gradients end at zero on the blue boundary. */
-:root {
+.circle-start-light {
   --circle-paint:
     radial-gradient(ellipse var(--circle-core-rx,100px) var(--circle-core-ry,100px)
       at var(--circle-x,50%) var(--circle-y,400px),
