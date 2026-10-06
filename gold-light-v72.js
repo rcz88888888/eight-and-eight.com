@@ -72,11 +72,17 @@
   function cacheGeometry() {
     const head = header?.getBoundingClientRect();
     const menuOpen = header?.classList.contains('menu-expanded');
-    const height = (head?.height || 0) + (menuOpen ? nav?.getBoundingClientRect().height || 0 : 0);
+    const menuBox = menuOpen ? nav?.getBoundingClientRect() : null;
+    const height = (head?.height || 0) + (menuBox?.height || 0);
     const ratio = Math.max(1, devicePixelRatio || 1);
     if (contentLayer) {
       paint(contentLayer, '--content-start', `${head?.height || 0}px`);
-      paint(contentLayer, '--content-cut', `${Math.max(0, Math.ceil(height * ratio) / ratio - 3)}px`);
+      // The open portrait menu ends at its measured outer border. Round
+      // inward to device pixels so the mask cannot pass that border.
+      const cut = menuBox && matchMedia('(orientation: portrait)').matches
+        ? Math.floor(menuBox.bottom * ratio) / ratio
+        : Math.ceil(height * ratio) / ratio - 3;
+      paint(contentLayer, '--content-cut', `${Math.max(0, cut)}px`);
     }
   }
 

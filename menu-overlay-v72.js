@@ -6,6 +6,7 @@
   if (!header || !nav || !toggle) return;
   const mobile = matchMedia('(max-width: 900px)');
   let frame = 0;
+  let previousGeometry = '';
   const set = (element, name, value) => {
     if (element.style.getPropertyValue(name) !== value) element.style.setProperty(name, value);
   };
@@ -21,6 +22,11 @@
     set(nav, '--menu-banner-height', `${rect.height}px`);
     set(nav, '--menu-top', `${Math.max(0, Math.min(innerHeight, rect.bottom))}px`);
     set(header, '--expanded-menu-height', `${menuHeight}px`);
+    const geometry = `${rect.bottom}:${rect.width}:${menuHeight}:${open}`;
+    if (geometry !== previousGeometry) {
+      previousGeometry = geometry;
+      window.EightEightEffects?.invalidate();
+    }
   }
   const schedule = () => { if (!frame) frame = requestAnimationFrame(position); };
   function sync() {
