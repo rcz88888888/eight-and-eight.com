@@ -493,3 +493,7 @@ body .topbar .menu-toggle > span {
   height:2.25px !important;min-height:2.25px !important;
   border:0 !important;border-radius:999px !important;overflow:hidden;
 }
+
+/* v152: six localized vertical reflections, split into opposing entrances. */
+.start-reflection-layer { pointer-events:none; }
+.start-reflection-rim { stroke-width:var(--hero-border-width,1.5px); }
