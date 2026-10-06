@@ -464,3 +464,32 @@ body > .site-shell { z-index: 3; }
   background-position: var(--reflection-offset-x,0px) var(--reflection-offset-y,0px);
   background-repeat: no-repeat;
 }
+
+/* v150: extra elliptical start light; both gradients end at zero on the blue boundary. */
+:root {
+  --circle-paint:
+    radial-gradient(ellipse var(--circle-core-rx,100px) var(--circle-core-ry,100px)
+      at var(--circle-x,50%) var(--circle-y,400px),
+      rgba(255,251,232,.95) 0%, rgba(255,251,232,.95) 60%, rgba(255,251,232,.5) 80%, transparent 100%),
+    radial-gradient(ellipse var(--circle-rx,200px) var(--circle-ry,500px)
+      at var(--circle-x,50%) var(--circle-y,400px),
+      rgba(255,251,232,.6) 0%, rgba(255,251,232,.6) 25%, rgba(255,251,232,.38) 50%,
+      rgba(255,251,232,.12) 75%, transparent 100%);
+}
+.circle-start-light { pointer-events:none; opacity:var(--opening-alpha,0); mix-blend-mode:screen;
+  background-image:var(--circle-paint);background-size:var(--opening-width,100vw) var(--opening-height,100vh);background-repeat:no-repeat; }
+.content-scroll > .circle-content-light { position:fixed;inset:0;z-index:0; }
+.topbar > .circle-banner-light {position:absolute;inset:0;z-index:1;background-position:var(--opening-banner-offset,0px) 0;}
+.hero-circle-rim {stroke-width:var(--hero-border-width,1.5px);}
+.gold-frame-light:not(.topbar)::after, .gold-header-edge {
+  background-image:radial-gradient(ellipse var(--circle-rx,200px) var(--circle-ry,500px)
+    at var(--circle-local-x,50%) var(--circle-local-y,400px),
+    rgba(255,251,232,var(--opening-alpha)) 0%,rgba(255,251,232,var(--opening-alpha)) 25%, transparent 100%),var(--reflection-paint);
+  background-size:auto,var(--reflection-width,100vw) var(--reflection-height,100vh);
+  background-position:0 0,var(--reflection-offset-x,0px) var(--reflection-offset-y,0px);
+}
+/* Keep the portrait hamburger thickness in every orientation. */
+body .topbar .menu-toggle > span {
+  height:2.25px !important;min-height:2.25px !important;
+  border:0 !important;border-radius:999px !important;overflow:hidden;
+}

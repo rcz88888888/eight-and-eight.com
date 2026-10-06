@@ -4,18 +4,9 @@
   const logo = stage?.querySelector('.hero-static-logo');
   const engine = window.EightEightEffects;
   if (!logo || !engine) return;
-  // Device identity prevents narrow/resized desktop windows from changing the logo.
-  const phone = navigator.userAgentData?.mobile === true ||
-    /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent);
-  const landscape = matchMedia('(orientation: landscape)');
-  const surfaceMasks = [...logo.querySelectorAll('rect[mask="url(#hero-paper-ornament)"]')];
-  function updatePhoneLogo() {
-    const solid = phone && landscape.matches;
-    for (const surface of surfaceMasks)
-      surface.setAttribute('mask', solid ? 'none' : 'url(#hero-paper-ornament)');
-  }
-  landscape.addEventListener('change', updatePhoneLogo);
-  updatePhoneLogo();
+  // Preserve the transparent wallpaper gaps on every device and orientation.
+  for (const surface of logo.querySelectorAll('rect[mask="url(#hero-paper-ornament)"]'))
+    surface.setAttribute('mask', 'url(#hero-paper-ornament)');
   const pattern = logo.querySelector('#hero-paper-pattern');
   const tileImage = pattern.querySelector('image');
   const header = document.querySelector('.topbar');
