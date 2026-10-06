@@ -373,21 +373,35 @@ body > .site-shell { z-index: 3; }
     max-height: none;
     transform: translate(-50%, -50%);
   }
-  body > .parallax-logo {
-    width: 37.68vh;
-    height: 55.91vh;
-    max-width: none;
-    max-height: none;
-  }
   @supports (height: 100svh) {
     .content-scroll .hero-static-logo.hero-wallpaper-logo {
       top: 37svh;
       width: 53.92svh;
       height: 80svh;
     }
-    body > .parallax-logo { width: 37.68svh; height: 55.91svh; }
   }
 }
 
 /* v139: static transparent start artwork behind the banner pattern. */
 .banner-startlogo-projection { display: block; z-index: 0; background: transparent; }
+
+/* v140: reserve the complete opening logo box plus a 24px About gap. */
+@media (orientation: landscape) {
+  .content-scroll .logo-stage { height: calc(77vh + 24px); }
+  @supports (height: 100svh) {
+    .content-scroll .logo-stage { height: calc(77svh + 24px); }
+  }
+}
+/* Measure the pre-enlargement hero dimensions without affecting layout. */
+.landscape-logo-reference {
+  position: absolute; visibility: hidden; pointer-events: none;
+  left: 8px; top: 0; width: calc(100% - 16px);
+  height: calc(100vh - var(--header-height) - 16px);
+}
+@media (max-width: 900px) { .landscape-logo-reference { height: calc(84vh - var(--header-height) - 16px); } }
+@media (max-width: 560px) { .landscape-logo-reference { height: calc(78vh - var(--header-height) - 16px); } }
+@supports (height: 100svh) {
+  .landscape-logo-reference { height: calc(100svh - var(--header-height) - 16px); }
+  @media (max-width: 900px) { .landscape-logo-reference { height: calc(84svh - var(--header-height) - 16px); } }
+  @media (max-width: 560px) { .landscape-logo-reference { height: calc(78svh - var(--header-height) - 16px); } }
+}

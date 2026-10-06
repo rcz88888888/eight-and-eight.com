@@ -35,6 +35,11 @@
   let lastFeedPaint = '';
   let sprites = [];
   let mainBox;
+  let openingScaleFactor=1;
+  const reference=document.createElement('span');
+  reference.className='landscape-logo-reference';
+  reference.setAttribute('aria-hidden','true');
+  openingLogo?.parentElement.append(reference);
   let openingCenter;
   let bgRatio = 1;
   let inkRatio = 1;
@@ -46,7 +51,7 @@
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
-    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
+    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     for (const layer of layers) layer.sprite = spriteFor(922 * scale * layer.scale * inkRatio);
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
@@ -99,9 +104,17 @@
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
       const box = openingLogo.getBoundingClientRect();
+      openingScaleFactor=1;
+      if(matchMedia('(orientation: landscape)').matches) {
+        const oldBox=reference.getBoundingClientRect();
+        const before=Math.min(oldBox.width/922,oldBox.height/1368);
+        const after=Math.min(box.width/922,box.height/1368);
+        if(before>0)openingScaleFactor=after/before;
+      }
       openingCenter = {x: box.left + box.width / 2,
         y: box.top + scrollPosition() + box.height / 2};
     }
+    cacheSpriteChoices();
     if (feed && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
@@ -189,12 +202,12 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${easedProgress}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
     ink.clearRect(0, 0, width, height);
-    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368);
+    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     const w = 922 * scale;
     const h = 1368 * scale;
     const cx = mainBox.left + mainBox.width / 2;
