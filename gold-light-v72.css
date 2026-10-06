@@ -500,3 +500,8 @@ body .topbar .menu-toggle > span {
 
 /* Dynamic light values are local to lit surfaces, never inherited page-wide. */
 :root { --opening-alpha:0; }
+
+/* v156: one native-scrolling SVG paints above the cream occluder but below
+   the banner pattern. No JS projection can lag behind compositor scrolling. */
+.content-scroll .hero-wallpaper-logo { z-index:3; }
+.content-scroll .logo-stage { isolation:auto; z-index:auto; }

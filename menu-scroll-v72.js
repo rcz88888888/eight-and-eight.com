@@ -19,7 +19,8 @@
 
   const cancel = () => {
     if (!active) return;
-    cancelAnimationFrame(active.frame);
+    if(active.frame)cancelAnimationFrame(active.frame);
+    active.stopDriver?.();
     if (active.previousBehavior) {
       root.style.setProperty('scroll-behavior', active.previousBehavior, active.previousPriority);
     } else {
@@ -69,32 +70,27 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       const session = active;
-      active.frame = requestAnimationFrame(startTime => {
-        if (active !== session) return;
-        const start = scrollPosition();
-        let destination = destinationFor(target);
-        destinationDirty = false;
-        const distance = destination - start;
-        if (Math.abs(distance) < 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          scrollTo({ top: destinationFor(target), behavior: 'auto' });
-          finish(target, hash);
-          return;
-        }
-        const duration = Math.min(8000, 2400 + Math.abs(distance) * 0.45);
-        const step = now => {
-          if (active !== session) return;
-          const progress = Math.min(1, Math.max(0, (now - startTime) / duration));
-          // Re-read layout only when resizing or loading changed the target.
-          if (destinationDirty) {
-            destination = destinationFor(target);
-            destinationDirty = false;
+      let startTime=null,start=0,destination=0,duration=0;
+      const engine=window.EightEightEffects;
+      const step=now=>{
+        if(active!==session)return;
+        if(startTime===null){
+          startTime=now;start=scrollPosition();destination=destinationFor(target);
+          destinationDirty=false;
+          const distance=destination-start;
+          if(Math.abs(distance)<1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+            scrollTo({top:destination,behavior:'auto'});finish(target,hash);return;
           }
-          scrollTo({ top: start + (destination - start) * ease(progress), behavior: 'auto' });
-          if (progress < 1) active.frame = requestAnimationFrame(step);
-          else finish(target, hash);
-        };
-        step(startTime);
-      });
+          duration=Math.min(8000,2400+Math.abs(distance)*.45);
+        }
+        const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
+        if(destinationDirty){destination=destinationFor(target);destinationDirty=false;}
+        scrollTo({top:start+(destination-start)*ease(progress),behavior:'auto'});
+        if(progress===1)finish(target,hash);
+        else if(!session.stopDriver)session.frame=requestAnimationFrame(step);
+      };
+      if(engine?.addFrameDriver)session.stopDriver=engine.addFrameDriver(step);
+      else session.frame=requestAnimationFrame(step);
     });
   });
 

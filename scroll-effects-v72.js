@@ -13,6 +13,7 @@
   let feedHeight = 0;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const subscribers = [];
+  const frameDrivers = new Set();
   const image = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
@@ -95,6 +96,12 @@
   const invalidate = () => { layoutDirty = true; viewportDirty = true; schedule(); };
   window.EightEightEffects = {
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
+    // Navigation advances first, then all canvases and lights use the same
+    // resulting scroll position in this frame (no second animation clock).
+    addFrameDriver(callback) {
+      frameDrivers.add(callback);schedule();
+      return () => frameDrivers.delete(callback);
+    },
     invalidate,
     schedule,
     scrollPosition
@@ -273,6 +280,7 @@
   function render(time = performance.now()) {
     raf = 0;
     if (document.hidden) return;
+    for(const driver of [...frameDrivers])driver(time);
     const width = root.clientWidth;
     const height = innerHeight;
     const geometryDirty = layoutDirty || viewportDirty;
@@ -293,7 +301,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (logoAnimating || lightAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (frameDrivers.size || logoAnimating || lightAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {

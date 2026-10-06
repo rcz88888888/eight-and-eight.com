@@ -43,7 +43,7 @@
   const colour=(target,strength)=>'rgb('+base.map((v,i)=>Math.round(v+(target[i]-v)*strength)).join(',')+')';
   let x=0,y=0,rx=0,ry=0,reveal=1,headerLeft=0;
   const contentLight=document.querySelector('.circle-content-light');
-  let scopes=[logo,header,contentLight].filter(Boolean),projection=null;
+  let scopes=[logo,header,contentLight].filter(Boolean);
   const localPaint=new WeakMap();
   function local(node,name,value) {
     if(!node)return;
@@ -95,19 +95,18 @@
       frame.style.setProperty('--opening-edge-y',(y-f.top-scroll).toFixed(2)+'px');
     }
     for(const node of scopes)if(!next.includes(node))resetLight(node);
-    scopes=[...new Set(next)];projection=null;
+    scopes=[...new Set(next)];
   },paint(state){
     const visible=Math.min(1,Math.max(0,1-(state.lightScroll ?? state.scroll)/reveal));
     // Light starts as soon as the opening artwork re-enters, then grows to 58%.
     const alpha=.58*Math.pow(visible,.8);
     // Scope changing properties to the illuminated surfaces; changing
     // inherited variables on the root used to restyle the entire document.
-    if(!projection)projection=document.querySelector('.banner-startlogo-projection');
     const values=[['--opening-alpha',alpha.toFixed(5)],
       ['--reflection-soft',colour(peak,alpha*.55)],
       ['--reflection-peak',colour(peak,alpha)],
       ['--reflection-shade',colour(shade,alpha*.18)]];
-    for(const node of [...scopes,projection])for(const [name,value] of values)local(node,name,value);
+    for(const node of scopes)for(const [name,value] of values)local(node,name,value);
     // Below the opening artwork every light is off. Skip invisible
     // position/style work while the logo rain and native scrolling continue.
     if(alpha===0)return;
