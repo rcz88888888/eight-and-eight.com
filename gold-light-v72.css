@@ -355,21 +355,9 @@ body > .site-shell { z-index: 3; }
 /* v128: moderated sun gold sampled from the supplied photograph. */
 :root { --wallpaper-sand-gold: #c2b594; --metallic-gold: #c2b594; --line: #c2b594; }
 
-/* v131: cream browser ground and a soft start light, excluding content glyphs. */
-:root { --page-cream: #fdfcfa; --start-light-alpha: 0; }
-.content-scroll > .content-start-light { position: fixed; inset: 0; z-index: 0; }
+:root { --page-cream: #fdfcfa; }
 .content-scroll .hero-wallpaper-logo { z-index: 0; }
-.topbar > .banner-start-light { position: absolute; inset: 0; z-index: 1; }
 .topbar > .wordmark, .topbar > .menu-toggle { z-index: 2; }
-.start-area-light {
-  pointer-events: none;
-  opacity: var(--start-light-alpha);
-  mix-blend-mode: screen;
-  background: radial-gradient(ellipse var(--start-light-rx, 400px) var(--start-light-ry, 700px)
-    at var(--start-light-x, 50%) var(--start-light-y, 400px),
-    rgba(255,254,248,1) 0%, rgba(255,254,248,.95) 40%,
-    rgba(255,254,248,.60) 65%, rgba(255,254,248,.24) 85%, rgba(255,254,248,0) 100%);
-}
 
 /* v134: landscape opening logos follow the marked visible height (62vh).
    SVG artwork has clear margins; canvas copies retain their depth scales. */
@@ -401,19 +389,5 @@ body > .site-shell { z-index: 3; }
   }
 }
 
-/* v137: project the original transparent start artwork above the cream mask,
-   under the banner ornament. Banner edges use the same spatial light field. */
-.content-scroll > .content-start-light { opacity: var(--logo-base-alpha, var(--start-light-alpha)); }
+/* v139: static transparent start artwork behind the banner pattern. */
 .banner-startlogo-projection { display: block; z-index: 0; background: transparent; }
-.gold-header-edge {
-  background: radial-gradient(ellipse var(--start-light-rx,400px) var(--start-light-ry,700px)
-    at var(--banner-light-x,50%) var(--banner-light-y,400px),
-    rgba(255,254,248,var(--start-light-alpha)) 0%,
-    rgba(255,254,248,var(--start-light-alpha)) 40%, transparent 100%), var(--gold-surface);
-}
-.wallpaper-end.gold-frame-light::after {
-  background: radial-gradient(ellipse var(--start-light-rx,400px) var(--start-light-ry,700px)
-    at var(--footer-light-x,50%) var(--footer-light-y,400px),
-    rgba(255,254,248,var(--start-light-alpha)) 0%,
-    rgba(255,254,248,var(--start-light-alpha)) 40%, transparent 100%), var(--gold-surface);
-}
