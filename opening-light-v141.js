@@ -39,8 +39,8 @@
     }
   },paint(state){
     const visible=Math.min(1,Math.max(0,1-state.scroll/reveal));
-    // Light starts as soon as the opening artwork re-enters, then grows to 48%.
-    const alpha=.48*Math.pow(visible,.8);
+    // Light starts as soon as the opening artwork re-enters, then grows to 78%.
+    const alpha=.78*Math.pow(visible,.8);
     property('--opening-alpha',alpha.toFixed(5));
     property('--reflection-base',colour(peak,0));
     property('--reflection-soft',colour(peak,alpha*.55));
