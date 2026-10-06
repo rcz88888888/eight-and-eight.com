@@ -496,4 +496,4 @@ body .topbar .menu-toggle > span {
 
 /* v152: six localized vertical reflections, split into opposing entrances. */
 .start-reflection-layer { pointer-events:none; }
-.start-reflection-rim { stroke-width:var(--hero-border-width,1.5px); }
+.start-reflection-material-rim { stroke-width:var(--hero-border-width,1.5px); }

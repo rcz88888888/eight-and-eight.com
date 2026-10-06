@@ -76,7 +76,7 @@
       frame.style.setProperty('--opening-edge-y',(y-f.top-scroll).toFixed(2)+'px');
     }
   },paint(state){
-    const visible=Math.min(1,Math.max(0,1-state.scroll/reveal));
+    const visible=Math.min(1,Math.max(0,1-(state.lightScroll ?? state.scroll)/reveal));
     // Light starts as soon as the opening artwork re-enters, then grows to 58%.
     const alpha=.58*Math.pow(visible,.8);
     property('--opening-alpha',alpha.toFixed(5));
@@ -84,6 +84,9 @@
     property('--reflection-soft',colour(peak,alpha*.55));
     property('--reflection-peak',colour(peak,alpha));
     property('--reflection-shade',colour(shade,alpha*.18));
+    // Below the opening artwork every light is off. Skip invisible
+    // position/style work while the logo rain and native scrolling continue.
+    if(alpha===0)return;
     property('--circle-x',circleX.toFixed(2)+'px');property('--circle-y',(circleY-state.scroll).toFixed(2)+'px');
     header.style.setProperty('--circle-local-x',(circleX-headerLeft).toFixed(2)+'px');
     header.style.setProperty('--circle-local-y',(circleY-state.scroll).toFixed(2)+'px');
