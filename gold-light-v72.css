@@ -497,3 +497,6 @@ body .topbar .menu-toggle > span {
 /* v152: six localized vertical reflections, split into opposing entrances. */
 .start-reflection-layer { pointer-events:none; }
 .start-reflection-material-rim { stroke-width:var(--hero-border-width,1.5px); }
+
+/* Dynamic light values are local to lit surfaces, never inherited page-wide. */
+:root { --opening-alpha:0; }

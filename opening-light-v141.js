@@ -42,6 +42,20 @@
   const base=[194,181,148],peak=[255,251,227],shade=[150,134,99];
   const colour=(target,strength)=>'rgb('+base.map((v,i)=>Math.round(v+(target[i]-v)*strength)).join(',')+')';
   let x=0,y=0,rx=0,ry=0,reveal=1,headerLeft=0;
+  const contentLight=document.querySelector('.circle-content-light');
+  let scopes=[logo,header,contentLight].filter(Boolean),projection=null;
+  const localPaint=new WeakMap();
+  function local(node,name,value) {
+    if(!node)return;
+    let cache=localPaint.get(node);
+    if(!cache){cache=new Map();localPaint.set(node,cache);}
+    if(cache.get(name)===value)return;
+    cache.set(name,value);node.style.setProperty(name,value);
+  }
+  function resetLight(node) {
+    local(node,'--opening-alpha','0');
+    for(const tone of ['soft','peak','shade'])local(node,'--reflection-'+tone,'rgb(194,181,148)');
+  }
   const cached=new Map();
   function property(name,value){if(cached.get(name)===value)return;cached.set(name,value);root.style.setProperty(name,value);}
   engine.subscribe({measure(){
@@ -66,8 +80,13 @@
     property('--opening-width',root.clientWidth+'px');property('--opening-height',innerHeight+'px');
     property('--opening-banner-offset',(-h.left).toFixed(2)+'px');
     property('--reflection-width',(rx*2).toFixed(2)+'px');property('--reflection-height',(ry*2).toFixed(2)+'px');
+    const next=[logo,header,contentLight].filter(Boolean);
+    for(const node of [header,contentLight])local(node,'--circle-x',circleX.toFixed(2)+'px');
     for(const frame of document.querySelectorAll('.gold-frame-light:not(.topbar)')) {
       const f=frame.getBoundingClientRect();
+      // Only the nearby frames can intersect the opening light. Distant
+      // sections keep their static base colour and require no scroll paints.
+      if(f.top+scroll<=y+ry && f.bottom+scroll>=y-ry)next.push(frame);
       frame.style.setProperty('--circle-local-x',(circleX-f.left).toFixed(2)+'px');
       frame.style.setProperty('--circle-local-y',(circleY-f.top-scroll).toFixed(2)+'px');
       frame.style.setProperty('--reflection-offset-x',(x-rx-f.left).toFixed(2)+'px');
@@ -75,25 +94,29 @@
       frame.style.setProperty('--opening-edge-x',(x-f.left).toFixed(2)+'px');
       frame.style.setProperty('--opening-edge-y',(y-f.top-scroll).toFixed(2)+'px');
     }
+    for(const node of scopes)if(!next.includes(node))resetLight(node);
+    scopes=[...new Set(next)];projection=null;
   },paint(state){
     const visible=Math.min(1,Math.max(0,1-(state.lightScroll ?? state.scroll)/reveal));
     // Light starts as soon as the opening artwork re-enters, then grows to 58%.
     const alpha=.58*Math.pow(visible,.8);
-    property('--opening-alpha',alpha.toFixed(5));
-    property('--reflection-base',colour(peak,0));
-    property('--reflection-soft',colour(peak,alpha*.55));
-    property('--reflection-peak',colour(peak,alpha));
-    property('--reflection-shade',colour(shade,alpha*.18));
+    // Scope changing properties to the illuminated surfaces; changing
+    // inherited variables on the root used to restyle the entire document.
+    if(!projection)projection=document.querySelector('.banner-startlogo-projection');
+    const values=[['--opening-alpha',alpha.toFixed(5)],
+      ['--reflection-soft',colour(peak,alpha*.55)],
+      ['--reflection-peak',colour(peak,alpha)],
+      ['--reflection-shade',colour(shade,alpha*.18)]];
+    for(const node of [...scopes,projection])for(const [name,value] of values)local(node,name,value);
     // Below the opening artwork every light is off. Skip invisible
     // position/style work while the logo rain and native scrolling continue.
     if(alpha===0)return;
-    property('--circle-x',circleX.toFixed(2)+'px');property('--circle-y',(circleY-state.scroll).toFixed(2)+'px');
-    header.style.setProperty('--circle-local-x',(circleX-headerLeft).toFixed(2)+'px');
-    header.style.setProperty('--circle-local-y',(circleY-state.scroll).toFixed(2)+'px');
-    property('--opening-x',x.toFixed(2)+'px');property('--opening-y',(y-state.scroll).toFixed(2)+'px');
-    header.style.setProperty('--reflection-offset-x',(x-rx-headerLeft).toFixed(2)+'px');
-    header.style.setProperty('--reflection-offset-y',(y-ry-state.scroll).toFixed(2)+'px');
-    header.style.setProperty('--opening-edge-x',(x-headerLeft).toFixed(2)+'px');
-    header.style.setProperty('--opening-edge-y',(y-state.scroll).toFixed(2)+'px');
+    for(const node of [header,contentLight])local(node,'--circle-y',(circleY-state.scroll).toFixed(2)+'px');
+    local(header,'--circle-local-x',(circleX-headerLeft).toFixed(2)+'px');
+    local(header,'--circle-local-y',(circleY-state.scroll).toFixed(2)+'px');
+    local(header,'--reflection-offset-x',(x-rx-headerLeft).toFixed(2)+'px');
+    local(header,'--reflection-offset-y',(y-ry-state.scroll).toFixed(2)+'px');
+    local(header,'--opening-edge-x',(x-headerLeft).toFixed(2)+'px');
+    local(header,'--opening-edge-y',(y-state.scroll).toFixed(2)+'px');
   }});
 })();
