@@ -438,3 +438,29 @@ body > .site-shell { z-index: 3; }
     rgba(255,254,249,var(--opening-alpha)) 0%,
     rgba(255,254,249,var(--opening-alpha)) 42%, transparent 100%), var(--gold-surface);
 }
+
+/* v142: actual surface reflections replace the broad white overlay. */
+.opening-content-light, .opening-banner-light { display: none; }
+:root {
+  --reflection-base: #c2b594;
+  --reflection-soft: #c2b594;
+  --reflection-peak: #c2b594;
+  --reflection-shade: #c2b594;
+  --reflection-paint: linear-gradient(113deg,
+    var(--reflection-base) 0%, var(--reflection-base) 20%,
+    var(--reflection-soft) 29%, var(--reflection-peak) 32%,
+    var(--reflection-soft) 34%, var(--reflection-base) 38%,
+    var(--reflection-soft) 46%, var(--reflection-peak) 48%,
+    var(--reflection-peak) 49.5%, var(--reflection-shade) 51.5%,
+    var(--reflection-base) 54%, var(--reflection-soft) 64%,
+    var(--reflection-peak) 68%, var(--reflection-soft) 71%,
+    var(--reflection-base) 79%, var(--reflection-base) 100%);
+}
+.topbar::before, .wallpaper-end::before,
+.gold-frame-light:not(.topbar)::after, .gold-header-edge {
+  background-color: var(--wallpaper-sand-gold);
+  background-image: var(--reflection-paint);
+  background-size: var(--reflection-width,100vw) var(--reflection-height,100vh);
+  background-position: var(--reflection-offset-x,0px) var(--reflection-offset-y,0px);
+  background-repeat: no-repeat;
+}
