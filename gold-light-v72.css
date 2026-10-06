@@ -405,3 +405,36 @@ body > .site-shell { z-index: 3; }
   @media (max-width: 900px) { .landscape-logo-reference { height: calc(84svh - var(--header-height) - 16px); } }
   @media (max-width: 560px) { .landscape-logo-reference { height: calc(78svh - var(--header-height) - 16px); } }
 }
+
+/* v141: soft ivory daylight in the existing palette, driven only by scroll. */
+:root {
+  --opening-alpha: 0;
+  --opening-paint:
+    radial-gradient(ellipse calc(var(--opening-rx,400px) * .16) calc(var(--opening-ry,600px) * .88)
+      at calc(var(--opening-x,50%) + 18px) var(--opening-y,400px),
+      rgba(255,254,249,.95) 0%, rgba(255,254,249,.55) 32%, transparent 100%),
+    radial-gradient(ellipse var(--opening-rx,400px) var(--opening-ry,600px)
+      at var(--opening-x,50%) var(--opening-y,400px),
+      rgba(255,254,249,.78) 0%, rgba(255,254,249,.58) 42%,
+      rgba(255,254,249,.2) 78%, transparent 100%);
+}
+.opening-light {
+  pointer-events: none;
+  background-image: var(--opening-paint);
+  background-size: var(--opening-width,100vw) var(--opening-height,100vh);
+  background-repeat: no-repeat;
+  opacity: var(--opening-alpha);
+  mix-blend-mode: screen;
+}
+.content-scroll > .opening-content-light { position: fixed; inset: 0; z-index: 0; }
+.topbar > .opening-banner-light {
+  position: absolute; inset: 0; z-index: 1;
+  background-position: var(--opening-banner-offset,0px) 0;
+}
+.gold-frame-light:not(.topbar)::after,
+.gold-header-edge {
+  background: radial-gradient(ellipse var(--opening-rx,400px) var(--opening-ry,600px)
+    at var(--opening-edge-x,50%) var(--opening-edge-y,400px),
+    rgba(255,254,249,var(--opening-alpha)) 0%,
+    rgba(255,254,249,var(--opening-alpha)) 42%, transparent 100%), var(--gold-surface);
+}
