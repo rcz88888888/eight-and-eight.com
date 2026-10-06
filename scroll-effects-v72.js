@@ -34,6 +34,7 @@
   let lastMainPaint = '';
   let lastFeedPaint = '';
   let sprites = [];
+  let mainSprites = [];
   let mainBox;
   let openingScaleFactor=1;
   const reference=document.createElement('span');
@@ -49,10 +50,11 @@
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
+  const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
-    for (const layer of layers) layer.sprite = spriteFor(922 * scale * layer.scale * inkRatio);
+    for (const layer of layers) layer.sprite = mainSpriteFor(922 * scale * layer.scale * inkRatio);
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
@@ -139,7 +141,7 @@
     const stableHeight = sceneViewportHeight;
     particles = Array.from({length: count}, (_, i) => {
       const fraction = i === 0 ? 0 : i === count - 1 ? 1 : rand() ** 2.6;
-      const w = mainWidth * (.008 + .872 * fraction);
+      const w = mainWidth * (.004 + .436 * fraction);
       return {
         x: rand() * (width + mainWidth) - mainWidth / 2 - w / 2,
         y: rand() * (pageHeight + stableHeight) - stableHeight / 2,
@@ -157,7 +159,7 @@
     cacheSpriteChoices();
   }
   function spawnRain(initial=false) {
-    const width=rainMaxWidth*(.008+.872*Math.random()**2.6);
+    const width=rainMaxWidth*(.004+.436*Math.random()**2.6);
     const duration=1+7*Math.random();
     return {x:Math.random()*rainWidth-width/2,width,height:width*1368/922,
       opacity:(.08+Math.random()*.24)*.2206456,duration,
@@ -287,6 +289,19 @@
       canvas.height = Math.round(width * 1368 / 922);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas;
+    });
+    // Cache the wallpaper base colour once per sprite size. Preserve the
+    // source silhouette and each layer's independent opacity during drawing.
+    const baseColour=getComputedStyle(root).getPropertyValue('--wallpaper-sand-gold').trim() || '#c2b594';
+    mainSprites=sprites.map(source=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=source.width;canvas.height=source.height;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(source,0,0);
+      ctx.globalCompositeOperation='source-in';ctx.fillStyle=baseColour;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalCompositeOperation='source-over';
       return canvas;
     });
     invalidate();
