@@ -34,9 +34,15 @@
     while(previous && Math.hypot(next.x-previous.x,next.y-previous.y)<150);
     return next;
   }
-  let from=target(),to=target(from);
+  const points=[target()];
+  while(points.length<4)points.push(target(points[points.length-1]));
   function paintLight(p) {
-    const eased=p*p*(3-2*p),mix=key=>from[key]+(to[key]-from[key])*eased;
+    // A cubic B-spline never stops at random control points. Its position,
+    // velocity and acceleration stay continuous across every segment.
+    // Positive weights keep width, opacity and position inside their bounds.
+    const t=Math.min(1,Math.max(0,p)),t2=t*t,t3=t2*t;
+    const weights=[(1-t)**3/6,(3*t3-6*t2+4)/6,(-3*t3+3*t2+3*t+1)/6,t3/6];
+    const mix=key=>points.reduce((sum,point,i)=>sum+weights[i]*point[key],0);
     for(const g of [gradient,projectedGradient]) if(g) {
       g.setAttribute('cx',mix('x').toFixed(2));g.setAttribute('cy',mix('y').toFixed(2));
       g.setAttribute('r',mix('r').toFixed(2));
@@ -52,7 +58,7 @@
     const dt=Math.min(.1,(time-lastFrame)/1000);
     if(time-lastFrame>=1000/30-1) {
       elapsed+=dt;lastFrame=time;
-      if(elapsed>=duration){from=to;to=target(from);elapsed=0;duration=6+Math.random()*6;}
+      while(elapsed>=duration){elapsed-=duration;points.shift();points.push(target(points[points.length-1]));}
       paintLight(elapsed/duration);
     }
     raf=requestAnimationFrame(tick);
