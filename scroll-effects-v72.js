@@ -46,7 +46,6 @@
   let bgRatio = 1;
   let inkRatio = 1;
   let logoProgress;
-  let lightScroll,lightAnimating=false,lastLightTime;
   let logoAnimating = false;
   let lastLogoTime;
   let lastBackgroundPaint = '';
@@ -72,17 +71,6 @@
     logoAnimating = Math.abs(target - logoProgress) > .00001;
     if (!logoAnimating) logoProgress = target;
     return logoProgress;
-  }
-  function easeLightScroll(target,time,reset) {
-    if(reset || lightScroll===undefined || reduced.matches)lightScroll=target;
-    else {
-      const dt=lastLightTime===undefined?1000/60:Math.max(0,Math.min(64,time-lastLightTime));
-      lightScroll+=(target-lightScroll)*(1-Math.exp(-dt/24));
-    }
-    lastLightTime=time;
-    lightAnimating=Math.abs(target-lightScroll)>.05;
-    if(!lightAnimating)lightScroll=target;
-    return lightScroll;
   }
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
@@ -292,17 +280,16 @@
       lastWidth = width;
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
-    state.lightScroll=easeLightScroll(state.scroll,time,resetMotion || controlledScroll);
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);
-    const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}:${state.lightScroll}`;
+    const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}`;
     if (geometryDirty || subscriberState !== lastSubscriberState) {
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (frameDrivers.size || logoAnimating || lightAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -339,7 +326,7 @@
   window.visualViewport?.addEventListener('resize', resize, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;lastLightTime=undefined;schedule(); });
+  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;schedule(); });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {
