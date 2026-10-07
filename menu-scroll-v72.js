@@ -44,6 +44,8 @@
     if (window.location.hash !== hash) window.history.pushState(null, '', hash);
     const hadTabindex = target.hasAttribute('tabindex');
     if (!hadTabindex) target.setAttribute('tabindex', '-1');
+    // Focus the destination for navigation without outlining its entire panel.
+    target.setAttribute('data-navigation-destination', '');
     target.focus({ preventScroll: true });
     if (!hadTabindex) target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
     cancel();

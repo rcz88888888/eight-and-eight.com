@@ -414,3 +414,10 @@ body .topbar .menu-toggle > span {
 /* Native source stays above the cream mask and below the banner pattern. */
 .content-scroll .hero-wallpaper-logo { z-index:3; }
 .content-scroll .logo-stage { isolation:auto; z-index:auto; }
+
+/* Programmatic anchor destinations keep focus without a browser selection rim.
+   Keyboard focus indicators on links and controls remain unchanged. */
+[data-navigation-destination]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
