@@ -11,11 +11,10 @@
   const tileImage = pattern.querySelector('image');
   const header = document.querySelector('.topbar');
   engine.subscribe({measure() {
-    const box = logo.getBoundingClientRect();
     const border = parseFloat(getComputedStyle(header).borderBottomWidth) ||
       (matchMedia('(orientation: landscape)').matches ? .8 : 1.5);
     logo.style.setProperty('--hero-border-width', `${border}px`);
-    const scale = Math.min(box.width / 922, box.height / 1368);
+    const scale = Math.min(logo.clientWidth / 922, logo.clientHeight / 1368);
     if (!(scale > 0)) return;
     const style = getComputedStyle(header, '::before');
     const pixels = parseFloat(style.maskSize || style.webkitMaskSize) || 260;

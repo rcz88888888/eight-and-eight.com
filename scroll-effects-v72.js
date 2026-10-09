@@ -124,7 +124,7 @@
         layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-layer.depth*.8));
       }
     }
-    if(openingLogo)openingLogo.style.rotate=`${shortestAngle(heroIdleAngle)}rad`;
+    if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
@@ -193,7 +193,7 @@
       if(matchMedia('(orientation: landscape)').matches) {
         const oldBox=reference.getBoundingClientRect();
         const before=Math.min(oldBox.width/922,oldBox.height/1368);
-        const after=Math.min(box.width/922,box.height/1368);
+        const after=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
         if(before>0)openingScaleFactor=after/before;
       }
       openingCenter = {x: box.left + box.width / 2,

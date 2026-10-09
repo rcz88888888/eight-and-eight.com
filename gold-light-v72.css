@@ -442,3 +442,16 @@ html, body { background:#fdfcfa !important; color-scheme:only light; }
 }
 .hero-wallpaper-logo:focus:not(:focus-visible) { outline:none; }
 .hero-wallpaper-logo:focus-visible { outline:1.5px solid var(--banner-logo-ink);outline-offset:4px; }
+
+/* Centre translation precedes rotation in the same transform list.
+   Individual CSS rotate would rotate the landscape centring translation. */
+.content-scroll .hero-static-logo.hero-wallpaper-logo {
+  rotate:none;
+  transform:rotate(var(--hero-idle-angle,0rad));
+  transform-origin:50% 50%;transform-box:border-box;
+}
+@media (orientation:landscape) {
+  .content-scroll .hero-static-logo.hero-wallpaper-logo {
+    transform:translate(-50%,-50%) rotate(var(--hero-idle-angle,0rad));
+  }
+}

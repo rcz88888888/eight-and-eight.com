@@ -35,7 +35,7 @@
     Object.assign(copy.style,{
       position:'absolute',left:`${box.left+box.width/2}px`,top:`${box.top+box.height/2}px`,
       width:`${hero.clientWidth}px`,height:`${hero.clientHeight}px`,
-      transform:'translate(-50%,-50%)',rotate:style.rotate,
+      transform:`translate(-50%,-50%) rotate(${style.getPropertyValue('--hero-idle-angle').trim() || '0rad'})`,rotate:'none',
       transformOrigin:'50% 50%',transformBox:'border-box',overflow:'visible',pointerEvents:'none'
     });
     copy.style.setProperty('--hero-border-width',style.getPropertyValue('--hero-border-width') || '1.5px');
