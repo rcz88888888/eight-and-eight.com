@@ -71,10 +71,19 @@
     if(u<=.56){const v=u-.44;return .1056+.74*v-.52*.12/(4*Math.PI)*Math.sin(2*Math.PI*v/.12);}
     return .3-low(1-u);
   }
+  const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   function spinPhase(seconds) {
-    if(seconds<=0)return 0;
-    const cycles=Math.floor(seconds/58),u=(seconds%58)/58;
-    return TAU*8*58*(cycles*.3+cycleIntegral(u));
+    if(seconds<=0 || seconds>=58)return 0;
+    const u=seconds/58;
+    // Finish on 139 whole turns rather than 139.2. A small correction
+    // in the final ten seconds preserves the central 8 turns/s peak.
+    const x=Math.max(0,Math.min(1,(seconds-48)/10));
+    return TAU*(8*58*cycleIntegral(u)-.2*smoothEnd(x));
+  }
+  function spinSpeed(seconds) {
+    if(seconds<=0 || seconds>=58)return 0;
+    const x=Math.max(0,Math.min(1,(seconds-48)/10));
+    return TAU*(8*cycleSpeed(seconds/58)-.2/10*30*x*x*(1-x)*(1-x));
   }
   function updateIdleRotation(time, scroll) {
     const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
@@ -117,11 +126,17 @@
       }
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);
-        const u=(elapsed%58)/58;
-        heroSpeed=TAU*8*cycleSpeed(u);
+        heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
         // Frontmost depth zero starts first; each deeper layer waits 0.8s.
         layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-layer.depth*.8));
+        const lastFinish=58+Math.max(0,...layers.map(layer=>layer.depth))*.8;
+        if(elapsed>=lastFinish){
+          // Begin the shared pause only once all nine logos have arrived.
+          mainIdleAngle=heroIdleAngle=heroSpeed=0;
+          layers.forEach(layer=>layer.idleAngle=0);
+          idleMode='waiting';idleSince=time;
+        }
       }
     }
     if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
