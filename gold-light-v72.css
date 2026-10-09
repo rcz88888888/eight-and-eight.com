@@ -421,3 +421,13 @@ body .topbar .menu-toggle > span {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Rotate the full wallpaper silhouette around its existing centre. */
+.hero-wallpaper-logo { transform-origin:50% 50%; transform-box:border-box; }
+
+/* Opaque cream ground below every logo, banner and content layer. */
+html, body { background:#fdfcfa !important; color-scheme:only light; }
+.page-cream-ground {
+  position:fixed;inset:0;z-index:-1;
+  background:#fdfcfa;pointer-events:none;
+}

@@ -50,6 +50,59 @@
   let lastLogoTime;
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
+  // One frame clock for idle rotation, scroll handoff and the return wobble.
+  const TAU = Math.PI * 2;
+  let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
+  let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
+  let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
+  const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
+  function updateIdleRotation(time, scroll) {
+    const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
+    idleLastTime = time;
+    const moved = Math.abs(scroll-idlePreviousScroll) > .25;
+    idlePreviousScroll = scroll;
+    const atTop = scroll <= .5;
+    if (reduced.matches) {
+      idleMode='waiting';idleSince=time;
+      mainIdleAngle=heroIdleAngle=heroSpeed=0;
+    } else if (!atTop || moved) {
+      // Freeze the main logos' automatic angle. The original scroll rotation
+      // continues from it; the front emblem alone coasts to a stop.
+      idleMode='scrolling';idleSince=undefined;
+      heroIdleAngle += heroSpeed * .22 * (1-Math.exp(-dt/.22));
+      heroSpeed *= Math.exp(-dt/.22);
+      if (heroSpeed < .001) heroSpeed=0;
+    } else {
+      if (idleMode==='scrolling') {
+        idleMode='settling';settleSince=time;
+        settleHero=shortestAngle(heroIdleAngle);
+        settleMain=shortestAngle(mainIdleAngle);
+        heroSpeed=0;
+      }
+      if (idleMode==='settling') {
+        const t=Math.min(1,(time-settleSince)/1100);
+        const envelope=(1-t)**3;
+        // Continuous return followed by a small, damped wobble.
+        const wobble=Math.sin(t*Math.PI*6)*.035*Math.sin(Math.PI*t)*envelope;
+        heroIdleAngle=settleHero*envelope+wobble;
+        mainIdleAngle=settleMain*envelope;
+        if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
+      }
+      if(idleMode==='waiting') {
+        if(idleSince===undefined)idleSince=time;
+        if(time-idleSince>=8000){idleMode='running';spinSince=time;}
+      }
+      if(idleMode==='running') {
+        const elapsed=Math.max(0,(time-spinSince)/1000);
+        const u=Math.min(1,elapsed/58);
+        // Smooth acceleration with zero slope at both ends. Analytic phase
+        // keeps the speed independent of the screen's frame rate.
+        heroSpeed=TAU*8*(3*u*u-2*u*u*u);
+        mainIdleAngle=heroIdleAngle=TAU*8*(58*(u**3-.5*u**4)+Math.max(0,elapsed-58));
+      }
+    }
+    if(openingLogo)openingLogo.style.rotate=`${shortestAngle(heroIdleAngle)}rad`;
+  }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
   function cacheSpriteChoices() {
@@ -211,7 +264,7 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${mainIdleAngle}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -222,7 +275,7 @@
     const cx = mainBox.left + mainBox.width / 2;
     const cy = mainBox.top + mainBox.height / 2;
     const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
-    const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16;
+    const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16 + mainIdleAngle;
     // All eight centers coincide with the opening emblem at scroll zero.
     // Fade this correction smoothly during the first quarter of the page,
     // retaining the established depth-dependent movement further down.
@@ -280,6 +333,7 @@
       lastWidth = width;
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
+    updateIdleRotation(time,state.scroll);
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
@@ -289,7 +343,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -326,7 +380,7 @@
   window.visualViewport?.addEventListener('resize', resize, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;schedule(); });
+  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {
