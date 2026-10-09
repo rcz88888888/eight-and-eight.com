@@ -20,6 +20,8 @@
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
+    depth: Number(node.dataset.depth),
+    idleAngle: 0, settleAngle: 0,
     speed: .72 ** Number(node.dataset.depth)
   }));
   let raf = 0;
@@ -56,6 +58,24 @@
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
+  // 88% of the cycle is at or below 48% speed; the central 12% forms
+  // a smooth peak. The analytic integral avoids numerical/frame-rate drift.
+  function cycleSpeed(u) {
+    if(u<.44){const x=u/.44;return .48*(3*x*x-2*x*x*x);}
+    if(u<=.56)return .48+.52*Math.sin(Math.PI*(u-.44)/.12)**2;
+    const x=(1-u)/.44;return .48*(3*x*x-2*x*x*x);
+  }
+  function cycleIntegral(u) {
+    const low=x=>.48*(x**3/.44**2-.5*x**4/.44**3);
+    if(u<.44)return low(u);
+    if(u<=.56){const v=u-.44;return .1056+.74*v-.52*.12/(4*Math.PI)*Math.sin(2*Math.PI*v/.12);}
+    return .3-low(1-u);
+  }
+  function spinPhase(seconds) {
+    if(seconds<=0)return 0;
+    const cycles=Math.floor(seconds/58),u=(seconds%58)/58;
+    return TAU*8*58*(cycles*.3+cycleIntegral(u));
+  }
   function updateIdleRotation(time, scroll) {
     const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
     idleLastTime = time;
@@ -65,6 +85,7 @@
     if (reduced.matches) {
       idleMode='waiting';idleSince=time;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
+      layers.forEach(layer=>layer.idleAngle=0);
     } else if (!atTop || moved) {
       // Freeze the main logos' automatic angle. The original scroll rotation
       // continues from it; the front emblem alone coasts to a stop.
@@ -77,6 +98,7 @@
         idleMode='settling';settleSince=time;
         settleHero=shortestAngle(heroIdleAngle);
         settleMain=shortestAngle(mainIdleAngle);
+        layers.forEach(layer=>layer.settleAngle=shortestAngle(layer.idleAngle));
         heroSpeed=0;
       }
       if (idleMode==='settling') {
@@ -86,6 +108,7 @@
         const wobble=Math.sin(t*Math.PI*6)*.035*Math.sin(Math.PI*t)*envelope;
         heroIdleAngle=settleHero*envelope+wobble;
         mainIdleAngle=settleMain*envelope;
+        layers.forEach(layer=>layer.idleAngle=layer.settleAngle*envelope);
         if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
       if(idleMode==='waiting') {
@@ -94,11 +117,11 @@
       }
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);
-        const u=Math.min(1,elapsed/58);
-        // Smooth acceleration with zero slope at both ends. Analytic phase
-        // keeps the speed independent of the screen's frame rate.
-        heroSpeed=TAU*8*(3*u*u-2*u*u*u);
-        mainIdleAngle=heroIdleAngle=TAU*8*(58*(u**3-.5*u**4)+Math.max(0,elapsed-58));
+        const u=(elapsed%58)/58;
+        heroSpeed=TAU*8*cycleSpeed(u);
+        mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
+        // Frontmost depth zero starts first; each deeper layer waits 0.8s.
+        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-layer.depth*.8));
       }
     }
     if(openingLogo)openingLogo.style.rotate=`${shortestAngle(heroIdleAngle)}rad`;
@@ -264,7 +287,7 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${mainIdleAngle}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${layers.map(layer=>layer.idleAngle).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -275,7 +298,7 @@
     const cx = mainBox.left + mainBox.width / 2;
     const cy = mainBox.top + mainBox.height / 2;
     const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
-    const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16 + mainIdleAngle;
+    const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16;
     // All eight centers coincide with the opening emblem at scroll zero.
     // Fade this correction smoothly during the first quarter of the page,
     // retaining the established depth-dependent movement further down.
@@ -285,7 +308,7 @@
     const startY = openingCenter?.y ?? cy;
     const openingTravel = .5 * Math.min(height, mainBox.height);
     window.EightEightEffects.logoFrame = {
-      rotation,
+      rotation: rotation + (layers[layers.length-1]?.idleAngle || 0),
       x: cx + (startX - cx) * openingBlend,
       y: cy + travel * (layers[layers.length - 1]?.speed ?? 1) +
         (startY - cy - openingTravel * (layers[layers.length - 1]?.speed ?? 1)) * openingBlend
@@ -294,7 +317,7 @@
       ink.save();
       ink.translate(cx + (startX - cx) * openingBlend,
         cy + travel * layer.speed + (startY - cy - openingTravel * layer.speed) * openingBlend);
-      ink.rotate(rotation);
+      ink.rotate(rotation + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       ink.globalAlpha = layer.opacity;
       ink.drawImage(layer.sprite, -w / 2, -h / 2, w, h);
