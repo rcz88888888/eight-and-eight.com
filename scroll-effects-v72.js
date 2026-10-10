@@ -53,13 +53,12 @@
   let logoProgress;
   let logoAnimating = false;
   const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
-  const scrollRotationDelay = 80;
+  const scrollRotationDelay = 800;
   const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
   const scrollRotationHistory = [];
   let scrollRotationStart = 0, scrollRotationFrameTime;
   let scrollInput = NaN, scrollLastInputTime = -Infinity;
-  let scrollRunSince = 0;
-  let scrollRestSince, scrollRestBlend = 1, scrollStackBlend = 1;
+  let scrollStackBlend = 1;
   let scrollRotationPending = false;
   let lastLogoTime;
   let lastBackgroundPaint = '';
@@ -350,28 +349,17 @@
     if(reset || reduced.matches || !scrollRotationHistory.length){
       scrollRotationHistory.length=0;
       scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
-      scrollRotationStart=0;scrollLastInputTime=scrollRunSince=time;scrollInput=inputScroll;
-      scrollRestSince=time-1200;scrollRestBlend=1;scrollStackBlend=1;
-      scrollRotationPending=false;
-      layers.forEach(layer=>{layer.scrollAngle=angle;layer.scrollOffset=angle*(1-layer.speed);});
+      scrollRotationStart=0;scrollLastInputTime=time;scrollInput=inputScroll;
+      scrollStackBlend=1;scrollRotationPending=false;
+      layers.forEach(layer=>{
+        layer.scrollAngle=layer.scrollTarget=layer.scrollDelayedAngle=angle;
+      });
       return;
     }
-    let last=scrollRotationHistory[scrollRotationHistory.length-1];
     if(Math.abs(inputScroll-scrollInput)>.01){
       scrollInput=inputScroll;scrollLastInputTime=time;
-      if(scrollRestSince!==undefined){
-        // Start a fresh delayed motion from the currently aligned positions,
-        // instead of replaying an obsolete scroll segment after a pause.
-        const previousAngle=last.angle,previousTime=last.time;
-        scrollRotationHistory.length=0;scrollRotationStart=0;
-        scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle:previousAngle},
-          {time:previousTime,angle:previousAngle});
-        last=scrollRotationHistory[scrollRotationHistory.length-1];
-        layers.forEach(layer=>layer.scrollOffset=layer.scrollAngle-previousAngle*layer.speed);
-        scrollRunSince=time;
-        scrollRestSince=undefined;
-      }
     }
+    const last=scrollRotationHistory[scrollRotationHistory.length-1];
     if(time>last.time)scrollRotationHistory.push({time,angle});
     else last.angle=angle;
     const cutoff=time-scrollRotationMaxDelay-64;
@@ -380,32 +368,12 @@
     if(scrollRotationStart>512){
       scrollRotationHistory.splice(0,scrollRotationStart);scrollRotationStart=0;
     }
-    const resting=scrollRestSince!==undefined || time-scrollLastInputTime>=120;
-    if(resting){
-      if(scrollRestSince===undefined){
-        scrollRestSince=time;scrollRestBlend=scrollStackBlend;
-        layers.forEach(layer=>layer.scrollRestAngle=layer.scrollAngle);
-      }
-      const t=Math.min(1,(time-scrollRestSince)/1200);
-      const blend=smoothEnd(t);
-      scrollStackBlend=scrollRestBlend+(1-scrollRestBlend)*blend;
-      for(const layer of layers){
-        layer.scrollAngle=t===1 || layer.depth===0?angle:
-          layer.scrollRestAngle+shortestAngle(angle-layer.scrollRestAngle)*blend;
-      }
-      scrollRotationPending=t<1;
-      return;
-    }
-    // The fan starts recovering immediately during an active scroll run;
-    // it no longer waits for the stop detector to begin moving back together.
-    const restack=1-Math.exp(-Math.max(0,time-scrollRunSince)/900);
-    scrollStackBlend+=(restack-scrollStackBlend)*(1-Math.exp(-dt/180));
-    if(1-scrollStackBlend<.00001)scrollStackBlend=1;
-    // Keep the 0.08s delay and reduce motion speed by 8% at each depth.
-    // Offsets preserve the current angle when scrolling resumes mid-return.
+    // Use one continuous delayed follower during movement AND after release.
+    // There is no stop detector, new easing phase or extra wait on release.
     let cursor=scrollRotationStart;
     const response=1-Math.exp(-dt/42);
     const catchUp=1-Math.exp(-dt/900);
+    let unsettled=time-scrollLastInputTime<scrollRotationMaxDelay || logoAnimating;
     for(const layer of scrollRotationOrder){
       const delayed=time-layer.depth*scrollRotationDelay;
       while(cursor+1<scrollRotationHistory.length &&
@@ -414,16 +382,16 @@
       const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
       const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
       const delayedAngle=from.angle+(to.angle-from.angle)*blend;
-      // Keep each 80ms onset intact, then continuously catch up to the front
-      // angle while retaining the depth-dependent scroll-speed contribution.
-      if(layer.depth>0 && delayed>=scrollRunSince){
-        layer.scrollOffset+=shortestAngle(angle-delayedAngle*layer.speed-layer.scrollOffset)*catchUp;
-      }
-      const target=delayedAngle*layer.speed+layer.scrollOffset;
+      layer.scrollTarget+=(delayedAngle-layer.scrollDelayedAngle)*layer.speed;
+      layer.scrollDelayedAngle=delayedAngle;
+      layer.scrollTarget+=shortestAngle(delayedAngle-layer.scrollTarget)*catchUp;
       layer.scrollAngle=layer.depth===0?angle:
-        layer.scrollAngle+shortestAngle(target-layer.scrollAngle)*response;
+        layer.scrollAngle+shortestAngle(layer.scrollTarget-layer.scrollAngle)*response;
+      if(Math.abs(shortestAngle(angle-layer.scrollAngle))>.00001 ||
+        Math.abs(shortestAngle(angle-layer.scrollTarget))>.00001)unsettled=true;
     }
-    scrollRotationPending=true;
+    if(!unsettled)layers.forEach(layer=>layer.scrollAngle=layer.scrollTarget=angle);
+    scrollRotationPending=unsettled;
   }
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
@@ -574,6 +542,7 @@
       lastBackgroundPaint = backgroundKey;
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
+    const mainOpacityBoost=1+.38*(1-patternVisibility);
     const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
@@ -607,10 +576,10 @@
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       if(patternVisibility>0){
-        ink.globalAlpha=layer.opacity*patternVisibility;
+        ink.globalAlpha=Math.min(1,layer.opacity*mainOpacityBoost)*patternVisibility;
         ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
       }
-      ink.globalAlpha=layer.opacity;
+      ink.globalAlpha=Math.min(1,layer.opacity*mainOpacityBoost);
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       ink.restore();
     }
