@@ -542,7 +542,6 @@
       lastBackgroundPaint = backgroundKey;
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
-    const mainOpacityBoost=1+.38*(1-patternVisibility);
     const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
@@ -576,10 +575,10 @@
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       if(patternVisibility>0){
-        ink.globalAlpha=Math.min(1,layer.opacity*mainOpacityBoost)*patternVisibility;
+        ink.globalAlpha=layer.opacity*patternVisibility;
         ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
       }
-      ink.globalAlpha=Math.min(1,layer.opacity*mainOpacityBoost);
+      ink.globalAlpha=layer.opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       ink.restore();
     }
