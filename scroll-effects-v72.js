@@ -269,7 +269,7 @@
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
   const mainSolidSpriteFor = pixels => mainSolidSprites.find(sprite=>sprite.width>=pixels) || mainSolidSprites[mainSolidSprites.length-1];
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
-  const mainLayerOpacity = (layer,patternVisibility) => layer.opacity*patternVisibility + .62*(.92**layer.depth)*(1-patternVisibility);
+  const mainLayerOpacity = layer => layer.opacity;
   function cacheMainWallpaperSprites() {
     if(!sprites.length || !wallpaperData || !openingLogo)return;
     const scale=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
@@ -590,7 +590,7 @@
         cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
-      const opacity=mainLayerOpacity(layer,patternVisibility);
+      const opacity=mainLayerOpacity(layer);
       if(patternVisibility>0){
         ink.globalAlpha=opacity*patternVisibility;
         ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
