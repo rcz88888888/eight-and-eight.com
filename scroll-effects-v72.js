@@ -59,35 +59,50 @@
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
   let handoffSince, handoffMain = 0, handoffActive = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
-  // 88% of the cycle is at or below 48% speed; the central 12% forms
-  // a smooth peak. The analytic integral avoids numerical/frame-rate drift.
-  function cycleSpeed(u) {
-    if(u<.44){const x=u/.44;return .48*(3*x*x-2*x*x*x);}
-    if(u<=.56)return .48+.52*Math.sin(Math.PI*(u-.44)/.12)**2;
-    const x=(1-u)/.44;return .48*(3*x*x-2*x*x*x);
-  }
-  function cycleIntegral(u) {
-    const low=x=>.48*(x**3/.44**2-.5*x**4/.44**3);
-    if(u<.44)return low(u);
-    if(u<=.56){const v=u-.44;return .1056+.74*v-.52*.12/(4*Math.PI)*Math.sin(2*Math.PI*v/.12);}
-    return .3-low(1-u);
-  }
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
+  const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
+  const spinDuration = 58;
+  const spinCruiseSpeed = 45/60;
+  const spinPeakSpeed = 8;
+  const spinCruiseDuration = spinDuration*.88;
+  const spinStartupDuration = .8;
+  const spinPeakRampDuration = 2.08;
+  let spinCursor = 0, spinTotalTurns = 0;
+  // 51.04s at exactly 45rpm, after a gentle startup. The peak has no hold:
+  // it immediately runs down to rest. These durations total 64 whole turns,
+  // so every delayed logo ends upright without an angle correction or jump.
+  const spinSegments = [
+    [spinStartupDuration,0,spinCruiseSpeed],
+    [spinCruiseDuration,spinCruiseSpeed,spinCruiseSpeed],
+    [spinPeakRampDuration,spinCruiseSpeed,spinPeakSpeed],
+    [spinDuration-spinStartupDuration-spinCruiseDuration-spinPeakRampDuration,spinPeakSpeed,0]
+  ].map(([duration,from,to])=>{
+    const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
+    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
+    return segment;
+  });
   function spinPhase(seconds) {
-    if(seconds<=0 || seconds>=58)return 0;
-    const u=seconds/58;
-    // Finish on 139 whole turns rather than 139.2. A small correction
-    // in the final ten seconds preserves the central 8 turns/s peak.
-    const x=Math.max(0,Math.min(1,(seconds-48)/10));
-    return TAU*(8*58*cycleIntegral(u)-.2*smoothEnd(x));
+    if(seconds<=0 || seconds>=spinDuration)return 0;
+    for(const segment of spinSegments){
+      if(seconds>=segment.end)continue;
+      const x=(seconds-segment.start)/segment.duration;
+      return TAU*(segment.turns+segment.duration*(segment.from*x+
+        (segment.to-segment.from)*smoothIntegral(x)));
+    }
+    return 0;
   }
   function spinSpeed(seconds) {
-    if(seconds<=0 || seconds>=58)return 0;
-    const x=Math.max(0,Math.min(1,(seconds-48)/10));
-    return TAU*(8*cycleSpeed(seconds/58)-.2/10*30*x*x*(1-x)*(1-x));
+    if(seconds<=0 || seconds>=spinDuration)return 0;
+    for(const segment of spinSegments){
+      if(seconds>=segment.end)continue;
+      const x=(seconds-segment.start)/segment.duration;
+      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
+    }
+    return 0;
   }
   // A downward gesture at the rotating start first reassembles all nine
   // logos. Keep document position at zero until that short phase completes.
+  const rejoinDuration = 800;
   let rejoinSince, rejoinHero = 0, rejoinMain = 0;
   function needsStartRejoin() {
     return !reduced.matches && (idleMode==='running' || idleMode==='settling') &&
@@ -104,7 +119,7 @@
     schedule();return true;
   }
   function advanceStartRejoin(time) {
-    const t=Math.min(1,Math.max(0,(time-rejoinSince)/600));
+    const t=Math.min(1,Math.max(0,(time-rejoinSince)/rejoinDuration));
     const remaining=1-smoothEnd(t);
     heroIdleAngle=rejoinHero*remaining;mainIdleAngle=rejoinMain*remaining;
     layers.forEach(layer=>layer.idleAngle=layer.rejoinAngle*remaining);
@@ -223,7 +238,7 @@
         // The front main logo follows the wallpaper logo by 0.8s;
         // each deeper main logo waits another 0.8s.
         layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*.8));
-        const lastFinish=58+Math.max(0,...layers.map(layer=>layer.depth+1))*.8;
+        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*.8;
         if(elapsed>=lastFinish){
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
@@ -454,7 +469,7 @@
     if (document.hidden) return;
     const controlledScroll=frameDrivers.size>0;
     if(controlledScroll && idleMode==='rejoining'){
-      advanceStartRejoin(rejoinSince+600);idleSince=time;
+      advanceStartRejoin(rejoinSince+rejoinDuration);idleSince=time;
     }
     for(const driver of [...frameDrivers])driver(time);
     const width = root.clientWidth;
