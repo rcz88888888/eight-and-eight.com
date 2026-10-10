@@ -269,7 +269,7 @@ bisherigen Licht- und Kontaktänderungen bleiben erhalten.
 
 ## Änderungen in Version 88
 
-- Kontaktbox: Eight&Eight, rCz audio, Contact und +491631583194; Telefonnummer
+- Kontaktbox: Eight&Eight, RCZ AUDIO, Contact und +491631583194; Telefonnummer
   direkt anwählbar. Der doppelte Kontaktblock unter Legal Information entfällt.
 - Die acht zusätzlichen Lichter auf dem Startlinienlogo sind entfernt.
   Das Logo erhält das gemeinsame Lichtfeld des oberen Banners.

@@ -15,13 +15,14 @@
   const subscribers = [];
   const frameDrivers = new Set();
   const image = new Image();
+  const wallpaperImage = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
-    idleAngle: 0, settleAngle: 0, handoffAngle: 0,
+    idleAngle: 0, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .72 ** Number(node.dataset.depth)
   }));
   let raf = 0;
@@ -38,6 +39,7 @@
   let lastFeedPaint = '';
   let sprites = [];
   let mainSprites = [];
+  let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
   const reference=document.createElement('span');
@@ -49,6 +51,12 @@
   let inkRatio = 1;
   let logoProgress;
   let logoAnimating = false;
+  const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
+  const scrollRotationDelay = 800;
+  const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
+  const scrollRotationHistory = [];
+  let scrollRotationStart = 0, scrollRotationChangedAt = -Infinity;
+  let scrollRotationPending = false;
   let lastLogoTime;
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
@@ -228,6 +236,9 @@
         if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
       if(idleMode==='waiting') {
+        // The shared eight-second pause begins after the delayed scroll
+        // rotations have also reached their starting orientations.
+        if(scrollRotationPending)idleSince=time;
         if(idleSince===undefined)idleSince=time;
         if(time-idleSince>=8000){idleMode='running';spinSince=time;}
       }
@@ -251,6 +262,49 @@
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
+  function cacheMainWallpaperSprites() {
+    if(!sprites.length || !wallpaperData || !openingLogo)return;
+    const scale=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
+    if(!(scale>0))return;
+    const pattern=openingLogo.querySelector('#hero-paper-pattern');
+    const border=openingLogo.querySelector('.hero-paper-border');
+    if(!pattern || !border)return;
+    const borderWidth=parseFloat(getComputedStyle(border).strokeWidth) || 1.5;
+    const key=[pattern.getAttribute('width'),pattern.getAttribute('height'),
+      pattern.getAttribute('x'),borderWidth/scale,border.getAttribute('stroke')].join(':');
+    if(key===mainWallpaperKey)return;
+    mainWallpaperKey=key;
+    // Use the opening SVG itself: the same shape, ornament alpha, placement
+    // and colour. Only rebuild after geometry changes, never during scrolling.
+    const copy=openingLogo.cloneNode(true);
+    copy.removeAttribute('class');copy.removeAttribute('style');
+    copy.setAttribute('width','922');copy.setAttribute('height','1368');
+    copy.querySelector('#hero-paper-pattern image').setAttribute('href',wallpaperData);
+    copy.querySelector('.hero-paper-border').setAttribute('stroke-width',borderWidth/scale);
+    for(const node of copy.querySelectorAll('[vector-effect]'))node.removeAttribute('vector-effect');
+    const request=++mainWallpaperRequest;
+    const wallpaper=new Image();
+    wallpaper.addEventListener('load',()=>{
+      if(request!==mainWallpaperRequest)return;
+      mainSprites=sprites.map(source=>{
+        const canvas=document.createElement('canvas');
+        canvas.width=source.width;canvas.height=source.height;
+        const ctx=canvas.getContext('2d');
+        ctx.imageSmoothingQuality='high';
+        ctx.drawImage(wallpaper,0,0,canvas.width,canvas.height);
+        return canvas;
+      });
+      lastMainPaint=lastFeedPaint='';
+      cacheSpriteChoices();schedule();
+    },{once:true});
+    wallpaper.addEventListener('error',()=>{
+      if(request===mainWallpaperRequest)mainWallpaperKey='';
+    },{once:true});
+    // Embedded mask bytes keep SVG image decoding independent of external
+    // image restrictions. No opaque backing or solid-gold fill is added.
+    wallpaper.src='data:image/svg+xml;charset=utf-8,'+
+      encodeURIComponent(new XMLSerializer().serializeToString(copy));
+  }
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
@@ -270,6 +324,42 @@
     logoAnimating = Math.abs(target - logoProgress) > .00001;
     if (!logoAnimating) logoProgress = target;
     return logoProgress;
+  }
+  function updateScrollRotations(progress,time,reset) {
+    const angle=(.5-.5*Math.cos(Math.PI*progress))*Math.PI*16;
+    if(reset || reduced.matches || !scrollRotationHistory.length){
+      scrollRotationHistory.length=0;
+      scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
+      scrollRotationStart=0;scrollRotationChangedAt=-Infinity;
+      scrollRotationPending=false;
+      layers.forEach(layer=>layer.scrollAngle=angle);
+      return;
+    }
+    const last=scrollRotationHistory[scrollRotationHistory.length-1];
+    if(Math.abs(angle-last.angle)>1e-9)scrollRotationChangedAt=time;
+    if(time>last.time)scrollRotationHistory.push({time,angle});
+    else last.angle=angle;
+    const cutoff=time-scrollRotationMaxDelay-64;
+    while(scrollRotationStart+1<scrollRotationHistory.length &&
+      scrollRotationHistory[scrollRotationStart+1].time<cutoff)scrollRotationStart++;
+    if(scrollRotationStart>512){
+      scrollRotationHistory.splice(0,scrollRotationStart);scrollRotationStart=0;
+    }
+    // Replay the front logo's actual motion at 0.8s intervals. Interpolate
+    // between frame samples rather than creating per-logo timers or changing
+    // document scrolling, translation, sizes or opacity.
+    let cursor=scrollRotationStart;
+    for(const layer of scrollRotationOrder){
+      const delayed=time-layer.depth*scrollRotationDelay;
+      while(cursor+1<scrollRotationHistory.length &&
+        scrollRotationHistory[cursor+1].time<=delayed)cursor++;
+      const from=scrollRotationHistory[cursor];
+      const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
+      const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
+      layer.scrollAngle=from.angle+(to.angle-from.angle)*blend;
+    }
+    scrollRotationPending=time-scrollRotationChangedAt<scrollRotationMaxDelay ||
+      layers.some(layer=>Math.abs(layer.scrollAngle-angle)>1e-7);
   }
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
@@ -322,6 +412,7 @@
       openingCenter = {x: box.left + box.width / 2,
         y: box.top + scrollPosition() + box.height / 2};
     }
+    cacheMainWallpaperSprites();
     cacheSpriteChoices();
     if (feed && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
@@ -390,7 +481,7 @@
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
   function paintCanvas(state, easedProgress) {
-    if (!bg || !ink || !mainBox || !sprites.length) return;
+    if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length) return;
     const {width, height, motionScroll} = state;
     const motionProgress = easedProgress;
     const backgroundKey = `${sceneKey}:${width}:${height}:${rainTime}`;
@@ -410,7 +501,7 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${layers.map(layer=>layer.idleAngle).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -421,7 +512,6 @@
     const cx = mainBox.left + mainBox.width / 2;
     const cy = mainBox.top + mainBox.height / 2;
     const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
-    const rotation = (.5 - .5 * Math.cos(Math.PI * motionProgress)) * Math.PI * 16;
     // All eight centers coincide with the opening emblem at scroll zero.
     // Fade this correction smoothly during the first quarter of the page,
     // retaining the established depth-dependent movement further down.
@@ -431,7 +521,7 @@
     const startY = openingCenter?.y ?? cy;
     const openingTravel = .5 * Math.min(height, mainBox.height);
     window.EightEightEffects.logoFrame = {
-      rotation: rotation + (layers[layers.length-1]?.idleAngle || 0),
+      rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: cx + (startX - cx) * openingBlend,
       y: cy + travel * (layers[layers.length - 1]?.speed ?? 1) +
         (startY - cy - openingTravel * (layers[layers.length - 1]?.speed ?? 1)) * openingBlend
@@ -440,7 +530,7 @@
       ink.save();
       ink.translate(cx + (startX - cx) * openingBlend,
         cy + travel * layer.speed + (startY - cy - openingTravel * layer.speed) * openingBlend);
-      ink.rotate(rotation + layer.idleAngle);
+      ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       ink.globalAlpha = layer.opacity;
       ink.drawImage(layer.sprite, -w / 2, -h / 2, w, h);
@@ -482,8 +572,9 @@
       lastWidth = width;
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
-    updateIdleRotation(time,state.scroll);
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
+    updateScrollRotations(easedProgress,time,resetMotion);
+    updateIdleRotation(time,state.scroll);
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);
@@ -492,7 +583,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -503,21 +594,16 @@
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       return canvas;
     });
-    // Cache the wallpaper base colour once per sprite size. Preserve the
-    // source silhouette and each layer's independent opacity during drawing.
-    const baseColour=getComputedStyle(root).getPropertyValue('--wallpaper-sand-gold').trim() || '#c2b594';
-    mainSprites=sprites.map(source=>{
-      const canvas=document.createElement('canvas');
-      canvas.width=source.width;canvas.height=source.height;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(source,0,0);
-      ctx.globalCompositeOperation='source-in';ctx.fillStyle=baseColour;
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.globalCompositeOperation='source-over';
-      return canvas;
-    });
     invalidate();
   }, {once: true});
+  wallpaperImage.addEventListener('load',()=>{
+    const canvas=document.createElement('canvas');
+    canvas.width=wallpaperImage.naturalWidth;canvas.height=wallpaperImage.naturalHeight;
+    canvas.getContext('2d').drawImage(wallpaperImage,0,0);
+    wallpaperData=canvas.toDataURL('image/png');
+    invalidate();
+  },{once:true});
+  wallpaperImage.src='wallpaper-ornament-mask-v45.png';
   image.src = 'eight-and-eight-logo-dark-v18.png';
   window.addEventListener('scroll', schedule, {passive: true});
   const resize = () => {
