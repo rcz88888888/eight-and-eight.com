@@ -23,7 +23,7 @@
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
     idleAngle: 0, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
-    speed: .72 ** Number(node.dataset.depth)
+    speed: .92 ** Number(node.dataset.depth)
   }));
   let raf = 0;
   let layoutDirty = true;
@@ -52,10 +52,12 @@
   let logoProgress;
   let logoAnimating = false;
   const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
-  const scrollRotationDelay = 800;
+  const scrollRotationDelay = 80;
   const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
   const scrollRotationHistory = [];
-  let scrollRotationStart = 0, scrollRotationChangedAt = -Infinity;
+  let scrollRotationStart = 0, scrollRotationFrameTime;
+  let scrollInput = NaN, scrollLastInputTime = -Infinity;
+  let scrollRestSince, scrollRestBlend = 1, scrollStackBlend = 1;
   let scrollRotationPending = false;
   let lastLogoTime;
   let lastBackgroundPaint = '';
@@ -325,18 +327,34 @@
     if (!logoAnimating) logoProgress = target;
     return logoProgress;
   }
-  function updateScrollRotations(progress,time,reset) {
+  function updateScrollRotations(progress,time,reset,inputScroll) {
     const angle=(.5-.5*Math.cos(Math.PI*progress))*Math.PI*16;
+    const dt=scrollRotationFrameTime===undefined?0:Math.max(0,Math.min(64,time-scrollRotationFrameTime));
+    scrollRotationFrameTime=time;
     if(reset || reduced.matches || !scrollRotationHistory.length){
       scrollRotationHistory.length=0;
       scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
-      scrollRotationStart=0;scrollRotationChangedAt=-Infinity;
+      scrollRotationStart=0;scrollLastInputTime=time;scrollInput=inputScroll;
+      scrollRestSince=time-1200;scrollRestBlend=1;scrollStackBlend=1;
       scrollRotationPending=false;
-      layers.forEach(layer=>layer.scrollAngle=angle);
+      layers.forEach(layer=>{layer.scrollAngle=angle;layer.scrollOffset=angle*(1-layer.speed);});
       return;
     }
-    const last=scrollRotationHistory[scrollRotationHistory.length-1];
-    if(Math.abs(angle-last.angle)>1e-9)scrollRotationChangedAt=time;
+    let last=scrollRotationHistory[scrollRotationHistory.length-1];
+    if(Math.abs(inputScroll-scrollInput)>.01){
+      scrollInput=inputScroll;scrollLastInputTime=time;
+      if(scrollRestSince!==undefined){
+        // Start a fresh delayed motion from the currently aligned positions,
+        // instead of replaying an obsolete scroll segment after a pause.
+        const previousAngle=last.angle,previousTime=last.time;
+        scrollRotationHistory.length=0;scrollRotationStart=0;
+        scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle:previousAngle},
+          {time:previousTime,angle:previousAngle});
+        last=scrollRotationHistory[scrollRotationHistory.length-1];
+        layers.forEach(layer=>layer.scrollOffset=layer.scrollAngle-previousAngle*layer.speed);
+        scrollRestSince=undefined;
+      }
+    }
     if(time>last.time)scrollRotationHistory.push({time,angle});
     else last.angle=angle;
     const cutoff=time-scrollRotationMaxDelay-64;
@@ -345,10 +363,28 @@
     if(scrollRotationStart>512){
       scrollRotationHistory.splice(0,scrollRotationStart);scrollRotationStart=0;
     }
-    // Replay the front logo's actual motion at 0.8s intervals. Interpolate
-    // between frame samples rather than creating per-logo timers or changing
-    // document scrolling, translation, sizes or opacity.
+    const resting=scrollRestSince!==undefined || time-scrollLastInputTime>=120;
+    if(resting){
+      if(scrollRestSince===undefined){
+        scrollRestSince=time;scrollRestBlend=scrollStackBlend;
+        layers.forEach(layer=>layer.scrollRestAngle=layer.scrollAngle);
+      }
+      const t=Math.min(1,(time-scrollRestSince)/1200);
+      const blend=smoothEnd(t);
+      scrollStackBlend=scrollRestBlend+(1-scrollRestBlend)*blend;
+      for(const layer of layers){
+        layer.scrollAngle=t===1 || layer.depth===0?angle:
+          layer.scrollRestAngle+shortestAngle(angle-layer.scrollRestAngle)*blend;
+      }
+      scrollRotationPending=t<1;
+      return;
+    }
+    scrollStackBlend*=Math.exp(-dt/180);
+    if(scrollStackBlend<.00001)scrollStackBlend=0;
+    // Keep the 0.08s delay and reduce motion speed by 8% at each depth.
+    // Offsets preserve the current angle when scrolling resumes mid-return.
     let cursor=scrollRotationStart;
+    const response=1-Math.exp(-dt/42);
     for(const layer of scrollRotationOrder){
       const delayed=time-layer.depth*scrollRotationDelay;
       while(cursor+1<scrollRotationHistory.length &&
@@ -356,10 +392,11 @@
       const from=scrollRotationHistory[cursor];
       const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
       const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
-      layer.scrollAngle=from.angle+(to.angle-from.angle)*blend;
+      const target=(from.angle+(to.angle-from.angle)*blend)*layer.speed+layer.scrollOffset;
+      layer.scrollAngle=layer.depth===0?angle:
+        layer.scrollAngle+shortestAngle(target-layer.scrollAngle)*response;
     }
-    scrollRotationPending=time-scrollRotationChangedAt<scrollRotationMaxDelay ||
-      layers.some(layer=>Math.abs(layer.scrollAngle-angle)>1e-7);
+    scrollRotationPending=true;
   }
   const randomFrom = seed => () => {
     let t = seed += 0x6D2B79F5;
@@ -501,7 +538,7 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -528,8 +565,9 @@
     };
     for (const layer of layers) {
       ink.save();
+      const speed=layer.speed+(1-layer.speed)*scrollStackBlend;
       ink.translate(cx + (startX - cx) * openingBlend,
-        cy + travel * layer.speed + (startY - cy - openingTravel * layer.speed) * openingBlend);
+        cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       ink.globalAlpha = layer.opacity;
@@ -573,7 +611,7 @@
     }
     const state = field(width, height, Math.max(0, scrollPosition()));
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
-    updateScrollRotations(easedProgress,time,resetMotion);
+    updateScrollRotations(easedProgress,time,resetMotion,state.scroll);
     updateIdleRotation(time,state.scroll);
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
