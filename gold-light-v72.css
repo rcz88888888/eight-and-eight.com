@@ -432,14 +432,6 @@ html, body { background:#fdfcfa !important; color-scheme:only light; }
   background:#fdfcfa;pointer-events:none;
 }
 
-/* The page washes out behind the preserved transparent wallpaper silhouette. */
-.logo-click-flash {
-  position:fixed;inset:0;z-index:2147483646;pointer-events:none;
-  background-color:rgba(255,254,249,.98);
-  background-image:repeating-conic-gradient(from var(--flash-angle) at 50% 48%,
-    rgba(255,255,255,.95) 0deg,rgba(255,255,255,0) 4deg,
-    rgba(255,255,255,0) 21deg,rgba(255,255,255,.85) 24deg);
-}
 .hero-wallpaper-logo:focus:not(:focus-visible) { outline:none; }
 .hero-wallpaper-logo:focus-visible { outline:1.5px solid var(--banner-logo-ink);outline-offset:4px; }
 

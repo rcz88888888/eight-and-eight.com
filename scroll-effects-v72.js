@@ -21,7 +21,7 @@
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
-    idleAngle: 0, settleAngle: 0,
+    idleAngle: 0, settleAngle: 0, handoffAngle: 0,
     speed: .72 ** Number(node.dataset.depth)
   }));
   let raf = 0;
@@ -57,6 +57,7 @@
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
+  let handoffSince, handoffMain = 0, handoffActive = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   // 88% of the cycle is at or below 48% speed; the central 12% forms
   // a smooth peak. The analytic integral avoids numerical/frame-rate drift.
@@ -85,6 +86,84 @@
     const x=Math.max(0,Math.min(1,(seconds-48)/10));
     return TAU*(8*cycleSpeed(seconds/58)-.2/10*30*x*x*(1-x)*(1-x));
   }
+  // A downward gesture at the rotating start first reassembles all nine
+  // logos. Keep document position at zero until that short phase completes.
+  let rejoinSince, rejoinHero = 0, rejoinMain = 0;
+  function needsStartRejoin() {
+    return !reduced.matches && (idleMode==='running' || idleMode==='settling') &&
+      (Math.abs(shortestAngle(heroIdleAngle))>.000001 || heroSpeed>.000001 ||
+        layers.some(layer=>Math.abs(shortestAngle(layer.idleAngle))>.000001));
+  }
+  function beginStartRejoin(time) {
+    if(idleMode==='rejoining' || !needsStartRejoin())return false;
+    rejoinSince=time;
+    rejoinHero=shortestAngle(heroIdleAngle);rejoinMain=shortestAngle(mainIdleAngle);
+    layers.forEach(layer=>layer.rejoinAngle=shortestAngle(layer.idleAngle));
+    heroSpeed=0;handoffActive=false;handoffSince=undefined;idleSince=undefined;
+    idleMode='rejoining';idlePreviousScroll=0;
+    schedule();return true;
+  }
+  function advanceStartRejoin(time) {
+    const t=Math.min(1,Math.max(0,(time-rejoinSince)/600));
+    const remaining=1-smoothEnd(t);
+    heroIdleAngle=rejoinHero*remaining;mainIdleAngle=rejoinMain*remaining;
+    layers.forEach(layer=>layer.idleAngle=layer.rejoinAngle*remaining);
+    if(t===1){
+      heroIdleAngle=mainIdleAngle=heroSpeed=0;
+      layers.forEach(layer=>layer.idleAngle=0);
+      idleMode='waiting';idleSince=time;idlePreviousScroll=0;
+    }
+  }
+  const inLocalControl = target => target?.closest?.(
+    '.site-nav, input, textarea, select, [contenteditable="true"]');
+  function consumeStartScroll(downward,time) {
+    if(idleMode==='rejoining')advanceStartRejoin(time);
+    if(idleMode==='rejoining')return true;
+    return downward && scrollPosition()<=.5 && beginStartRejoin(time);
+  }
+  window.addEventListener('wheel',event=>{
+    if(event.ctrlKey || inLocalControl(event.target) || !event.cancelable)return;
+    if(consumeStartScroll(event.deltaY>0,performance.now()))event.preventDefault();
+  },{passive:false,capture:true});
+  let touchY, touchSuppressed=false, touchLocal=false;
+  window.addEventListener('touchstart',event=>{
+    touchY=event.touches.length===1?event.touches[0].clientY:undefined;
+    touchSuppressed=false;touchLocal=!!inLocalControl(event.target);
+  },{passive:true,capture:true});
+  window.addEventListener('touchmove',event=>{
+    if(event.touches.length!==1){touchY=undefined;touchSuppressed=false;return;}
+    const y=event.touches[0].clientY;
+    const delta=touchY===undefined?0:touchY-y;touchY=y;
+    if(touchLocal || !event.cancelable)return;
+    if(consumeStartScroll(delta>0,performance.now())){
+      event.preventDefault();touchSuppressed=true;
+    } else if(touchSuppressed){
+      // Once a touch gesture has been cancelled, iOS will not resume native
+      // scrolling mid-gesture. Apply only its subsequent deltas until release.
+      event.preventDefault();
+      window.scrollBy({top:delta,behavior:'auto'});
+    }
+  },{passive:false,capture:true});
+  for(const type of ['touchend','touchcancel'])window.addEventListener(type,()=>{
+    touchY=undefined;touchSuppressed=false;touchLocal=false;
+  },{passive:true,capture:true});
+  window.addEventListener('keydown',event=>{
+    if(inLocalControl(event.target) || event.target?.closest?.('a,button') ||
+      event.ctrlKey || event.altKey || event.metaKey)return;
+    const down=event.key==='ArrowDown' || event.key==='PageDown' ||
+      event.key==='End' || (event.key===' ' && !event.shiftKey);
+    const scrollKey=down || ['ArrowUp','PageUp','Home',' '].includes(event.key);
+    if(scrollKey && consumeStartScroll(down,performance.now()))event.preventDefault();
+  },{capture:true});
+  window.addEventListener('scroll',()=>{
+    // Covers scrollbar drags and non-cancellable momentum events. Explicit
+    // menu navigation retains its existing shared animation driver.
+    if(!frameDrivers.size && idlePreviousScroll<=.5 && scrollPosition()>.5)
+      beginStartRejoin(performance.now());
+    if(idleMode==='rejoining' && !frameDrivers.size && scrollPosition()!==0)
+      window.scrollTo({top:0,behavior:'auto'});
+    schedule();
+  },{passive:true});
   function updateIdleRotation(time, scroll) {
     const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
     idleLastTime = time;
@@ -93,16 +172,29 @@
     const atTop = scroll <= .5;
     if (reduced.matches) {
       idleMode='waiting';idleSince=time;
+      handoffSince=undefined;handoffActive=false;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.idleAngle=0);
+    } else if(idleMode==='rejoining'){
+      advanceStartRejoin(time);
     } else if (!atTop || moved) {
-      // Freeze the main logos' automatic angle. The original scroll rotation
-      // continues from it; the front emblem alone coasts to a stop.
+      // Remove the idle offsets along each logo's shortest path. The
+      // original scroll angle keeps updating underneath this 600ms handoff.
+      if(idleMode!=='scrolling' || handoffSince===undefined){
+        handoffSince=time;handoffMain=shortestAngle(mainIdleAngle);
+        layers.forEach(layer=>layer.handoffAngle=shortestAngle(layer.idleAngle));
+      }
       idleMode='scrolling';idleSince=undefined;
+      const handoffProgress=Math.min(1,Math.max(0,(time-handoffSince)/600));
+      const remaining=1-smoothEnd(handoffProgress);
+      mainIdleAngle=handoffMain*remaining;
+      layers.forEach(layer=>layer.idleAngle=layer.handoffAngle*remaining);
+      handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001);
       heroIdleAngle += heroSpeed * .22 * (1-Math.exp(-dt/.22));
       heroSpeed *= Math.exp(-dt/.22);
       if (heroSpeed < .001) heroSpeed=0;
     } else {
+      handoffActive=false;handoffSince=undefined;
       if (idleMode==='scrolling') {
         idleMode='settling';settleSince=time;
         settleHero=shortestAngle(heroIdleAngle);
@@ -361,6 +453,9 @@
     raf = 0;
     if (document.hidden) return;
     const controlledScroll=frameDrivers.size>0;
+    if(controlledScroll && idleMode==='rejoining'){
+      advanceStartRejoin(rejoinSince+600);idleSince=time;
+    }
     for(const driver of [...frameDrivers])driver(time);
     const width = root.clientWidth;
     const height = innerHeight;
@@ -382,7 +477,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -419,7 +514,7 @@
   window.visualViewport?.addEventListener('resize', resize, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });
+  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;handoffSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {

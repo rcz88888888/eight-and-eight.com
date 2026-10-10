@@ -40,7 +40,7 @@
     return Math.min(limit, Math.max(0, scrollPosition() + target.getBoundingClientRect().top - margin));
   };
 
-  const finish = (target, hash, logoClick) => {
+  const finish = (target, hash) => {
     if (window.location.hash !== hash) window.history.pushState(null, '', hash);
     const hadTabindex = target.hasAttribute('tabindex');
     if (!hadTabindex) target.setAttribute('tabindex', '-1');
@@ -49,7 +49,6 @@
     target.focus({ preventScroll: true });
     if (!hadTabindex) target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
     cancel();
-    if(logoClick)window.dispatchEvent(new Event('eight-eight-home-flash'));
   };
 
   // All in-page navigation: menu entries, the header wordmark and Back to top.
@@ -59,7 +58,6 @@
       const hash = link.getAttribute('href');
       const target = document.getElementById(decodeURIComponent(hash.slice(1)));
       if (!target) return;
-      const logoClick=target.id==='top' && link.classList.contains('wordmark');
       event.preventDefault();
       cancel();
       document.querySelector('.site-nav')?.classList.remove('open');
@@ -83,14 +81,14 @@
           destinationDirty=false;
           const distance=destination-start;
           if(Math.abs(distance)<1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-            scrollTo({top:destination,behavior:'auto'});finish(target,hash,logoClick);return;
+            scrollTo({top:destination,behavior:'auto'});finish(target,hash);return;
           }
           duration=Math.min(8000,2400+Math.abs(distance)*.45);
         }
         const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
         if(destinationDirty){destination=destinationFor(target);destinationDirty=false;}
         scrollTo({top:start+(destination-start)*ease(progress),behavior:'auto'});
-        if(progress===1)finish(target,hash,logoClick);
+        if(progress===1)finish(target,hash);
         else if(!session.stopDriver)session.frame=requestAnimationFrame(step);
       };
       if(engine?.addFrameDriver)session.stopDriver=engine.addFrameDriver(step);
