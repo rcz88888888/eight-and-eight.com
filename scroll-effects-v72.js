@@ -249,10 +249,10 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // The front main logo follows the wallpaper logo by 0.8s;
-        // each deeper main logo waits another 0.8s.
-        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*.8));
-        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*.8;
+        // The front main logo follows the wallpaper logo by 0.08s;
+        // each deeper main logo waits another 0.08s.
+        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*.08));
+        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*.08;
         if(elapsed>=lastFinish){
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
