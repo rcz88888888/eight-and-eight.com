@@ -38,8 +38,8 @@
   let lastMainPaint = '';
   let lastFeedPaint = '';
   let sprites = [];
-  let mainSprites = [], mainBorderSprites = [];
-  let mainPatternFadeEnd = 1;
+  let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
+  let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
@@ -267,6 +267,9 @@
   const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
   const mainBorderSpriteFor = pixels => mainBorderSprites.find(sprite => sprite.width >= pixels) || mainBorderSprites[mainBorderSprites.length - 1];
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
+  const mainSolidSpriteFor = pixels => mainSolidSprites.find(sprite=>sprite.width>=pixels) || mainSolidSprites[mainSolidSprites.length-1];
+  const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
+  const mainLayerOpacity = (layer,patternVisibility) => layer.opacity*patternVisibility + .62*(.92**layer.depth)*(1-patternVisibility);
   function cacheMainWallpaperSprites() {
     if(!sprites.length || !wallpaperData || !openingLogo)return;
     const scale=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
@@ -290,9 +293,13 @@
     const borderCopy=copy.cloneNode(true);
     borderCopy.querySelector('g[mask="url(#hero-paper-shape)"]').remove();
     borderCopy.querySelector('defs').remove();
+    const solidCopy=borderCopy.cloneNode(true);
+    const solidShape=solidCopy.querySelector('.hero-paper-border');
+    solidShape.setAttribute('fill',border.getAttribute('stroke'));
+    solidShape.setAttribute('stroke','none');
     copy.querySelector('.hero-paper-border').remove();
     const request=++mainWallpaperRequest;
-    const wallpaper=new Image(), outline=new Image();
+    const wallpaper=new Image(), outline=new Image(), solid=new Image();
     let loaded=0;
     const cacheImage=image=>sprites.map(source=>{
       const canvas=document.createElement('canvas');
@@ -302,13 +309,13 @@
       return canvas;
     });
     const ready=()=>{
-      if(request!==mainWallpaperRequest || ++loaded!==2)return;
+      if(request!==mainWallpaperRequest || ++loaded!==3)return;
       // Swap both caches together. The outline is always painted at the
       // layer's original opacity; only the separate interior pattern fades.
-      mainSprites=cacheImage(wallpaper);mainBorderSprites=cacheImage(outline);
+      mainSprites=cacheImage(wallpaper);mainBorderSprites=cacheImage(outline);mainSolidSprites=cacheImage(solid);
       lastMainPaint=lastFeedPaint='';cacheSpriteChoices();schedule();
     };
-    for(const image of [wallpaper,outline]){
+    for(const image of [wallpaper,outline,solid]){
       image.addEventListener('load',ready,{once:true});
       image.addEventListener('error',()=>{
         if(request===mainWallpaperRequest)mainWallpaperKey='';
@@ -316,7 +323,7 @@
     }
     const serialise=svg=>'data:image/svg+xml;charset=utf-8,'+
       encodeURIComponent(new XMLSerializer().serializeToString(svg));
-    wallpaper.src=serialise(copy);outline.src=serialise(borderCopy);
+    wallpaper.src=serialise(copy);outline.src=serialise(borderCopy);solid.src=serialise(solidCopy);
   }
 
   function cacheSpriteChoices() {
@@ -324,7 +331,7 @@
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     for (const layer of layers) {
       const pixels=922*scale*layer.scale*inkRatio;
-      layer.sprite=mainSpriteFor(pixels);layer.borderSprite=mainBorderSpriteFor(pixels);
+      layer.sprite=mainSpriteFor(pixels);layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
     }
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
@@ -439,6 +446,14 @@
       mainPatternFadeEnd=Math.max(1,about.getBoundingClientRect().top+
         scrollPosition()-header.getBoundingClientRect().bottom-gap);
     }
+    const services=document.querySelector('#services');
+    const positioning=services?.querySelector('.service-grid article');
+    if(services && positioning && header){
+      const gap=Math.max(16,Math.min(24,width*40/706));
+      const offset=scrollPosition()-header.getBoundingClientRect().bottom-gap;
+      mainFillStart=Math.max(mainPatternFadeEnd,services.getBoundingClientRect().top+offset);
+      mainFillEnd=Math.max(mainFillStart+1,positioning.getBoundingClientRect().top+offset);
+    }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
       const box = openingLogo.getBoundingClientRect();
@@ -521,7 +536,7 @@
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
   function paintCanvas(state, easedProgress) {
-    if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length || !mainBorderSprites.length) return;
+    if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length || !mainBorderSprites.length || !mainSolidSprites.length) return;
     const {width, height, motionScroll} = state;
     const motionProgress = easedProgress;
     const backgroundKey = `${sceneKey}:${width}:${height}:${rainTime}`;
@@ -542,7 +557,8 @@
       lastBackgroundPaint = backgroundKey;
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
+    const fillVisibility=mainFillVisibility(state.scroll);
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -574,11 +590,16 @@
         cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
+      const opacity=mainLayerOpacity(layer,patternVisibility);
       if(patternVisibility>0){
-        ink.globalAlpha=layer.opacity*patternVisibility;
+        ink.globalAlpha=opacity*patternVisibility;
         ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
       }
-      ink.globalAlpha=layer.opacity;
+      if(fillVisibility>0){
+        ink.globalAlpha=opacity*fillVisibility;
+        ink.drawImage(layer.solidSprite,-w/2,-h/2,w,h);
+      }
+      ink.globalAlpha=opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       ink.restore();
     }
