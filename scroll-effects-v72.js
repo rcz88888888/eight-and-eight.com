@@ -72,33 +72,35 @@
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinDuration = 58;
-  const spinCruiseSpeed = 45/60;
   const spinPeakSpeed = 8;
-  const spinCruiseDuration = spinDuration*.88;
-  const spinStartupDuration = .8;
   const spinPeakRampDuration = 2.08;
+  const spinFinishDuration = 8.16;
+  const spinThirdDuration = (58-2.08-4.08)/3;
+  const spinDuration = spinThirdDuration*3+spinPeakRampDuration+spinFinishDuration;
   let spinCursor = 0, spinTotalTurns = 0;
-  // 51.04s at exactly 45rpm, after a gentle startup. The peak has no hold:
-  // it immediately runs down to rest. These durations total 64 whole turns,
-  // so every delayed logo ends upright without an angle correction or jump.
+  // Three equal tempo stages, then the existing peak and a doubled finish.
   const spinSegments = [
-    [spinStartupDuration,0,spinCruiseSpeed],
-    [spinCruiseDuration,spinCruiseSpeed,spinCruiseSpeed],
-    [spinPeakRampDuration,spinCruiseSpeed,spinPeakSpeed],
-    [spinDuration-spinStartupDuration-spinCruiseDuration-spinPeakRampDuration,spinPeakSpeed,0]
+    [spinThirdDuration,0,33/60],
+    [spinThirdDuration,33/60,45/60],
+    [spinThirdDuration,45/60,88/60],
+    [spinPeakRampDuration,88/60,spinPeakSpeed],
+    [spinFinishDuration,spinPeakSpeed,0]
   ].map(([duration,from,to])=>{
     const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
     spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
     return segment;
   });
+  // Distribute the fractional turn over the finish, with zero correction
+  // speed at both ends, so every logo comes to rest upright without a snap.
+  const spinClosingTurns=Math.ceil(spinTotalTurns)-spinTotalTurns;
   function spinPhase(seconds) {
     if(seconds<=0 || seconds>=spinDuration)return 0;
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*smoothIntegral(x)));
+        (segment.to-segment.from)*smoothIntegral(x)) +
+        (segment===spinSegments[spinSegments.length-1]?spinClosingTurns*smoothEnd(x):0));
     }
     return 0;
   }
@@ -107,7 +109,8 @@
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
+      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x)+
+        (segment===spinSegments[spinSegments.length-1]?spinClosingTurns/segment.duration*30*x*x*(1-x)*(1-x):0));
     }
     return 0;
   }
