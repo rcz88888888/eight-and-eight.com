@@ -22,7 +22,7 @@
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
-    idleAngle: 0, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
+    idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
   let raf = 0;
@@ -261,6 +261,10 @@
         }
       }
     }
+    for(const layer of layers){
+      const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*.08:-1;
+      layer.idleVisibility=idleRotationVisibility(elapsed);
+    }
     if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
@@ -269,7 +273,13 @@
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
   const mainSolidSpriteFor = pixels => mainSolidSprites.find(sprite=>sprite.width>=pixels) || mainSolidSprites[mainSolidSprites.length-1];
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
-  const mainLayerOpacity = layer => layer.opacity;
+  const idleRotationVisibility = elapsed => {
+    const fadeIn=smoothEnd(Math.max(0,Math.min(1,elapsed/1.8)));
+    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-elapsed)/1.8)));
+    return .7+.3*fadeIn*fadeOut;
+  };
+  const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
+    layer.opacity*(1-.38*fillVisibility)*(1-(1-layer.idleVisibility)*patternVisibility);
   function cacheMainWallpaperSprites() {
     if(!sprites.length || !wallpaperData || !openingLogo)return;
     const scale=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
@@ -447,12 +457,16 @@
         scrollPosition()-header.getBoundingClientRect().bottom-gap);
     }
     const services=document.querySelector('#services');
-    const positioning=services?.querySelector('.service-grid article');
-    if(services && positioning && header){
+    const concept=services?.querySelector('h2.subheading');
+    if(services && concept && header){
       const gap=Math.max(16,Math.min(24,width*40/706));
       const offset=scrollPosition()-header.getBoundingClientRect().bottom-gap;
       mainFillStart=Math.max(mainPatternFadeEnd,services.getBoundingClientRect().top+offset);
-      mainFillEnd=Math.max(mainFillStart+1,positioning.getBoundingClientRect().top+offset);
+      // Second screenshot: Concept Architecture begins 70 image pixels
+      // beneath the banner, scaled to the current CSS viewport width.
+      const conceptGap=Math.max(28,Math.min(48,width*70/706));
+      mainFillEnd=Math.max(mainFillStart+1,concept.getBoundingClientRect().top+
+        scrollPosition()-header.getBoundingClientRect().bottom-conceptGap);
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
@@ -558,7 +572,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -590,7 +604,7 @@
         cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
-      const opacity=mainLayerOpacity(layer);
+      const opacity=mainLayerOpacity(layer,patternVisibility,fillVisibility);
       if(patternVisibility>0){
         ink.globalAlpha=opacity*patternVisibility;
         ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
