@@ -57,6 +57,7 @@
   const scrollRotationHistory = [];
   let scrollRotationStart = 0, scrollRotationFrameTime;
   let scrollInput = NaN, scrollLastInputTime = -Infinity;
+  let scrollRunSince = 0;
   let scrollRestSince, scrollRestBlend = 1, scrollStackBlend = 1;
   let scrollRotationPending = false;
   let lastLogoTime;
@@ -334,7 +335,7 @@
     if(reset || reduced.matches || !scrollRotationHistory.length){
       scrollRotationHistory.length=0;
       scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
-      scrollRotationStart=0;scrollLastInputTime=time;scrollInput=inputScroll;
+      scrollRotationStart=0;scrollLastInputTime=scrollRunSince=time;scrollInput=inputScroll;
       scrollRestSince=time-1200;scrollRestBlend=1;scrollStackBlend=1;
       scrollRotationPending=false;
       layers.forEach(layer=>{layer.scrollAngle=angle;layer.scrollOffset=angle*(1-layer.speed);});
@@ -352,6 +353,7 @@
           {time:previousTime,angle:previousAngle});
         last=scrollRotationHistory[scrollRotationHistory.length-1];
         layers.forEach(layer=>layer.scrollOffset=layer.scrollAngle-previousAngle*layer.speed);
+        scrollRunSince=time;
         scrollRestSince=undefined;
       }
     }
@@ -379,12 +381,16 @@
       scrollRotationPending=t<1;
       return;
     }
-    scrollStackBlend*=Math.exp(-dt/180);
-    if(scrollStackBlend<.00001)scrollStackBlend=0;
+    // The fan starts recovering immediately during an active scroll run;
+    // it no longer waits for the stop detector to begin moving back together.
+    const restack=1-Math.exp(-Math.max(0,time-scrollRunSince)/900);
+    scrollStackBlend+=(restack-scrollStackBlend)*(1-Math.exp(-dt/180));
+    if(1-scrollStackBlend<.00001)scrollStackBlend=1;
     // Keep the 0.08s delay and reduce motion speed by 8% at each depth.
     // Offsets preserve the current angle when scrolling resumes mid-return.
     let cursor=scrollRotationStart;
     const response=1-Math.exp(-dt/42);
+    const catchUp=1-Math.exp(-dt/900);
     for(const layer of scrollRotationOrder){
       const delayed=time-layer.depth*scrollRotationDelay;
       while(cursor+1<scrollRotationHistory.length &&
@@ -392,7 +398,13 @@
       const from=scrollRotationHistory[cursor];
       const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
       const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
-      const target=(from.angle+(to.angle-from.angle)*blend)*layer.speed+layer.scrollOffset;
+      const delayedAngle=from.angle+(to.angle-from.angle)*blend;
+      // Keep each 80ms onset intact, then continuously catch up to the front
+      // angle while retaining the depth-dependent scroll-speed contribution.
+      if(layer.depth>0 && delayed>=scrollRunSince){
+        layer.scrollOffset+=shortestAngle(angle-delayedAngle*layer.speed-layer.scrollOffset)*catchUp;
+      }
+      const target=delayedAngle*layer.speed+layer.scrollOffset;
       layer.scrollAngle=layer.depth===0?angle:
         layer.scrollAngle+shortestAngle(target-layer.scrollAngle)*response;
     }
