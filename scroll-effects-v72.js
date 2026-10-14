@@ -72,7 +72,7 @@
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinDuration = 64;
+  const spinDuration = 55.4;
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
   const startRotationStagger = .18;
@@ -96,17 +96,54 @@
     return {source:source.point,sourceIndex:source.index,index,extra,node,border};
   }).filter(Boolean);
   let pointTiles=[],pointStroke=1.5,heroPointMorph=0,heroPointElapsed=0,lastPointFrame='';
-  const pointMorphAt = elapsed => elapsed<32?0:elapsed<34.8?
-    smoothEnd(Math.max(0,Math.min(1,(elapsed-32)/2.8))):elapsed<40?1:
-    1-smoothEnd(Math.max(0,Math.min(1,(elapsed-40)/10.8)));
+  const svgNS='http://www.w3.org/2000/svg';
+  const ringClip=document.createElementNS(svgNS,'clipPath');ringClip.id='technics-photo-rim-clip';
+  const ringPath=document.createElementNS(svgNS,'path');
+  ringPath.setAttribute('d','M786 684 A325 325 0 1 0 136 684 A325 325 0 1 0 786 684 Z M758 684 A297 297 0 1 0 164 684 A297 297 0 1 0 758 684 Z');
+  ringPath.setAttribute('clip-rule','evenodd');ringClip.append(ringPath);
+  openingLogo?.querySelector('defs').append(ringClip);
+  const photoGroup=document.createElementNS(svgNS,'g');photoGroup.classList.add('technics-photo-rim');
+  photoGroup.setAttribute('clip-path','url(#technics-photo-rim-clip)');photoGroup.style.opacity='0';
+  const photoNode=document.createElementNS(svgNS,'image');
+  photoNode.setAttribute('href','technics-sl1210mk2-strobe-source.jpg');
+  const photoScale=325/270,photoLeft=461-290*photoScale,photoTop=684-285*photoScale;
+  for(const [name,value] of Object.entries({x:photoLeft,y:photoTop,width:736*photoScale,height:573*photoScale}))photoNode.setAttribute(name,value);
+  const strobeRows=[{inner:297,outer:306,reference:.967},{inner:306,outer:312,reference:1},
+    {inner:312,outer:318,reference:1.033},{inner:318,outer:325,reference:1.06}];
+  const photoRowGroups=strobeRows.map((row,index)=>{
+    const clip=document.createElementNS(svgNS,'clipPath');clip.id=`technics-photo-row-${index}`;
+    const path=document.createElementNS(svgNS,'path');
+    const circle=r=>`M${461+r} 684 A${r} ${r} 0 1 0 ${461-r} 684 A${r} ${r} 0 1 0 ${461+r} 684 Z`;
+    path.setAttribute('d',circle(row.outer)+circle(row.inner));path.setAttribute('clip-rule','evenodd');
+    clip.append(path);openingLogo.querySelector('defs').append(clip);
+    const group=document.createElementNS(svgNS,'g');group.setAttribute('clip-path',`url(#${clip.id})`);
+    group.append(photoNode.cloneNode(true));photoGroup.append(group);return group;
+  });
+  openingLogo?.append(photoGroup);
+  const photoImage=new Image();let photoRingCanvas;
+  photoImage.addEventListener('load',()=>{
+    photoRingCanvas=strobeRows.map(row=>{
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=720;
+      const ctx=canvas.getContext('2d');ctx.translate(360,360);ctx.scale(360/325,360/325);
+      ctx.beginPath();ctx.arc(0,0,row.outer,0,TAU);ctx.arc(0,0,row.inner,0,TAU,true);ctx.clip('evenodd');
+      ctx.drawImage(photoImage,-290*photoScale,-285*photoScale,736*photoScale,573*photoScale);return canvas;
+    });
+    lastMainPaint=lastFeedPaint='';schedule();
+  },{once:true});photoImage.src='technics-sl1210mk2-strobe-source.jpg';
+  const pointMorphAt = elapsed => elapsed<29.6?0:elapsed<31.4?
+    smoothEnd(Math.max(0,Math.min(1,(elapsed-29.6)/1.8))):elapsed<39.4?1:
+    1-smoothEnd(Math.max(0,Math.min(1,(elapsed-39.4)/16)));
+  const photoRingOpacity = morph => smoothEnd(Math.max(0,Math.min(1,(morph-.45)/.55)));
   function pointGeometry(mark,morph,elapsed){
     const from=mark.source;
     // A virtual 45rpm strobe reference: no flashes, and no dependency on Hz.
     // At 45rpm the body's angular speed cancels this reference exactly.
-    const a=-Math.PI/2+TAU*mark.index/80-TAU*.75*Math.max(0,elapsed-32);
-    return {x:from.x+(461+410*Math.cos(a)-from.x)*morph,
-      y:from.y+(684+410*Math.sin(a)-from.y)*morph,
-      rx:from.rx+(8-from.rx)*morph,ry:from.ry+(8-from.ry)*morph,
+    const row=Math.floor(mark.index/20);
+    const radius=301+row*8;
+    const a=-Math.PI/2+TAU*(mark.index%20)/20-TAU*.75*Math.max(0,elapsed-29.6);
+    return {x:from.x+(461+radius*Math.cos(a)-from.x)*morph,
+      y:from.y+(684+radius*Math.sin(a)-from.y)*morph,
+      rx:from.rx+(3.5-from.rx)*morph,ry:from.ry+(3.5-from.ry)*morph,
       angle:from.angle*(1-morph),opacity:mark.extra?morph:1};
   }
   function paintHeroPoints(morph,elapsed){
@@ -114,6 +151,7 @@
     if(key===lastPointFrame)return;lastPointFrame=key;
     for(const mark of timecodePoints){
       const g=pointGeometry(mark,morph,elapsed);
+      g.opacity*=1-photoRingOpacity(morph);
       for(const node of [mark.node,mark.border]){
         node.setAttribute('cx',g.x);node.setAttribute('cy',g.y);
         node.setAttribute('rx',g.rx);node.setAttribute('ry',g.ry);
@@ -121,14 +159,18 @@
         node.style.opacity=String(g.opacity);
       }
     }
+    photoGroup.style.opacity=String(photoRingOpacity(morph));
+    photoRowGroups.forEach((group,index)=>group.setAttribute('transform',
+      `rotate(${-270*strobeRows[index].reference*Math.max(0,elapsed-29.6)} 461 684)`));
   }
   function paintMainPoints(ctx,layer,w,h,opacity,patternVisibility,fillVisibility){
     ctx.save();ctx.translate(-w/2,-h/2);ctx.scale(w/922,h/1368);
     const morph=layer.pointMorph||0;
     for(const mark of timecodePoints){
       if(mark.extra && morph===0)continue;
+      if(photoRingOpacity(morph)===1)continue;
       const g=pointGeometry(mark,morph,layer.pointElapsed||0);
-      const alpha=opacity*g.opacity;
+      const alpha=opacity*g.opacity*(1-photoRingOpacity(morph));
       if(patternVisibility>0 && pointTiles[mark.sourceIndex]){
         ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.angle);
         ctx.scale(g.rx,g.ry);ctx.globalAlpha=alpha*patternVisibility;
@@ -138,36 +180,51 @@
       if(fillVisibility>0){ctx.globalAlpha=alpha*fillVisibility;ctx.fillStyle='#c2b594';ctx.fill();}
       ctx.globalAlpha=alpha;ctx.strokeStyle='#c2b594';ctx.lineWidth=pointStroke;ctx.stroke();
     }
+    if(photoRingCanvas && morph>0){
+      for(let index=0;index<strobeRows.length;index++){
+        ctx.save();ctx.translate(461,684);
+        ctx.rotate(-TAU*.75*strobeRows[index].reference*Math.max(0,(layer.pointElapsed||0)-29.6));
+        ctx.globalAlpha=opacity*photoRingOpacity(morph);
+        ctx.drawImage(photoRingCanvas[index],-325,-325,650,650);ctx.restore();
+      }
+    }
     ctx.restore();
   }
   let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[];
-  let previousSpeed=0;
-  for(const rpm of [8,33,45,88,45,33,8,0]){
-    const speed=rpm/60;
-    for(const [duration,from,to] of [[spinTransitionDuration,previousSpeed,speed],
-      [spinStageDuration-spinTransitionDuration,speed,speed]]){
-      const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
-      spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
-      spinSegments.push(segment);
-    }
-    previousSpeed=speed;
+  function addSpinSegment(duration,from,to,linear=false){
+    const segment={start:spinCursor,end:Number((spinCursor+duration).toFixed(10)),duration,from,to,linear,turns:spinTotalTurns};
+    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;spinSegments.push(segment);
+    return segment;
   }
-  // Shape the 33-to-8rpm transition to finish on a whole revolution.
-  // All stage lengths and target speeds stay exact, with no end-position snap.
-  const alignmentSegment=spinSegments[12];
-  const correction=Math.ceil(spinTotalTurns)-spinTotalTurns;
+  let previousSpeed=0;
+  for(const rpm of [8,33,45]){
+    addSpinSegment(2.8,previousSpeed,rpm/60);
+    addSpinSegment(5.2,rpm/60,rpm/60);previousSpeed=rpm/60;
+  }
+  addSpinSegment(2.8,45/60,88/60);
+  addSpinSegment(2.8,88/60,88/60);
+  addSpinSegment(1.8,88/60,888/60,true);
+  // The requested switch follows the peak immediately; no 888rpm hold.
+  addSpinSegment(8,45/60,45/60);
+  addSpinSegment(2.8,45/60,33/60);
+  addSpinSegment(5.2,33/60,33/60);
+  const alignmentSegment=addSpinSegment(2.8,33/60,8/60);
+  addSpinSegment(5.2,8/60,8/60);
+  // Retain all target tempi and durations. Change only the easing shape
+  // of the 33-to-8 transition to end upright when the 8rpm stage stops.
+  const correction=Math.round(spinTotalTurns)-spinTotalTurns;
   const powerIntegral=q=>10/(3*q+1)-15/(4*q+1)+6/(5*q+1);
   const alignmentArea=q=>alignmentSegment.duration*(alignmentSegment.from+
     (alignmentSegment.to-alignmentSegment.from)*powerIntegral(q));
   const alignmentTurns=alignmentArea(1)+correction;
-  let powerLow=1,powerHigh=16;
+  let powerLow=.2,powerHigh=32;
   for(let i=0;i<60;i++){
     const q=(powerLow+powerHigh)/2;
     if(alignmentArea(q)<alignmentTurns)powerLow=q;else powerHigh=q;
   }
   const alignmentPower=(powerLow+powerHigh)/2;
-  for(let i=13;i<spinSegments.length;i++)spinSegments[i].turns+=correction;
+  spinSegments[spinSegments.length-1].turns+=correction;
   function spinPhase(seconds) {
     if(seconds<=0 || seconds>=spinDuration)return 0;
     for(const segment of spinSegments){
@@ -179,8 +236,8 @@
         return TAU*(segment.turns+segment.duration*(segment.from*x+
           (segment.to-segment.from)*integral));
       }
-      return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*smoothIntegral(x)));
+      const integral=segment.linear?x*x/2:smoothIntegral(x);
+      return TAU*(segment.turns+segment.duration*(segment.from*x+(segment.to-segment.from)*integral));
     }
     return 0;
   }
@@ -189,8 +246,8 @@
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      if(segment===alignmentSegment)return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x**alignmentPower));
-      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
+      const blend=segment.linear?x:segment===alignmentSegment?smoothEnd(x**alignmentPower):smoothEnd(x);
+      return TAU*(segment.from+(segment.to-segment.from)*blend);
     }
     return 0;
   }
@@ -339,7 +396,7 @@
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
           layers.forEach(layer=>layer.idleAngle=0);
-          idleMode='waiting';idleSince=time-8000;
+          idleMode='waiting';idleSince=time;
         }
       }
     }
@@ -365,7 +422,7 @@
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
   const idleRotationVisibility = elapsed => {
     const fadeIn=smoothEnd(Math.max(0,Math.min(1,elapsed/1.8)));
-    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-spinStageDuration+spinTransitionDuration-elapsed)/1.8)));
+    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-elapsed)/1.8)));
     return .7+.3*fadeIn*fadeOut;
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
@@ -385,6 +442,9 @@
     // Use the opening SVG itself: the same shape, ornament alpha, placement
     // and colour. Only rebuild after geometry changes, never during scrolling.
     const copy=openingLogo.cloneNode(true);
+    copy.querySelector('.technics-photo-rim')?.remove();
+    copy.querySelector('#technics-photo-rim-clip')?.remove();
+    for(const node of copy.querySelectorAll('clipPath[id^="technics-photo-row-"]'))node.remove();
     copy.removeAttribute('class');copy.removeAttribute('style');
     copy.setAttribute('width','922');copy.setAttribute('height','1368');
     copy.querySelector('#hero-paper-pattern image').setAttribute('href',wallpaperData);
