@@ -72,35 +72,48 @@
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinPeakSpeed = 8;
-  const spinPeakRampDuration = 2.08;
-  const spinFinishDuration = 8.16;
-  const spinThirdDuration = (58-2.08-4.08)/3;
-  const spinDuration = spinThirdDuration*3+spinPeakRampDuration+spinFinishDuration;
+  const spinDuration = 40;
+  const spinTransitionDuration = 2.8;
+  const spinStageDuration = 8;
+  const startRotationStagger = .18;
   let spinCursor = 0, spinTotalTurns = 0;
-  // Three equal tempo stages, then the existing peak and a doubled finish.
-  const spinSegments = [
-    [spinThirdDuration,0,33/60],
-    [spinThirdDuration,33/60,45/60],
-    [spinThirdDuration,45/60,88/60],
-    [spinPeakRampDuration,88/60,spinPeakSpeed],
-    [spinFinishDuration,spinPeakSpeed,0]
-  ].map(([duration,from,to])=>{
-    const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
-    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
-    return segment;
-  });
-  // Distribute the fractional turn over the finish, with zero correction
-  // speed at both ends, so every logo comes to rest upright without a snap.
-  const spinClosingTurns=Math.ceil(spinTotalTurns)-spinTotalTurns;
+  const spinSegments=[];
+  let previousSpeed=0;
+  for(const rpm of [8,33,45,88,0]){
+    const speed=rpm/60;
+    for(const [duration,from,to] of [[spinTransitionDuration,previousSpeed,speed],
+      [spinStageDuration-spinTransitionDuration,speed,speed]]){
+      const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
+      spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
+      spinSegments.push(segment);
+    }
+    previousSpeed=speed;
+  }
+  // Keep the 2.8s stop monotonic, but shape its easing so the logo ends
+  // on a whole turn. No angle correction or extra rotation after stopping.
+  const stopSegment=spinSegments[8];
+  const stopTurns=Math.ceil(spinTotalTurns)-stopSegment.turns;
+  const stopArea=q=>1-10/(3*q+1)+15/(4*q+1)-6/(5*q+1);
+  let stopLow=1,stopHigh=16;
+  for(let i=0;i<60;i++){
+    const q=(stopLow+stopHigh)/2;
+    if(stopArea(q)*stopSegment.from*stopSegment.duration<stopTurns)stopLow=q;
+    else stopHigh=q;
+  }
+  const stopPower=(stopLow+stopHigh)/2;
+  spinSegments[9].turns=Math.ceil(spinTotalTurns);
   function spinPhase(seconds) {
     if(seconds<=0 || seconds>=spinDuration)return 0;
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
+      if(segment===stopSegment){
+        const q=stopPower;
+        const integral=x-10*x**(3*q+1)/(3*q+1)+15*x**(4*q+1)/(4*q+1)-6*x**(5*q+1)/(5*q+1);
+        return TAU*(segment.turns+segment.duration*segment.from*integral);
+      }
       return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*smoothIntegral(x)) +
-        (segment===spinSegments[spinSegments.length-1]?spinClosingTurns*smoothEnd(x):0));
+        (segment.to-segment.from)*smoothIntegral(x)));
     }
     return 0;
   }
@@ -109,8 +122,8 @@
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x)+
-        (segment===spinSegments[spinSegments.length-1]?spinClosingTurns/segment.duration*30*x*x*(1-x)*(1-x):0));
+      if(segment===stopSegment)return TAU*segment.from*(1-smoothEnd(x**stopPower));
+      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
     }
     return 0;
   }
@@ -252,20 +265,19 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // The front main logo follows the wallpaper logo by 0.08s;
-        // each deeper main logo waits another 0.08s.
-        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*.08));
-        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*.08;
+        // Start-only 0.18s stagger; scroll following stays at 80ms.
+        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
+        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
         if(elapsed>=lastFinish){
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
           layers.forEach(layer=>layer.idleAngle=0);
-          idleMode='waiting';idleSince=time;
+          idleMode='waiting';idleSince=time-8000;
         }
       }
     }
     for(const layer of layers){
-      const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*.08:-1;
+      const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
       layer.idleVisibility=idleRotationVisibility(elapsed);
     }
     if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
@@ -278,7 +290,7 @@
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
   const idleRotationVisibility = elapsed => {
     const fadeIn=smoothEnd(Math.max(0,Math.min(1,elapsed/1.8)));
-    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-elapsed)/1.8)));
+    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-spinStageDuration+spinTransitionDuration-elapsed)/1.8)));
     return .7+.3*fadeIn*fadeOut;
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
