@@ -72,172 +72,48 @@
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinDuration = 55.4;
+  const spinDuration = 40;
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
   const startRotationStagger = .18;
-  const pointMask=openingLogo?.querySelector('#hero-paper-shape > g');
-  const pointBorder=openingLogo?.querySelector('.hero-paper-border');
-  const originalPoints=[...(pointMask?.querySelectorAll('ellipse')||[])].map((node,index)=>({
-    node,border:pointBorder.querySelectorAll('ellipse')[index],
-    x:+node.getAttribute('cx'),y:+node.getAttribute('cy'),
-    rx:+node.getAttribute('rx'),ry:+node.getAttribute('ry'),
-    angle:(parseFloat((node.getAttribute('transform')||'').replace('rotate(',''))||0)*Math.PI/180
-  }));
-  const pointOrder=originalPoints.map((point,index)=>({point,index})).sort((a,b)=>
-    Math.atan2(a.point.y-684,a.point.x-461)-Math.atan2(b.point.y-684,b.point.x-461));
-  const timecodePoints=Array.from({length:80},(_,index)=>{
-    const source=pointOrder[index%pointOrder.length];
-    if(!source)return null;
-    const extra=index>=originalPoints.length;
-    const node=extra?source.point.node.cloneNode(true):source.point.node;
-    const border=extra?source.point.border.cloneNode(true):source.point.border;
-    if(extra){node.style.opacity=border.style.opacity='0';pointMask.append(node);pointBorder.append(border);}
-    return {source:source.point,sourceIndex:source.index,index,extra,node,border};
-  }).filter(Boolean);
-  let pointTiles=[],pointStroke=1.5,heroPointMorph=0,heroPointElapsed=0,lastPointFrame='';
-  const svgNS='http://www.w3.org/2000/svg';
-  const ringClip=document.createElementNS(svgNS,'clipPath');ringClip.id='technics-photo-rim-clip';
-  const ringPath=document.createElementNS(svgNS,'path');
-  ringPath.setAttribute('d','M786 684 A325 325 0 1 0 136 684 A325 325 0 1 0 786 684 Z M758 684 A297 297 0 1 0 164 684 A297 297 0 1 0 758 684 Z');
-  ringPath.setAttribute('clip-rule','evenodd');ringClip.append(ringPath);
-  openingLogo?.querySelector('defs').append(ringClip);
-  const photoGroup=document.createElementNS(svgNS,'g');photoGroup.classList.add('technics-photo-rim');
-  photoGroup.setAttribute('clip-path','url(#technics-photo-rim-clip)');photoGroup.style.opacity='0';
-  const photoNode=document.createElementNS(svgNS,'image');
-  photoNode.setAttribute('href','technics-sl1210mk2-strobe-source.jpg');
-  const photoScale=325/270,photoLeft=461-290*photoScale,photoTop=684-285*photoScale;
-  for(const [name,value] of Object.entries({x:photoLeft,y:photoTop,width:736*photoScale,height:573*photoScale}))photoNode.setAttribute(name,value);
-  const strobeRows=[{inner:297,outer:306,reference:.967},{inner:306,outer:312,reference:1},
-    {inner:312,outer:318,reference:1.033},{inner:318,outer:325,reference:1.06}];
-  const photoRowGroups=strobeRows.map((row,index)=>{
-    const clip=document.createElementNS(svgNS,'clipPath');clip.id=`technics-photo-row-${index}`;
-    const path=document.createElementNS(svgNS,'path');
-    const circle=r=>`M${461+r} 684 A${r} ${r} 0 1 0 ${461-r} 684 A${r} ${r} 0 1 0 ${461+r} 684 Z`;
-    path.setAttribute('d',circle(row.outer)+circle(row.inner));path.setAttribute('clip-rule','evenodd');
-    clip.append(path);openingLogo.querySelector('defs').append(clip);
-    const group=document.createElementNS(svgNS,'g');group.setAttribute('clip-path',`url(#${clip.id})`);
-    group.append(photoNode.cloneNode(true));photoGroup.append(group);return group;
-  });
-  openingLogo?.append(photoGroup);
-  const photoImage=new Image();let photoRingCanvas;
-  photoImage.addEventListener('load',()=>{
-    photoRingCanvas=strobeRows.map(row=>{
-      const canvas=document.createElement('canvas');canvas.width=canvas.height=720;
-      const ctx=canvas.getContext('2d');ctx.translate(360,360);ctx.scale(360/325,360/325);
-      ctx.beginPath();ctx.arc(0,0,row.outer,0,TAU);ctx.arc(0,0,row.inner,0,TAU,true);ctx.clip('evenodd');
-      ctx.drawImage(photoImage,-290*photoScale,-285*photoScale,736*photoScale,573*photoScale);return canvas;
-    });
-    lastMainPaint=lastFeedPaint='';schedule();
-  },{once:true});photoImage.src='technics-sl1210mk2-strobe-source.jpg';
-  const pointMorphAt = elapsed => elapsed<29.6?0:elapsed<31.4?
-    smoothEnd(Math.max(0,Math.min(1,(elapsed-29.6)/1.8))):elapsed<39.4?1:
-    1-smoothEnd(Math.max(0,Math.min(1,(elapsed-39.4)/16)));
-  const photoRingOpacity = morph => smoothEnd(Math.max(0,Math.min(1,(morph-.45)/.55)));
-  function pointGeometry(mark,morph,elapsed){
-    const from=mark.source;
-    // A virtual 45rpm strobe reference: no flashes, and no dependency on Hz.
-    // At 45rpm the body's angular speed cancels this reference exactly.
-    const row=Math.floor(mark.index/20);
-    const radius=301+row*8;
-    const a=-Math.PI/2+TAU*(mark.index%20)/20-TAU*.75*Math.max(0,elapsed-29.6);
-    return {x:from.x+(461+radius*Math.cos(a)-from.x)*morph,
-      y:from.y+(684+radius*Math.sin(a)-from.y)*morph,
-      rx:from.rx+(3.5-from.rx)*morph,ry:from.ry+(3.5-from.ry)*morph,
-      angle:from.angle*(1-morph),opacity:mark.extra?morph:1};
-  }
-  function paintHeroPoints(morph,elapsed){
-    const key=morph===0?'original':`${morph}:${elapsed}`;
-    if(key===lastPointFrame)return;lastPointFrame=key;
-    for(const mark of timecodePoints){
-      const g=pointGeometry(mark,morph,elapsed);
-      g.opacity*=1-photoRingOpacity(morph);
-      for(const node of [mark.node,mark.border]){
-        node.setAttribute('cx',g.x);node.setAttribute('cy',g.y);
-        node.setAttribute('rx',g.rx);node.setAttribute('ry',g.ry);
-        node.setAttribute('transform',`rotate(${g.angle*180/Math.PI} ${g.x} ${g.y})`);
-        node.style.opacity=String(g.opacity);
-      }
-    }
-    photoGroup.style.opacity=String(photoRingOpacity(morph));
-    photoRowGroups.forEach((group,index)=>group.setAttribute('transform',
-      `rotate(${-270*strobeRows[index].reference*Math.max(0,elapsed-29.6)} 461 684)`));
-  }
-  function paintMainPoints(ctx,layer,w,h,opacity,patternVisibility,fillVisibility){
-    ctx.save();ctx.translate(-w/2,-h/2);ctx.scale(w/922,h/1368);
-    const morph=layer.pointMorph||0;
-    for(const mark of timecodePoints){
-      if(mark.extra && morph===0)continue;
-      if(photoRingOpacity(morph)===1)continue;
-      const g=pointGeometry(mark,morph,layer.pointElapsed||0);
-      const alpha=opacity*g.opacity*(1-photoRingOpacity(morph));
-      if(patternVisibility>0 && pointTiles[mark.sourceIndex]){
-        ctx.save();ctx.translate(g.x,g.y);ctx.rotate(g.angle);
-        ctx.scale(g.rx,g.ry);ctx.globalAlpha=alpha*patternVisibility;
-        ctx.drawImage(pointTiles[mark.sourceIndex],-1,-1,2,2);ctx.restore();
-      }
-      ctx.beginPath();ctx.ellipse(g.x,g.y,g.rx,g.ry,g.angle,0,TAU);
-      if(fillVisibility>0){ctx.globalAlpha=alpha*fillVisibility;ctx.fillStyle='#c2b594';ctx.fill();}
-      ctx.globalAlpha=alpha;ctx.strokeStyle='#c2b594';ctx.lineWidth=pointStroke;ctx.stroke();
-    }
-    if(photoRingCanvas && morph>0){
-      for(let index=0;index<strobeRows.length;index++){
-        ctx.save();ctx.translate(461,684);
-        ctx.rotate(-TAU*.75*strobeRows[index].reference*Math.max(0,(layer.pointElapsed||0)-29.6));
-        ctx.globalAlpha=opacity*photoRingOpacity(morph);
-        ctx.drawImage(photoRingCanvas[index],-325,-325,650,650);ctx.restore();
-      }
-    }
-    ctx.restore();
-  }
   let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[];
-  function addSpinSegment(duration,from,to,linear=false){
-    const segment={start:spinCursor,end:Number((spinCursor+duration).toFixed(10)),duration,from,to,linear,turns:spinTotalTurns};
-    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;spinSegments.push(segment);
-    return segment;
-  }
   let previousSpeed=0;
-  for(const rpm of [8,33,45]){
-    addSpinSegment(2.8,previousSpeed,rpm/60);
-    addSpinSegment(5.2,rpm/60,rpm/60);previousSpeed=rpm/60;
+  for(const rpm of [8,33,45,88,0]){
+    const speed=rpm/60;
+    for(const [duration,from,to] of [[spinTransitionDuration,previousSpeed,speed],
+      [spinStageDuration-spinTransitionDuration,speed,speed]]){
+      const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
+      spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
+      spinSegments.push(segment);
+    }
+    previousSpeed=speed;
   }
-  addSpinSegment(2.8,45/60,88/60);
-  addSpinSegment(2.8,88/60,88/60);
-  addSpinSegment(1.8,88/60,888/60,true);
-  // The requested switch follows the peak immediately; no 888rpm hold.
-  addSpinSegment(8,45/60,45/60);
-  addSpinSegment(2.8,45/60,33/60);
-  addSpinSegment(5.2,33/60,33/60);
-  const alignmentSegment=addSpinSegment(2.8,33/60,8/60);
-  addSpinSegment(5.2,8/60,8/60);
-  // Retain all target tempi and durations. Change only the easing shape
-  // of the 33-to-8 transition to end upright when the 8rpm stage stops.
-  const correction=Math.round(spinTotalTurns)-spinTotalTurns;
-  const powerIntegral=q=>10/(3*q+1)-15/(4*q+1)+6/(5*q+1);
-  const alignmentArea=q=>alignmentSegment.duration*(alignmentSegment.from+
-    (alignmentSegment.to-alignmentSegment.from)*powerIntegral(q));
-  const alignmentTurns=alignmentArea(1)+correction;
-  let powerLow=.2,powerHigh=32;
+  // Keep the 2.8s stop monotonic, but shape its easing so the logo ends
+  // on a whole turn. No angle correction or extra rotation after stopping.
+  const stopSegment=spinSegments[8];
+  const stopTurns=Math.ceil(spinTotalTurns)-stopSegment.turns;
+  const stopArea=q=>1-10/(3*q+1)+15/(4*q+1)-6/(5*q+1);
+  let stopLow=1,stopHigh=16;
   for(let i=0;i<60;i++){
-    const q=(powerLow+powerHigh)/2;
-    if(alignmentArea(q)<alignmentTurns)powerLow=q;else powerHigh=q;
+    const q=(stopLow+stopHigh)/2;
+    if(stopArea(q)*stopSegment.from*stopSegment.duration<stopTurns)stopLow=q;
+    else stopHigh=q;
   }
-  const alignmentPower=(powerLow+powerHigh)/2;
-  spinSegments[spinSegments.length-1].turns+=correction;
+  const stopPower=(stopLow+stopHigh)/2;
+  spinSegments[9].turns=Math.ceil(spinTotalTurns);
   function spinPhase(seconds) {
     if(seconds<=0 || seconds>=spinDuration)return 0;
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      if(segment===alignmentSegment){
-        const q=alignmentPower;
-        const integral=10*x**(3*q+1)/(3*q+1)-15*x**(4*q+1)/(4*q+1)+6*x**(5*q+1)/(5*q+1);
-        return TAU*(segment.turns+segment.duration*(segment.from*x+
-          (segment.to-segment.from)*integral));
+      if(segment===stopSegment){
+        const q=stopPower;
+        const integral=x-10*x**(3*q+1)/(3*q+1)+15*x**(4*q+1)/(4*q+1)-6*x**(5*q+1)/(5*q+1);
+        return TAU*(segment.turns+segment.duration*segment.from*integral);
       }
-      const integral=segment.linear?x*x/2:smoothIntegral(x);
-      return TAU*(segment.turns+segment.duration*(segment.from*x+(segment.to-segment.from)*integral));
+      return TAU*(segment.turns+segment.duration*(segment.from*x+
+        (segment.to-segment.from)*smoothIntegral(x)));
     }
     return 0;
   }
@@ -246,8 +122,8 @@
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      const blend=segment.linear?x:segment===alignmentSegment?smoothEnd(x**alignmentPower):smoothEnd(x);
-      return TAU*(segment.from+(segment.to-segment.from)*blend);
+      if(segment===stopSegment)return TAU*segment.from*(1-smoothEnd(x**stopPower));
+      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
     }
     return 0;
   }
@@ -396,22 +272,14 @@
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
           layers.forEach(layer=>layer.idleAngle=0);
-          idleMode='waiting';idleSince=time;
+          idleMode='waiting';idleSince=time-8000;
         }
       }
     }
     for(const layer of layers){
       const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
       layer.idleVisibility=idleRotationVisibility(elapsed);
-      layer.pointElapsed=Math.max(0,elapsed);
-      const target=idleMode==='running'?pointMorphAt(elapsed):0;
-      layer.pointMorph=idleMode==='running'?target:(layer.pointMorph||0)*Math.exp(-dt/.12);
-      if(layer.pointMorph<.00001)layer.pointMorph=0;
     }
-    heroPointElapsed=idleMode==='running'?Math.max(0,(time-spinSince)/1000):heroPointElapsed;
-    heroPointMorph=idleMode==='running'?pointMorphAt(heroPointElapsed):heroPointMorph*Math.exp(-dt/.12);
-    if(heroPointMorph<.00001)heroPointMorph=0;
-    paintHeroPoints(heroPointMorph,heroPointElapsed);
     if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
@@ -422,7 +290,7 @@
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
   const idleRotationVisibility = elapsed => {
     const fadeIn=smoothEnd(Math.max(0,Math.min(1,elapsed/1.8)));
-    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-elapsed)/1.8)));
+    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-spinStageDuration+spinTransitionDuration-elapsed)/1.8)));
     return .7+.3*fadeIn*fadeOut;
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
@@ -442,28 +310,11 @@
     // Use the opening SVG itself: the same shape, ornament alpha, placement
     // and colour. Only rebuild after geometry changes, never during scrolling.
     const copy=openingLogo.cloneNode(true);
-    copy.querySelector('.technics-photo-rim')?.remove();
-    copy.querySelector('#technics-photo-rim-clip')?.remove();
-    for(const node of copy.querySelectorAll('clipPath[id^="technics-photo-row-"]'))node.remove();
     copy.removeAttribute('class');copy.removeAttribute('style');
     copy.setAttribute('width','922');copy.setAttribute('height','1368');
     copy.querySelector('#hero-paper-pattern image').setAttribute('href',wallpaperData);
     copy.querySelector('.hero-paper-border').setAttribute('stroke-width',borderWidth/scale);
     for(const node of copy.querySelectorAll('[vector-effect]'))node.removeAttribute('vector-effect');
-    const pointsCopy=copy.cloneNode(true);
-    for(const node of pointsCopy.querySelectorAll('ellipse'))node.remove();
-    pointsCopy.querySelector('.hero-paper-border').remove();
-    const pointGroup=pointsCopy.querySelector('#hero-paper-shape > g');
-    for(const point of originalPoints){
-      const node=point.node.cloneNode(true);node.removeAttribute('style');
-      node.setAttribute('cx',point.x);node.setAttribute('cy',point.y);
-      node.setAttribute('rx',point.rx);node.setAttribute('ry',point.ry);
-      node.setAttribute('transform',`rotate(${point.angle*180/Math.PI} ${point.x} ${point.y})`);
-      pointGroup.append(node);
-    }
-    pointGroup.querySelector('path').remove();
-    for(const node of copy.querySelectorAll('ellipse'))node.remove();
-    pointStroke=borderWidth/scale;
     const borderCopy=copy.cloneNode(true);
     borderCopy.querySelector('g[mask="url(#hero-paper-shape)"]').remove();
     borderCopy.querySelector('defs').remove();
@@ -473,7 +324,7 @@
     solidShape.setAttribute('stroke','none');
     copy.querySelector('.hero-paper-border').remove();
     const request=++mainWallpaperRequest;
-    const wallpaper=new Image(), outline=new Image(), solid=new Image(), pointsImage=new Image();
+    const wallpaper=new Image(), outline=new Image(), solid=new Image();
     let loaded=0;
     const cacheImage=image=>sprites.map(source=>{
       const canvas=document.createElement('canvas');
@@ -483,20 +334,13 @@
       return canvas;
     });
     const ready=()=>{
-      if(request!==mainWallpaperRequest || ++loaded!==4)return;
+      if(request!==mainWallpaperRequest || ++loaded!==3)return;
       // Swap both caches together. The outline is always painted at the
       // layer's original opacity; only the separate interior pattern fades.
-      pointTiles=originalPoints.map(point=>{
-        const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
-        const ctx=canvas.getContext('2d');ctx.translate(64,64);ctx.scale(64/point.rx,64/point.ry);
-        ctx.beginPath();ctx.ellipse(0,0,point.rx,point.ry,0,0,TAU);ctx.clip();
-        ctx.rotate(-point.angle);ctx.translate(-point.x,-point.y);
-        ctx.drawImage(pointsImage,0,0,922,1368);return canvas;
-      });
       mainSprites=cacheImage(wallpaper);mainBorderSprites=cacheImage(outline);mainSolidSprites=cacheImage(solid);
       lastMainPaint=lastFeedPaint='';cacheSpriteChoices();schedule();
     };
-    for(const image of [wallpaper,outline,solid,pointsImage]){
+    for(const image of [wallpaper,outline,solid]){
       image.addEventListener('load',ready,{once:true});
       image.addEventListener('error',()=>{
         if(request===mainWallpaperRequest)mainWallpaperKey='';
@@ -504,7 +348,7 @@
     }
     const serialise=svg=>'data:image/svg+xml;charset=utf-8,'+
       encodeURIComponent(new XMLSerializer().serializeToString(svg));
-    wallpaper.src=serialise(copy);outline.src=serialise(borderCopy);solid.src=serialise(solidCopy);pointsImage.src=serialise(pointsCopy);
+    wallpaper.src=serialise(copy);outline.src=serialise(borderCopy);solid.src=serialise(solidCopy);
   }
 
   function cacheSpriteChoices() {
@@ -743,7 +587,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}:${layer.pointMorph}:${layer.pointElapsed}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -786,7 +630,6 @@
       }
       ink.globalAlpha=opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
-      paintMainPoints(ink,layer,w,h,opacity,patternVisibility,fillVisibility);
       ink.restore();
     }
     if (!root.classList.contains('canvas-logos-ready')) {
