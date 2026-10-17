@@ -93,10 +93,10 @@
   appendSpin(spinTransitionDuration,8,33);
   appendSpin(spinStageDuration-spinTransitionDuration,33);
   appendSpin(spinTransitionDuration,33,45);
-  appendSpin(spinStageDuration-spinTransitionDuration-3,45);
-  // The final three seconds of the 45-rpm stage accelerate linearly.
-  appendSpin(3,45,8888,'linear');
-  const stopSegment=appendSpin(spinTransitionDuration,8888,0,'stop');
+  appendSpin(spinStageDuration-spinTransitionDuration-1.8,45);
+  // The final 1.8 seconds of the 45-rpm stage accelerate linearly.
+  appendSpin(1.8,45,888,'linear');
+  const stopSegment=appendSpin(spinTransitionDuration,888,0,'stop');
   // Keep the 2.8s stop monotonic, but shape its easing so the logo ends
   // on a whole turn. No angle correction or extra rotation after stopping.
   const stoppedTurns=Math.ceil(spinTotalTurns);

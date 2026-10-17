@@ -22,8 +22,9 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
 - Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
-- Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung auf 8888 rpm,
-  Abbremsen, Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
+- Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung in den letzten
+  1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
+  Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
 
 Die aktive Website wurde bei der Dateibereinigung nicht verändert.
 Geprüft: Abhängigkeiten, Skriptsyntax, Ringgeometrie, Zeitablauf und ZIP-Integrität.
