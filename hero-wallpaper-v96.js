@@ -31,8 +31,8 @@
       ring.setAttribute('width', size);
       ring.setAttribute('height', size);
     }
-    const style = getComputedStyle(header, '::before');
-    const pixels = parseFloat(style.maskSize || style.webkitMaskSize) || 260;
+    const pixels = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--wallpaper-tile-size')) || 220;
     const tile = pixels / scale;
     for (const node of [pattern, tileImage]) {
       node.setAttribute('width', tile); node.setAttribute('height', tile);

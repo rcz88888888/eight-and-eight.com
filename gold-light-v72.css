@@ -4,6 +4,7 @@
   --site-dark-gold: var(--banner-logo-metal);
   --banner-logo-ink: var(--banner-logo-metal);
   --wallpaper-sand-gold: #c2b594;
+  --wallpaper-tile-size: 220px;
 }
 /* v95: every gold surface is static; no reflection variables or beams. */
 .gold-light-target, .topbar, .wallpaper-end {
@@ -113,7 +114,7 @@ em.gold-text-light {
 }
 
 /* Recolour only the ornament; the banner paper is fully transparent.
-   Keep the smaller v39 repeat scale and the menu's fixed wallpaper origin. */
+   Use the portrait tile size on every surface and keep the menu origin fixed. */
 .topbar::before,
 .wallpaper-end::before {
   background: var(--gold-surface);
@@ -123,8 +124,8 @@ em.gold-text-light {
   mask-image: url("wallpaper-ornament-mask-v45.png");
   -webkit-mask-mode: alpha;
   mask-mode: alpha;
-  -webkit-mask-size: 260px 260px;
-  mask-size: 260px 260px;
+  -webkit-mask-size: var(--wallpaper-tile-size) var(--wallpaper-tile-size);
+  mask-size: var(--wallpaper-tile-size) var(--wallpaper-tile-size);
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
@@ -145,13 +146,8 @@ em.gold-text-light {
     mask-position: center -58px;
   }
 }
-@media (max-width: 560px) {
-  .topbar::before,
-  .wallpaper-end::before {
-    -webkit-mask-size: 220px 220px;
-    mask-size: 220px 220px;
-  }
-}
+/* The expanded navigation uses the same repeat size as both banners. */
+.site-nav { --menu-wallpaper-size: var(--wallpaper-tile-size); }
 
 /* v42: all banner ground layers are transparent; keep the masked ornament. */
 .topbar,
@@ -391,20 +387,6 @@ body > .site-shell { z-index: 3; }
     .content-scroll .logo-stage { height: calc(77svh + 24px); }
   }
 }
-/* Measure the pre-enlargement hero dimensions without affecting layout. */
-.landscape-logo-reference {
-  position: absolute; visibility: hidden; pointer-events: none;
-  left: 8px; top: 0; width: calc(100% - 16px);
-  height: calc(100vh - var(--header-height) - 16px);
-}
-@media (max-width: 900px) { .landscape-logo-reference { height: calc(84vh - var(--header-height) - 16px); } }
-@media (max-width: 560px) { .landscape-logo-reference { height: calc(78vh - var(--header-height) - 16px); } }
-@supports (height: 100svh) {
-  .landscape-logo-reference { height: calc(100svh - var(--header-height) - 16px); }
-  @media (max-width: 900px) { .landscape-logo-reference { height: calc(84svh - var(--header-height) - 16px); } }
-  @media (max-width: 560px) { .landscape-logo-reference { height: calc(78svh - var(--header-height) - 16px); } }
-}
-
 /* Keep the portrait hamburger thickness in every orientation. */
 body .topbar .menu-toggle > span {
   height:2.25px !important;min-height:2.25px !important;

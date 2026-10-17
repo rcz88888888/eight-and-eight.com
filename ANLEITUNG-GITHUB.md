@@ -13,11 +13,26 @@ Diese ZIP enthält 35 Dateien einschließlich dieser Anleitung und CNAME.
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
+## Feste Gestaltungsregeln
+
+- Die Tapetenkachel ist überall 220 CSS-Pixel breit und hoch, entsprechend
+  dem bisherigen Smartphone-Hochformat. Diese Größe gilt unabhängig von
+  Gerät, Bildschirmbreite, Ausrichtung und Größe der jeweiligen Logoebene.
+- Startlogo, alle acht Hauptlogoebenen, oberer und unterer Banner sowie
+  die erweiterte Menüfläche verwenden dieselbe Mustergröße.
+- Die zentrale CSS-Variable --wallpaper-tile-size definiert diesen Wert.
+  SVG- und Canvas-Logos gleichen ihre jeweilige Zeichenskalierung aus,
+  damit das Muster beim Vergrößern einer Logoebene nicht mitwächst.
+
 ## Enthaltene Änderungen
+
+- Im Querformat entspricht die nächste Hintergrundebene der tatsächlichen
+  Größe des vordersten Startlogos. Alle weiteren sieben Ebenen behalten
+  ihre bisherige relative Größenstaffelung. Die Ringe folgen ihren Ebenen.
 
 - Das vorderste Startlogo sitzt auf Desktop und im Querformat mittig zwischen
   Bannerkante und der ersten Textfeldlinie. Der Mittelpunkt folgt der Höhe
-  des Startbereichs; die Logo- und Ringgröße bleiben erhalten.
+  des Startbereichs; die Größe des vordersten Startlogos bleibt erhalten.
 
 - Der Ring des vordersten Startlogos ist ausgeblendet.
 - Die acht schwächeren Hauptlogoebenen behalten ihre sandgoldenen Punktringe
@@ -33,6 +48,9 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
 
 Die Positionierung im Hochformat bleibt erhalten.
-Aktuelle Prüfung: geänderte CSS-Regeln, Dateiverweise und ZIP-Integrität.
-Ringgeometrie und Animationsablauf wurden nicht geändert.
+Aktuelle Prüfung: JavaScript-Syntax, Skalierungsberechnungen für fünf
+Desktop-/Quer-/Hochformate, konstante Mustergröße aller neun Logos,
+Texturzuordnung, Cache-Wiederverwendung, Schutz gegen veraltete Ladevorgänge
+nach Größenänderungen, Dateiverweise und ZIP-Integrität.
+Die zeitlichen Animationsabläufe sind unverändert.
 Ein Live-Browsertest war in dieser Umgebung nicht verfügbar.

@@ -20,6 +20,7 @@
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
+    node,
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
@@ -45,10 +46,6 @@
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
-  const reference=document.createElement('span');
-  reference.className='landscape-logo-reference';
-  reference.setAttribute('aria-hidden','true');
-  openingLogo?.parentElement.append(reference);
   let openingCenter;
   let bgRatio = 1;
   let inkRatio = 1;
@@ -303,7 +300,6 @@
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const ringSpriteFor = pixels => ringSprites.find(sprite => sprite.width >= pixels) || ringSprites[ringSprites.length - 1];
-  const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
   const mainBorderSpriteFor = pixels => mainBorderSprites.find(sprite => sprite.width >= pixels) || mainBorderSprites[mainBorderSprites.length - 1];
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
   const mainSolidSpriteFor = pixels => mainSolidSprites.find(sprite=>sprite.width>=pixels) || mainSolidSprites[mainSolidSprites.length-1];
@@ -317,71 +313,116 @@
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
     layer.opacity*(1-.38*fillVisibility)*(1-(1-layer.idleVisibility)*patternVisibility);
+  function openingMainScaleFactor() {
+    if (!openingLogo || !mainBox || !matchMedia('(orientation: landscape)').matches) return 1;
+    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    const canvasScale = Math.min(mainBox.width / 922, mainBox.height / 1368);
+    const frontScale = layers.find(layer => layer.depth === 0)?.scale || 1;
+    // Match the nearest background logo to the foreground artwork itself.
+    // The other seven retain their existing size progression and rings.
+    return openingScale > 0 && canvasScale > 0 ? openingScale / (canvasScale * frontScale) : 1;
+  }
+  function syncMainWallpaperGeometry() {
+    if (!mainBox) return;
+    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
+    if (!(scale > 0)) return;
+    const pixels = parseFloat(getComputedStyle(root).getPropertyValue('--wallpaper-tile-size')) || 220;
+    for (const layer of layers) {
+      // Also keep the native SVG fallback correct before canvas is ready.
+      layer.node.style.setProperty('--layer-scale', layer.scale * openingScaleFactor);
+      const pattern = layer.node.querySelector('pattern');
+      const image = pattern?.querySelector('image');
+      if (!pattern || !image) continue;
+      const tile = pixels / (scale * layer.scale);
+      for (const node of [pattern, image]) {
+        node.setAttribute('width', tile); node.setAttribute('height', tile);
+      }
+      pattern.setAttribute('x', (922 - tile) / 2);
+    }
+  }
   function cacheMainWallpaperSprites() {
-    if(!sprites.length || !wallpaperData || !openingLogo)return;
-    const scale=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
-    if(!(scale>0))return;
-    const pattern=openingLogo.querySelector('#hero-paper-pattern');
-    const border=openingLogo.querySelector('.hero-paper-border');
-    if(!pattern || !border)return;
-    const borderWidth=parseFloat(getComputedStyle(border).strokeWidth) || 1.5;
-    const key=[pattern.getAttribute('width'),pattern.getAttribute('height'),
-      pattern.getAttribute('x'),borderWidth/scale,border.getAttribute('stroke')].join(':');
-    if(key===mainWallpaperKey)return;
-    mainWallpaperKey=key;
-    // Use the opening SVG itself: the same shape, ornament alpha, placement
-    // and colour. Only rebuild after geometry changes, never during scrolling.
-    const copy=openingLogo.cloneNode(true);
-    // Draw the point ring separately, with each layer's own cached transform.
+    if (!sprites.length || !wallpaperData || !openingLogo || !mainBox) return;
+    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
+    if (!(openingScale > 0) || !(scale > 0)) return;
+    const pattern = openingLogo.querySelector('#hero-paper-pattern');
+    const border = openingLogo.querySelector('.hero-paper-border');
+    if (!pattern || !border) return;
+    const pixels = parseFloat(getComputedStyle(root).getPropertyValue('--wallpaper-tile-size')) || 220;
+    const borderWidth = parseFloat(getComputedStyle(border).strokeWidth) || 1.5;
+    const key = [pixels, scale, inkRatio, borderWidth / openingScale, border.getAttribute('stroke'),
+      ...layers.map(layer => layer.scale)].join(':');
+    if (key === mainWallpaperKey) return;
+    mainWallpaperKey = key;
+    const copy = openingLogo.cloneNode(true);
     copy.querySelector('.hero-strobe-ring')?.remove();
-    copy.removeAttribute('class');copy.removeAttribute('style');
-    copy.setAttribute('width','922');copy.setAttribute('height','1368');
-    copy.querySelector('#hero-paper-pattern image').setAttribute('href',wallpaperData);
-    copy.querySelector('.hero-paper-border').setAttribute('stroke-width',borderWidth/scale);
-    for(const node of copy.querySelectorAll('[vector-effect]'))node.removeAttribute('vector-effect');
-    const borderCopy=copy.cloneNode(true);
+    copy.removeAttribute('class'); copy.removeAttribute('style');
+    copy.setAttribute('width', '922'); copy.setAttribute('height', '1368');
+    copy.querySelector('#hero-paper-pattern image').setAttribute('href', wallpaperData);
+    copy.querySelector('.hero-paper-border').setAttribute('stroke-width', borderWidth / openingScale);
+    for (const node of copy.querySelectorAll('[vector-effect]')) node.removeAttribute('vector-effect');
+    const borderCopy = copy.cloneNode(true);
     borderCopy.querySelector('g[mask="url(#hero-paper-shape)"]').remove();
     borderCopy.querySelector('defs').remove();
-    const solidCopy=borderCopy.cloneNode(true);
-    const solidShape=solidCopy.querySelector('.hero-paper-border');
-    solidShape.setAttribute('fill',border.getAttribute('stroke'));
-    solidShape.setAttribute('stroke','none');
+    const solidCopy = borderCopy.cloneNode(true);
+    const solidShape = solidCopy.querySelector('.hero-paper-border');
+    solidShape.setAttribute('fill', border.getAttribute('stroke'));
+    solidShape.setAttribute('stroke', 'none');
     copy.querySelector('.hero-paper-border').remove();
-    const request=++mainWallpaperRequest;
-    const wallpaper=new Image(), outline=new Image(), solid=new Image();
-    let loaded=0;
-    const cacheImage=image=>sprites.map(source=>{
-      const canvas=document.createElement('canvas');
-      canvas.width=source.width;canvas.height=source.height;
-      const ctx=canvas.getContext('2d');ctx.imageSmoothingQuality='high';
-      ctx.drawImage(image,0,0,canvas.width,canvas.height);
-      return canvas;
-    });
-    const ready=()=>{
-      if(request!==mainWallpaperRequest || ++loaded!==3)return;
-      // Swap both caches together. The outline is always painted at the
-      // layer's original opacity; only the separate interior pattern fades.
-      mainSprites=cacheImage(wallpaper);mainBorderSprites=cacheImage(outline);mainSolidSprites=cacheImage(solid);
-      lastMainPaint=lastFeedPaint='';cacheSpriteChoices();schedule();
-    };
-    for(const image of [wallpaper,outline,solid]){
-      image.addEventListener('load',ready,{once:true});
-      image.addEventListener('error',()=>{
-        if(request===mainWallpaperRequest)mainWallpaperKey='';
-      },{once:true});
-    }
-    const serialise=svg=>'data:image/svg+xml;charset=utf-8,'+
+    const serialise = svg => 'data:image/svg+xml;charset=utf-8,' +
       encodeURIComponent(new XMLSerializer().serializeToString(svg));
-    wallpaper.src=serialise(copy);outline.src=serialise(borderCopy);solid.src=serialise(solidCopy);
+    const wallpaperSources = layers.map(layer => {
+      const svg = copy.cloneNode(true);
+      // Counteract this layer's complete draw scale, so every repeat stays
+      // 220 CSS pixels even though the eight silhouettes differ in size.
+      const tile = pixels / (scale * layer.scale);
+      for (const node of [svg.querySelector('#hero-paper-pattern'), svg.querySelector('#hero-paper-pattern image')]) {
+        node.setAttribute('width', tile); node.setAttribute('height', tile);
+      }
+      svg.querySelector('#hero-paper-pattern').setAttribute('x', (922 - tile) / 2);
+      return serialise(svg);
+    });
+    const request = ++mainWallpaperRequest;
+    const wallpapers = wallpaperSources.map(() => new Image());
+    const outline = new Image(), solid = new Image();
+    const images = [...wallpapers, outline, solid];
+    let loaded = 0;
+    const rasterise = (image, width, height) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(image, 0, 0, width, height);
+      return canvas;
+    };
+    const cacheEdges = image => sprites.map(source => rasterise(image, source.width, source.height));
+    const ready = () => {
+      if (request !== mainWallpaperRequest || ++loaded !== images.length) return;
+      // Cache one correctly sized pattern per layer, only on resize/load.
+      // Bound raster sizes and reuse them in every scroll/animation frame.
+      mainSprites = wallpapers.map((image, index) => {
+        const width = Math.max(8, Math.min(1536, Math.ceil(922 * scale * layers[index].scale * inkRatio)));
+        return rasterise(image, width, Math.round(width * 1368 / 922));
+      });
+      mainBorderSprites = cacheEdges(outline); mainSolidSprites = cacheEdges(solid);
+      lastMainPaint = lastFeedPaint = ''; cacheSpriteChoices(); schedule();
+    };
+    for (const image of images) {
+      image.addEventListener('load', ready, {once: true});
+      image.addEventListener('error', () => {
+        if (request === mainWallpaperRequest) mainWallpaperKey = '';
+      }, {once: true});
+    }
+    wallpapers.forEach((image, index) => { image.src = wallpaperSources[index]; });
+    outline.src = serialise(borderCopy); solid.src = serialise(solidCopy);
   }
 
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     mainRingWidth=Number(openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('width')) || 0;
-    for (const layer of layers) {
+    for (const [index, layer] of layers.entries()) {
       const pixels=922*scale*layer.scale*inkRatio;
-      layer.sprite=mainSpriteFor(pixels);layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
+      layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
       layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*inkRatio);
     }
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
@@ -512,16 +553,13 @@
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
       const box = openingLogo.getBoundingClientRect();
-      openingScaleFactor=1;
-      if(matchMedia('(orientation: landscape)').matches) {
-        const oldBox=reference.getBoundingClientRect();
-        const before=Math.min(oldBox.width/922,oldBox.height/1368);
-        const after=Math.min(openingLogo.clientWidth/922,openingLogo.clientHeight/1368);
-        if(before>0)openingScaleFactor=after/before;
-      }
+      openingScaleFactor = openingMainScaleFactor();
       openingCenter = {x: box.left + box.width / 2,
         y: box.top + scrollPosition() + box.height / 2};
     }
+    bgRatio = Math.min(devicePixelRatio || 1, 1.25);
+    inkRatio = Math.min(devicePixelRatio || 1, 1.5);
+    syncMainWallpaperGeometry();
     cacheMainWallpaperSprites();
     cacheSpriteChoices();
     if (feed && bannerMask) {
@@ -529,8 +567,6 @@
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
     }
     if (!bg || !ink || !mainBox) return;
-    bgRatio = Math.min(devicePixelRatio || 1, 1.25);
-    inkRatio = Math.min(devicePixelRatio || 1, 1.5);
     resizeSurface(background, bg, width, height, bgRatio);
     resizeSurface(logos, ink, width, height, inkRatio);
     background.style.width = logos.style.width = `${width}px`;
