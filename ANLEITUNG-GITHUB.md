@@ -15,6 +15,16 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Feste Gestaltungsregeln
 
+- Regen-Hintergrundlogos verwenden in jedem Modus die Größenreferenz des
+  Querformats. Dafür werden die längere und kürzere Viewportseite wie im
+  Querformat ausgewertet. Beim Wechsel zwischen Hoch- und Querformat
+  derselben Viewportabmessungen bleibt der Größenbereich identisch.
+  Die Referenz nutzt stabile kleine Viewporteinheiten, damit mobile
+  Browserleisten die Regengröße beim Scrollen nicht verändern.
+- Diese Regengrößen sind unabhängig von der Größe der Haupt-/Startlogos.
+  Zufällige Größenverteilung, Sichtbarkeit, Fallgeschwindigkeit und die
+  bisherige unterschiedliche Regenmenge je Ausrichtung bleiben erhalten.
+
 - Die Tapetenkachel ist überall 220 CSS-Pixel breit und hoch, entsprechend
   dem bisherigen Smartphone-Hochformat. Diese Größe gilt unabhängig von
   Gerät, Bildschirmbreite, Ausrichtung und Größe der jeweiligen Logoebene.
@@ -25,6 +35,15 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   damit das Muster beim Vergrößern einer Logoebene nicht mitwächst.
 
 ## Enthaltene Änderungen
+
+- Das Startlogo und die acht Hauptlogoebenen teilen eine feste
+  Viewporthöhen-Referenz. Auf Touchgeräten wird sie vor dem ersten Scrollen
+  festgehalten, damit ein-/ausfahrende Browserleisten in eingebetteten
+  Browsern (z. B. Messenger/WhatsApp) die Logos nicht nachträglich skalieren.
+- Beim Drehen bzw. tatsächlichen Ändern der Fensterbreite wird neu gemessen.
+  Auf Desktopgeräten funktioniert auch das Verändern der Fensterhöhe weiter.
+- Die Referenz gilt ebenfalls für die Regengrößen. Die sichtbare Canvasfläche
+  darf sich weiterhin an das Fenster anpassen, ohne die Logogrößen zu ändern.
 
 - Im Querformat entspricht die nächste Hintergrundebene der tatsächlichen
   Größe des vordersten Startlogos. Alle weiteren sieben Ebenen behalten
@@ -48,9 +67,12 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
 
 Die Positionierung im Hochformat bleibt erhalten.
-Aktuelle Prüfung: JavaScript-Syntax, Skalierungsberechnungen für fünf
+Aktuelle Prüfung: JavaScript-Syntax, identische Regengrößen bei vertauschten
+Viewportseiten und Abgleich mit den bisherigen Querformatgrößen, Skalierungsberechnungen für fünf
 Desktop-/Quer-/Hochformate, konstante Mustergröße aller neun Logos,
 Texturzuordnung, Cache-Wiederverwendung, Schutz gegen veraltete Ladevorgänge
 nach Größenänderungen, Dateiverweise und ZIP-Integrität.
 Die zeitlichen Animationsabläufe sind unverändert.
-Ein Live-Browsertest war in dieser Umgebung nicht verfügbar.
+Ein Live-Browsertest bzw. Test direkt in Messenger/WhatsApp war in dieser
+Umgebung nicht verfügbar. Die Schutzlogik wurde mit simulierten Browserleisten-,
+Initialisierungs-, Dreh- und Desktop-Größenänderungen geprüft.

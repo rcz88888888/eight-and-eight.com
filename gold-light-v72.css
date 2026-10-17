@@ -234,17 +234,22 @@ body {
    for canvas geometry, but remove all eight static copies from painting. */
 .canvas-logos-ready .parallax-logo { visibility: hidden; }
 .canvas-logos-ready .parallax-logo .main-logo-layer { display: none; }
-/* Small viewport units prevent the address bar from resizing the opening
-   section and changing the complete scroll range on every mobile gesture. */
+/* CSS and canvas share a viewport height pinned before user scrolling.
+   Embedded browsers may resize even their small viewport during toolbar motion. */
+:root { --opening-viewport-height: 100vh; }
 @supports (height: 100svh) {
-  .logo-stage { height: calc(100svh - var(--header-height)); }
-  .parallax-logo { height: calc(100svh - var(--header-height) - clamp(56px, 8svh, 96px)); }
-  @media (max-width: 900px) {
-    .logo-stage { height: calc(84svh - var(--header-height)); }
-  }
-  @media (max-width: 560px) {
-    .logo-stage { height: calc(78svh - var(--header-height)); }
-  }
+  :root { --opening-viewport-height: 100svh; }
+}
+.logo-stage { height: calc(var(--opening-viewport-height) - var(--header-height)); }
+.parallax-logo {
+  height: calc(var(--opening-viewport-height) - var(--header-height) -
+    clamp(56px, calc(var(--opening-viewport-height) * .08), 96px));
+}
+@media (max-width: 900px) {
+  .logo-stage { height: calc(var(--opening-viewport-height) * .84 - var(--header-height)); }
+}
+@media (max-width: 560px) {
+  .logo-stage { height: calc(var(--opening-viewport-height) * .78 - var(--header-height)); }
 }
 body, body * { text-rendering: auto; }
 
@@ -363,17 +368,11 @@ body > .site-shell { z-index: 3; }
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 53.92vh;
-    height: 80vh;
+    width: calc(var(--opening-viewport-height) * .5392);
+    height: calc(var(--opening-viewport-height) * .8);
     max-width: none;
     max-height: none;
     transform: translate(-50%, -50%);
-  }
-  @supports (height: 100svh) {
-    .content-scroll .hero-static-logo.hero-wallpaper-logo {
-      width: 53.92svh;
-      height: 80svh;
-    }
   }
 }
 
@@ -382,10 +381,7 @@ body > .site-shell { z-index: 3; }
 
 /* v140: reserve the complete opening logo box plus a 24px About gap. */
 @media (orientation: landscape) {
-  .content-scroll .logo-stage { height: calc(77vh + 24px); }
-  @supports (height: 100svh) {
-    .content-scroll .logo-stage { height: calc(77svh + 24px); }
-  }
+  .content-scroll .logo-stage { height: calc(var(--opening-viewport-height) * .77 + 24px); }
 }
 /* Keep the portrait hamburger thickness in every orientation. */
 body .topbar .menu-toggle > span {
@@ -429,4 +425,13 @@ html, body { background:#fdfcfa !important; color-scheme:only light; }
   .content-scroll .hero-static-logo.hero-wallpaper-logo {
     transform:translate(-50%,-50%) rotate(var(--hero-idle-angle,0rad));
   }
+}
+
+/* Stable landscape reference for rain sizes, independent of browser toolbars. */
+.rain-size-reference {
+  position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+  visibility: hidden; pointer-events: none; contain: strict;
+}
+@supports (height: 100svh) {
+  .rain-size-reference { width: 100svw; height: 100svh; }
 }

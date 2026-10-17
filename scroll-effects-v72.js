@@ -46,6 +46,17 @@
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
+  const rainViewport = document.createElement('span');
+  rainViewport.className = 'rain-size-reference';
+  rainViewport.setAttribute('aria-hidden', 'true');
+  document.body.append(rainViewport);
+  const touchViewport = matchMedia('(hover: none) and (pointer: coarse)');
+  let openingViewport, openingViewportLocked = false;
+  const lockOpeningViewport = event => {
+    if (event.type !== 'scroll' || scrollPosition() > 0) openingViewportLocked = true;
+  };
+  for (const type of ['touchstart', 'pointerdown', 'wheel', 'keydown', 'scroll'])
+    window.addEventListener(type, lockOpeningViewport, {passive: true});
   let openingCenter;
   let bgRatio = 1;
   let inkRatio = 1;
@@ -526,7 +537,36 @@
       context.imageSmoothingQuality = 'low';
     }
   }
+  function syncOpeningViewport(width, height) {
+    const probe = rainViewport.getBoundingClientRect();
+    const viewportWidth = probe.width || width;
+    const viewportHeight = probe.height || height;
+    if (!(width > 0) || !(viewportHeight > 0)) return false;
+    const widthChanged = openingViewport && openingViewport.width !== width;
+    // Let an embedded browser finish its initial layout before the first
+    // gesture. After that, height-only toolbar/zoom resizes keep logo sizes fixed.
+    if (widthChanged) openingViewportLocked = false;
+    const canResizeHeight = !touchViewport.matches || !openingViewportLocked;
+    if (openingViewport && !widthChanged &&
+        (!canResizeHeight || openingViewport.height === viewportHeight)) return false;
+    openingViewport = {width, viewportWidth, height: viewportHeight};
+    root.style.setProperty('--opening-viewport-height', `${viewportHeight}px`);
+    return true;
+  }
+  function rainReferenceWidth(width, height) {
+    // Always use the existing landscape sizing, even on a portrait viewport.
+    // This reference is independent of the foreground/main-logo enlargement.
+    const longSide = Math.max(width, height);
+    const shortSide = Math.min(width, height);
+    const header = longSide <= 560 ? 90.44 : longSide <= 900 ? 104 : 120;
+    const boxWidth = longSide <= 560 ? Math.min(.72 * longSide, 460) : Math.min(.52 * longSide, 560);
+    const inset = Math.max(56, Math.min(96, .08 * shortSide));
+    const boxHeight = Math.max(0, Math.min(820, shortSide - header - inset));
+    return Math.min(boxWidth, boxHeight * 922 / 1368) * 1.15;
+  }
   function measure(width, height) {
+    // Pin the CSS and canvas geometry to the same viewport before measuring.
+    if (syncOpeningViewport(width, height)) layoutDirty = true;
     // All layout reads happen before the scroll frame's paints.
     pageHeight = Math.max(scrollHeight(), height);
     mainBox = main?.getBoundingClientRect();
@@ -571,9 +611,10 @@
     resizeSurface(logos, ink, width, height, inkRatio);
     background.style.width = logos.style.width = `${width}px`;
     background.style.height = logos.style.height = `${height}px`;
-    const mainWidth = Math.min(mainBox.width, mainBox.height * 922 / 1368) * 1.15;
+    // Rain uses the same pinned viewport, with the landscape size reference.
+    const rainSizeWidth = rainReferenceWidth(openingViewport.viewportWidth, openingViewport.height);
     const portrait = matchMedia('(orientation: portrait)').matches;
-    const key = `${width}:${Math.round(pageHeight)}:${portrait}:${mainWidth.toFixed(1)}`;
+    const key = `${width}:${Math.round(pageHeight)}:${portrait}:${rainSizeWidth.toFixed(1)}`;
     if (key === sceneKey) { rainWidth=width;rainHeight=height;cacheSpriteChoices(); return; }
     sceneKey = key;
     const rand = randomFrom(88888888);
@@ -584,16 +625,16 @@
     const stableHeight = sceneViewportHeight;
     particles = Array.from({length: count}, (_, i) => {
       const fraction = i === 0 ? 0 : i === count - 1 ? 1 : rand() ** 2.6;
-      const w = mainWidth * (.004 + .436 * fraction);
+      const w = rainSizeWidth * (.004 + .436 * fraction);
       return {
-        x: rand() * (width + mainWidth) - mainWidth / 2 - w / 2,
+        x: rand() * (width + rainSizeWidth) - rainSizeWidth / 2 - w / 2,
         y: rand() * (pageHeight + stableHeight) - stableHeight / 2,
         width: w, height: w * 1368 / 922,
         opacity: (.08 + rand() * .24) * .2206456,
         speed: .16 + rand() * .56
       };
     });
-    rainWidth=width;rainHeight=height;rainMaxWidth=mainWidth;
+    rainWidth=width;rainHeight=height;rainMaxWidth=rainSizeWidth;
     const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
     const poolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
     rain=Array.from({length:poolSize},()=>spawnRain(true));
