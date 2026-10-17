@@ -15,8 +15,9 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Enthaltene Änderungen
 
-- Der sandgoldene Vektorring dreht in derselben Ebene wie das Startlogo.
-- Der kleinste Abstand zum Ring entspricht einem Achtel der Logogröße.
+- Der sandgoldene Punktering dreht in derselben Ebene wie das Startlogo.
+- Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
+- Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
 - Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung auf 8888 rpm,
   Abbremsen, Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.

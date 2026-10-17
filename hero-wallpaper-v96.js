@@ -19,12 +19,12 @@
     if (!(scale > 0)) return;
     if (ring) {
       // Preserve a true circle and the vector's exact point spacing. The
-      // nearest inner edge clears the visible logo by 1/8 of its full height,
+      // nearest points clear the visible logo by 1/16 of its full height,
       // including its non-scaling outline at the current responsive scale.
       const outline = border / scale;
       const extent = Number(ring.dataset.logoExtent) + outline;
       const radius = Number(ring.dataset.logoRadius) + outline / 2;
-      const ringScale = (radius + extent / 8) / 548.2;
+      const ringScale = (radius + extent / 16) / 559.65;
       const size = 1280 * ringScale;
       ring.setAttribute('x', 461 - size / 2);
       ring.setAttribute('y', 684 - size / 2);
