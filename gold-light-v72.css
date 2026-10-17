@@ -359,13 +359,13 @@ body > .site-shell { z-index: 3; }
 .content-scroll .hero-wallpaper-logo { z-index: 0; }
 .topbar > .wordmark, .topbar > .menu-toggle { z-index: 2; }
 
-/* v134: landscape opening logos follow the marked visible height (62vh).
-   SVG artwork has clear margins; canvas copies retain their depth scales. */
+/* Landscape keeps the existing logo size, centred between the banner
+   and the first text-panel edge, as in the portrait flex layout. */
 @media (orientation: landscape) {
   .content-scroll .logo-stage { position: relative; overflow: visible; }
   .content-scroll .hero-static-logo.hero-wallpaper-logo {
     position: absolute;
-    top: 37vh;
+    top: 50%;
     left: 50%;
     width: 53.92vh;
     height: 80vh;
@@ -375,7 +375,6 @@ body > .site-shell { z-index: 3; }
   }
   @supports (height: 100svh) {
     .content-scroll .hero-static-logo.hero-wallpaper-logo {
-      top: 37svh;
       width: 53.92svh;
       height: 80svh;
     }

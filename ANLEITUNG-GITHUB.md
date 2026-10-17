@@ -1,4 +1,4 @@
-# Eight&Eight – bereinigte Website mit Startring
+# Eight&Eight – Website mit Hintergrundringen
 
 Diese ZIP enthält 35 Dateien einschließlich dieser Anleitung und CNAME.
 Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
@@ -15,7 +15,13 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Enthaltene Änderungen
 
-- Der sandgoldene Punktering dreht in derselben Ebene wie das Startlogo.
+- Das vorderste Startlogo sitzt auf Desktop und im Querformat mittig zwischen
+  Bannerkante und der ersten Textfeldlinie. Der Mittelpunkt folgt der Höhe
+  des Startbereichs; die Logo- und Ringgröße bleiben erhalten.
+
+- Der Ring des vordersten Startlogos ist ausgeblendet.
+- Die acht schwächeren Hauptlogoebenen behalten ihre sandgoldenen Punktringe
+  auch beim Herunterscrollen im Hintergrund.
 - Alle acht Hauptlogo-Ebenen tragen denselben Punktering mit ihrer jeweiligen
   Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
   zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
@@ -26,6 +32,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
   Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
 
-Die aktive Website wurde bei der Dateibereinigung nicht verändert.
-Geprüft: Abhängigkeiten, Skriptsyntax, Ringgeometrie, Zeitablauf und ZIP-Integrität.
+Die Positionierung im Hochformat bleibt erhalten.
+Aktuelle Prüfung: geänderte CSS-Regeln, Dateiverweise und ZIP-Integrität.
+Ringgeometrie und Animationsablauf wurden nicht geändert.
 Ein Live-Browsertest war in dieser Umgebung nicht verfügbar.
