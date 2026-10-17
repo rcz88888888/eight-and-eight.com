@@ -439,6 +439,8 @@ html, body { background:#fdfcfa !important; color-scheme:only light; }
    Individual CSS rotate would rotate the landscape centring translation. */
 .content-scroll .hero-static-logo.hero-wallpaper-logo {
   rotate:none;
+  /* The circular rim extends beyond the portrait SVG's artwork viewport. */
+  overflow:visible;
   transform:rotate(var(--hero-idle-angle,0rad));
   transform-origin:50% 50%;transform-box:border-box;
 }

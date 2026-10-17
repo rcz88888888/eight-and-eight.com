@@ -72,27 +72,33 @@
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinDuration = 40;
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
   const startRotationStagger = .18;
   let spinCursor = 0, spinTotalTurns = 0;
-  const spinSegments=[];
-  let previousSpeed=0;
-  for(const rpm of [8,33,45,88,0]){
-    const speed=rpm/60;
-    for(const [duration,from,to] of [[spinTransitionDuration,previousSpeed,speed],
-      [spinStageDuration-spinTransitionDuration,speed,speed]]){
-      const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,turns:spinTotalTurns};
-      spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
-      spinSegments.push(segment);
-    }
-    previousSpeed=speed;
+  const spinSegments=[], spinMotionWindows=[];
+  function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth') {
+    const from=fromRpm/60, to=toRpm/60;
+    const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,
+      turns:spinTotalTurns,curve};
+    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
+    spinSegments.push(segment);
+    return segment;
   }
+  // Eight-second tempo stages retain the existing 2.8-second transitions.
+  appendSpin(spinTransitionDuration,0,8);
+  appendSpin(spinStageDuration-spinTransitionDuration,8);
+  appendSpin(spinTransitionDuration,8,33);
+  appendSpin(spinStageDuration-spinTransitionDuration,33);
+  appendSpin(spinTransitionDuration,33,45);
+  appendSpin(spinStageDuration-spinTransitionDuration-3,45);
+  // The final three seconds of the 45-rpm stage accelerate linearly.
+  appendSpin(3,45,8888,'linear');
+  const stopSegment=appendSpin(spinTransitionDuration,8888,0,'stop');
   // Keep the 2.8s stop monotonic, but shape its easing so the logo ends
   // on a whole turn. No angle correction or extra rotation after stopping.
-  const stopSegment=spinSegments[8];
-  const stopTurns=Math.ceil(spinTotalTurns)-stopSegment.turns;
+  const stoppedTurns=Math.ceil(spinTotalTurns);
+  const stopTurns=stoppedTurns-stopSegment.turns;
   const stopArea=q=>1-10/(3*q+1)+15/(4*q+1)-6/(5*q+1);
   let stopLow=1,stopHigh=16;
   for(let i=0;i<60;i++){
@@ -101,7 +107,17 @@
     else stopHigh=q;
   }
   const stopPower=(stopLow+stopHigh)/2;
-  spinSegments[9].turns=Math.ceil(spinTotalTurns);
+  spinTotalTurns=stoppedTurns;
+  spinMotionWindows.push({start:0,end:spinCursor});
+  appendSpin(8,0);
+  // One revolution at 8 rpm is exactly 7.5 seconds. Each is followed by
+  // eight seconds at rest, including the seventh before the sequence repeats.
+  for(let round=0;round<7;round++) {
+    const turn=appendSpin(60/8,8);
+    spinMotionWindows.push({start:turn.start,end:turn.end});
+    appendSpin(8,0);
+  }
+  const spinDuration=spinCursor;
   function spinPhase(seconds) {
     if(seconds<=0 || seconds>=spinDuration)return 0;
     for(const segment of spinSegments){
@@ -113,7 +129,7 @@
         return TAU*(segment.turns+segment.duration*segment.from*integral);
       }
       return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*smoothIntegral(x)));
+        (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x))));
     }
     return 0;
   }
@@ -123,7 +139,8 @@
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       if(segment===stopSegment)return TAU*segment.from*(1-smoothEnd(x**stopPower));
-      return TAU*(segment.from+(segment.to-segment.from)*smoothEnd(x));
+      return TAU*(segment.from+(segment.to-segment.from)*
+        (segment.curve==='linear'?x:smoothEnd(x)));
     }
     return 0;
   }
@@ -289,8 +306,10 @@
   const mainSolidSpriteFor = pixels => mainSolidSprites.find(sprite=>sprite.width>=pixels) || mainSolidSprites[mainSolidSprites.length-1];
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
   const idleRotationVisibility = elapsed => {
-    const fadeIn=smoothEnd(Math.max(0,Math.min(1,elapsed/1.8)));
-    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(spinDuration-spinStageDuration+spinTransitionDuration-elapsed)/1.8)));
+    const motion=spinMotionWindows.find(window=>elapsed>=window.start && elapsed<window.end);
+    if(!motion)return .7;
+    const fadeIn=smoothEnd(Math.max(0,Math.min(1,(elapsed-motion.start)/1.8)));
+    const fadeOut=smoothEnd(Math.max(0,Math.min(1,(motion.end-elapsed)/1.8)));
     return .7+.3*fadeIn*fadeOut;
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
@@ -310,6 +329,8 @@
     // Use the opening SVG itself: the same shape, ornament alpha, placement
     // and colour. Only rebuild after geometry changes, never during scrolling.
     const copy=openingLogo.cloneNode(true);
+    // The new rim belongs only to the foremost opening logo.
+    copy.querySelector('.hero-strobe-ring')?.remove();
     copy.removeAttribute('class');copy.removeAttribute('style');
     copy.setAttribute('width','922');copy.setAttribute('height','1368');
     copy.querySelector('#hero-paper-pattern image').setAttribute('href',wallpaperData);
