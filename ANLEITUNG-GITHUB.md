@@ -16,6 +16,9 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 ## Enthaltene Änderungen
 
 - Der sandgoldene Punktering dreht in derselben Ebene wie das Startlogo.
+- Alle acht Hauptlogo-Ebenen tragen denselben Punktering mit ihrer jeweiligen
+  Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
+  zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
 - Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
 - Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.

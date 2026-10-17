@@ -16,6 +16,7 @@
   const frameDrivers = new Set();
   const image = new Image();
   const wallpaperImage = new Image();
+  const ringImage = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
@@ -39,6 +40,7 @@
   let lastFeedPaint = '';
   let sprites = [];
   let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
+  let ringSprites = [], mainRingWidth = 0;
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
@@ -300,6 +302,7 @@
     if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
+  const ringSpriteFor = pixels => ringSprites.find(sprite => sprite.width >= pixels) || ringSprites[ringSprites.length - 1];
   const mainSpriteFor = pixels => mainSprites.find(sprite => sprite.width >= pixels) || mainSprites[mainSprites.length - 1];
   const mainBorderSpriteFor = pixels => mainBorderSprites.find(sprite => sprite.width >= pixels) || mainBorderSprites[mainBorderSprites.length - 1];
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
@@ -329,7 +332,7 @@
     // Use the opening SVG itself: the same shape, ornament alpha, placement
     // and colour. Only rebuild after geometry changes, never during scrolling.
     const copy=openingLogo.cloneNode(true);
-    // The new rim belongs only to the foremost opening logo.
+    // Draw the point ring separately, with each layer's own cached transform.
     copy.querySelector('.hero-strobe-ring')?.remove();
     copy.removeAttribute('class');copy.removeAttribute('style');
     copy.setAttribute('width','922');copy.setAttribute('height','1368');
@@ -375,9 +378,11 @@
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
+    mainRingWidth=Number(openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('width')) || 0;
     for (const layer of layers) {
       const pixels=922*scale*layer.scale*inkRatio;
       layer.sprite=mainSpriteFor(pixels);layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
+      layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*inkRatio);
     }
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
@@ -608,7 +613,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -616,6 +621,7 @@
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     const w = 922 * scale;
     const h = 1368 * scale;
+    const ringDiameter = mainRingWidth * scale;
     const cx = mainBox.left + mainBox.width / 2;
     const cy = mainBox.top + mainBox.height / 2;
     const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
@@ -651,6 +657,11 @@
       }
       ink.globalAlpha=opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
+      if(layer.ringSprite && ringDiameter>0) {
+        // Same scale, centre, angle and opacity as this logo, including its
+        // staggered idle/scroll motion. No independent animation clock.
+        ink.drawImage(layer.ringSprite,-ringDiameter/2,-ringDiameter/2,ringDiameter,ringDiameter);
+      }
       ink.restore();
     }
     if (!root.classList.contains('canvas-logos-ready')) {
@@ -713,6 +724,21 @@
     });
     invalidate();
   }, {once: true});
+  ringImage.addEventListener('load',()=>{
+    // Rasterise the vector only once at a few resolutions. Scroll frames
+    // reuse these transparent textures for all eight logo layers.
+    ringSprites=[256,512,1024,2048].map(size=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=canvas.height=size;
+      const context=canvas.getContext('2d');
+      context.imageSmoothingQuality='high';
+      context.drawImage(ringImage,0,0,size,size);
+      return canvas;
+    });
+    lastMainPaint=lastFeedPaint='';cacheSpriteChoices();schedule();
+  },{once:true});
+  ringImage.src=openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('href') ||
+    'stroboskopring-sandgold.svg?v=20261017-points-gap16';
   wallpaperImage.addEventListener('load',()=>{
     const canvas=document.createElement('canvas');
     canvas.width=wallpaperImage.naturalWidth;canvas.height=wallpaperImage.naturalHeight;
