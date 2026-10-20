@@ -36,16 +36,6 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Enthaltene Änderungen
 
-- Alle acht Punktringe haben denselben endgültigen Durchmesser. Referenz
-  ist der bisher größte Ring. Nur die Ringe werden vor der jeweiligen
-  Ebenenskalierung gegensinnig umskaliert; die Hauptlogos behalten ihre
-  bisherigen Größen. Dadurch verschwinden die größenbedingten radialen
-  Abstände zwischen den Ringen, wenn ihre Mittelpunkte übereinanderliegen.
-- Jedes Logo und sein Ring werden innerhalb derselben Canvas-Ebenengruppe
-  gezeichnet. Mittelpunkt, Rotation, Sichtbarkeit, Zeitversatz und das
-  jeweils 8 % langsamere Scrolltempo gelten gemeinsam für die Gruppe.
-  Auch die Punktgrößen der Ringe sind durch die Vor-Skalierung identisch.
-
 - Die Browser-Farbvorgabe, der HTML-/Body-Hintergrund und die eigentliche
   Seitenfläche verwenden dasselbe Cremeweiß (#fdfcfa). Die Theme-Farbvorgabe
   wird bei Layoutmessungen direkt mit --page-cream synchronisiert.
@@ -87,12 +77,11 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Der Ring des vordersten Startlogos ist ausgeblendet.
 - Die acht schwächeren Hauptlogoebenen behalten ihre sandgoldenen Punktringe
   auch beim Herunterscrollen im Hintergrund.
-- Alle acht Hauptlogo-Ebenen tragen einen gleich großen Punktering mit der
-  jeweiligen Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
+- Alle acht Hauptlogo-Ebenen tragen denselben Punktering mit ihrer jeweiligen
+  Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
   zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
 - Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
-- Der äußerste Referenzring behält seinen bisherigen Abstand von einem
-  Sechzehntel der Logogröße. Die übrigen Ringe werden daran angeglichen.
+- Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
 - Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung in den letzten
   1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
@@ -108,9 +97,7 @@ Die automatische Startsequenz ist unverändert. Die Scrollstaffelung wurde
 wie oben beschrieben angepasst. Zusätzlich geprüft: Browser-/Seitenfarbe,
 Fächerzeit an beiden Fotopunkten, dauerhafte 8-%-Staffelung, Zwischenwerte, Rückwärtsscrollen und
 Nachlauf nach dem Scrollende sowie die tatsächlich gezeichneten
-Canvas-Verschiebungen. Zusätzlich geprüft: tatsächliche Ringdurchmesser,
-Punktgrößen, gemeinsame Gruppentransformationen und unveränderte Logogrößen.
-Der Code der Startanimation wurde bytegenau mit
+Canvas-Verschiebungen. Der Code der Startanimation wurde bytegenau mit
 der vorherigen Version verglichen.
 Ein Live-Browsertest bzw. Test direkt in Messenger/WhatsApp war in dieser
 Umgebung nicht verfügbar. Die Schutzlogik wurde mit simulierten Browserleisten-,

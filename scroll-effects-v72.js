@@ -432,14 +432,10 @@
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     mainRingWidth=Number(openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('width')) || 0;
-    // Normalise only the ring before the logo/ring group's depth scaling.
-    // Use the existing outermost ring so every logo still fits inside it.
-    const sharedRingScale = Math.max(1, ...layers.map(layer => layer.scale));
     for (const [index, layer] of layers.entries()) {
       const pixels=922*scale*layer.scale*inkRatio;
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
-      layer.ringScale=sharedRingScale/layer.scale;
-      layer.ringSprite=ringSpriteFor(mainRingWidth*scale*sharedRingScale*inkRatio);
+      layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*inkRatio);
     }
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
@@ -724,7 +720,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scale}:${layer.ringScale}:${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -770,12 +766,9 @@
       ink.globalAlpha=opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       if(layer.ringSprite && ringDiameter>0) {
-        // This same group transform owns the logo and its ring. Compensate
-        // only the ring's local size so all eight final diameters (and dot
-        // sizes) agree despite the logos' different depth scales.
-        const localRingDiameter=ringDiameter*layer.ringScale;
-        ink.drawImage(layer.ringSprite,-localRingDiameter/2,-localRingDiameter/2,
-          localRingDiameter,localRingDiameter);
+        // Same scale, centre, angle and opacity as this logo, including its
+        // staggered idle/scroll motion. No independent animation clock.
+        ink.drawImage(layer.ringSprite,-ringDiameter/2,-ringDiameter/2,ringDiameter,ringDiameter);
       }
       ink.restore();
     }
