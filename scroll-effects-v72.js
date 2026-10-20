@@ -27,6 +27,19 @@
     idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
+  // Adjust only the three innermost ring bands before the logo group scale.
+  // SVG radii, including point edges: 563 - 3.35 and 590 + 3.15.
+  // Work inward from the unchanged fourth ring; slight overlap prevents seams.
+  const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
+  const ringEdgeOverlap = .75;
+  const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
+  for (const layer of layers) layer.ringScale = 1;
+  for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
+    const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
+    const nextScale = next.scale * next.ringScale;
+    const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
+    layer.ringScale = Math.max(1, ringScale / layer.scale);
+  }
   let raf = 0;
   let layoutDirty = true;
   let viewportDirty = true;
@@ -435,7 +448,7 @@
     for (const [index, layer] of layers.entries()) {
       const pixels=922*scale*layer.scale*inkRatio;
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
-      layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*inkRatio);
+      layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*layer.ringScale*inkRatio);
     }
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
@@ -754,9 +767,10 @@
       ink.globalAlpha=opacity;
       ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       if(layer.ringSprite && ringDiameter>0) {
-        // Same scale, centre, angle and opacity as this logo, including its
-        // staggered idle/scroll motion. No independent animation clock.
-        ink.drawImage(layer.ringSprite,-ringDiameter/2,-ringDiameter/2,ringDiameter,ringDiameter);
+        // Local ring size is independent of the logo silhouette. The enclosing
+        // group still supplies their shared centre, rotation, motion and opacity.
+        const diameter = ringDiameter * layer.ringScale;
+        ink.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
       }
       ink.restore();
     }
