@@ -403,10 +403,10 @@ body .topbar .menu-toggle > span {
 .hero-wallpaper-logo { transform-origin:50% 50%; transform-box:border-box; }
 
 /* Opaque cream ground below every logo, banner and content layer. */
-html, body { background:#fdfcfa !important; color-scheme:only light; }
+html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only light; }
 .page-cream-ground {
   position:fixed;inset:0;z-index:-1;
-  background:#fdfcfa;pointer-events:none;
+  background:var(--page-cream, #fdfcfa);pointer-events:none;
 }
 
 .hero-wallpaper-logo:focus:not(:focus-visible) { outline:none; }
@@ -434,4 +434,11 @@ html, body { background:#fdfcfa !important; color-scheme:only light; }
 }
 @supports (height: 100svh) {
   .rain-size-reference { width: 100svw; height: 100svh; }
+}
+
+/* Keep native chrome on the page-ground fallback instead of sampling the
+   champagne ornament of the fixed banner. Identity filter: no visible blur. */
+body .site-shell .topbar {
+  -webkit-backdrop-filter: blur(0px) !important;
+  backdrop-filter: blur(0px) !important;
 }

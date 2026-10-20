@@ -69,6 +69,18 @@
     previous[name] = value;
     element.style.setProperty(name, value);
   }
+  function syncBrowserColor() {
+    const color = getComputedStyle(document.documentElement)
+      .getPropertyValue('--page-cream').trim() || '#fdfcfa';
+    // Use the page ground, never the banner ornament's champagne/gold.
+    for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+      if (meta.getAttribute('content') !== color) meta.setAttribute('content', color);
+    }
+    for (const element of [document.documentElement, document.body]) {
+      if (element.style.getPropertyValue('background-color') !== color)
+        element.style.setProperty('background-color', color, 'important');
+    }
+  }
   function cacheGeometry() {
     const head = header?.getBoundingClientRect();
     const menuOpen = header?.classList.contains('menu-expanded');
@@ -122,7 +134,7 @@
   if (!engine) return;
   engine.subscribe({
     measure() {
-      measureEdges(); cacheGeometry();
+      syncBrowserColor(); measureEdges(); cacheGeometry();
     }
   });
   // Lazy-loaded portfolio images can change their height after initial layout.

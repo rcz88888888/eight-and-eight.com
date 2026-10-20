@@ -36,6 +36,37 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Enthaltene Änderungen
 
+- Alle acht Punktringe haben denselben endgültigen Durchmesser. Referenz
+  ist der bisher größte Ring. Nur die Ringe werden vor der jeweiligen
+  Ebenenskalierung gegensinnig umskaliert; die Hauptlogos behalten ihre
+  bisherigen Größen. Dadurch verschwinden die größenbedingten radialen
+  Abstände zwischen den Ringen, wenn ihre Mittelpunkte übereinanderliegen.
+- Jedes Logo und sein Ring werden innerhalb derselben Canvas-Ebenengruppe
+  gezeichnet. Mittelpunkt, Rotation, Sichtbarkeit, Zeitversatz und das
+  jeweils 8 % langsamere Scrolltempo gelten gemeinsam für die Gruppe.
+  Auch die Punktgrößen der Ringe sind durch die Vor-Skalierung identisch.
+
+- Die Browser-Farbvorgabe, der HTML-/Body-Hintergrund und die eigentliche
+  Seitenfläche verwenden dasselbe Cremeweiß (#fdfcfa). Die Theme-Farbvorgabe
+  wird bei Layoutmessungen direkt mit --page-cream synchronisiert.
+  Die endgültige Darstellung der nativen Browserleisten steuert der Browser.
+- Jede weiter hinten liegende Hauptlogoebene folgt beim Scrollen dauerhaft
+  8 % langsamer als die unmittelbar davorliegende Ebene (Faktor 0,92 je Tiefe).
+  Das gilt für die Rotation und die vertikale Scrollbewegung. Die Ebenen
+  werden beim Scrollende nicht wieder auf die vordere Ebene angeglichen.
+- Der zusätzliche Zeitversatz sinkt zwischen den neuen Fotopunkten linear
+  von 0,08 auf 0,008 Sekunden pro Ebene. Der gemeinsame Messpunkt ist die
+  obere Rahmenkante der Karte „User Experience Concepts“: im ersten Foto
+  562 Bildpixel, im zweiten 45 Bildpixel unter der Bannerkante, jeweils bei
+  706 Bildpixeln Breite. Die Fotoabstände skalieren mit der Fensterbreite
+  bis 706 CSS-Pixeln; auf größeren Fenstern bleibt diese Referenz begrenzt.
+  Vorher gilt 0,08 Sekunden, danach 0,008 Sekunden. Beim Rückwärtsscrollen
+  läuft der gleiche Übergang entsprechend zurück.
+- Ein optisch neutraler Backdrop-Filter am festen Banner verhindert auf
+  betroffenen Safari-Versionen die Übernahme der Champagnerfläche als
+  Browserleisten-Farbquelle. Die Grund- und Themefarbe bleibt #fdfcfa.
+  Das Verhalten der nativen Browserleiste muss am jeweiligen Gerät geprüft werden.
+
 - Das Startlogo und die acht Hauptlogoebenen teilen eine feste
   Viewporthöhen-Referenz. Auf Touchgeräten wird sie vor dem ersten Scrollen
   festgehalten, damit ein-/ausfahrende Browserleisten in eingebetteten
@@ -56,11 +87,12 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Der Ring des vordersten Startlogos ist ausgeblendet.
 - Die acht schwächeren Hauptlogoebenen behalten ihre sandgoldenen Punktringe
   auch beim Herunterscrollen im Hintergrund.
-- Alle acht Hauptlogo-Ebenen tragen denselben Punktering mit ihrer jeweiligen
-  Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
+- Alle acht Hauptlogo-Ebenen tragen einen gleich großen Punktering mit der
+  jeweiligen Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
   zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
 - Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
-- Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
+- Der äußerste Referenzring behält seinen bisherigen Abstand von einem
+  Sechzehntel der Logogröße. Die übrigen Ringe werden daran angeglichen.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
 - Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung in den letzten
   1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
@@ -72,7 +104,14 @@ Viewportseiten und Abgleich mit den bisherigen Querformatgrößen, Skalierungsbe
 Desktop-/Quer-/Hochformate, konstante Mustergröße aller neun Logos,
 Texturzuordnung, Cache-Wiederverwendung, Schutz gegen veraltete Ladevorgänge
 nach Größenänderungen, Dateiverweise und ZIP-Integrität.
-Die zeitlichen Animationsabläufe sind unverändert.
+Die automatische Startsequenz ist unverändert. Die Scrollstaffelung wurde
+wie oben beschrieben angepasst. Zusätzlich geprüft: Browser-/Seitenfarbe,
+Fächerzeit an beiden Fotopunkten, dauerhafte 8-%-Staffelung, Zwischenwerte, Rückwärtsscrollen und
+Nachlauf nach dem Scrollende sowie die tatsächlich gezeichneten
+Canvas-Verschiebungen. Zusätzlich geprüft: tatsächliche Ringdurchmesser,
+Punktgrößen, gemeinsame Gruppentransformationen und unveränderte Logogrößen.
+Der Code der Startanimation wurde bytegenau mit
+der vorherigen Version verglichen.
 Ein Live-Browsertest bzw. Test direkt in Messenger/WhatsApp war in dieser
 Umgebung nicht verfügbar. Die Schutzlogik wurde mit simulierten Browserleisten-,
 Initialisierungs-, Dreh- und Desktop-Größenänderungen geprüft.

@@ -555,7 +555,7 @@ p {
 
 /* === Clean cream / logo / transparent-field layering === */
 :root {
-  --page-cream: #f7f0e5;
+  --page-cream: #fdfcfa;
   --dark-gold-line: rgba(128, 99, 47, .68);
   --logo-shift: 0px;
 }
@@ -688,7 +688,7 @@ body::before {
 
 /* === Near-white cream and restored wallpaper bands === */
 :root {
-  --page-cream: #fffdf7;
+  --page-cream: #fdfcfa;
   --logo-opacity: .20;
 }
 
@@ -824,7 +824,7 @@ body::before {
 
 /* === 2026-09-02 requested visual revision === */
 :root {
-  --page-cream: #f5ecdf;
+  --page-cream: #fdfcfa;
   --field-cream: rgba(245, 236, 223, .86);
   --field-cream-strong: rgba(245, 236, 223, .94);
   --rose-gold-line: rgba(151, 112, 78, .46);
@@ -1012,7 +1012,7 @@ p,
 /* Final layer order: cream canvas, moving logo, normally scrolling content. */
 html,
 body {
-  background: #f7f0e5;
+  background: var(--page-cream, #fdfcfa);
 }
 
 body::before {
