@@ -435,10 +435,3 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
 @supports (height: 100svh) {
   .rain-size-reference { width: 100svw; height: 100svh; }
 }
-
-/* Keep native chrome on the page-ground fallback instead of sampling the
-   champagne ornament of the fixed banner. Identity filter: no visible blur. */
-body .site-shell .topbar {
-  -webkit-backdrop-filter: blur(0px) !important;
-  backdrop-filter: blur(0px) !important;
-}

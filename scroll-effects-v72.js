@@ -43,7 +43,6 @@
   let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
   let ringSprites = [], mainRingWidth = 0;
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
-  let scrollFanStart = Infinity, scrollFanEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
@@ -65,11 +64,12 @@
   let logoAnimating = false;
   const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
   const scrollRotationDelay = 80;
-  const scrollRotationFinalDelay = 8; // milliseconds: 0.008 seconds per layer
+  const scrollRotationFinalDelay = .8; // milliseconds: 0.0008 seconds per layer
   const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
   const scrollRotationHistory = [];
   let scrollRotationStart = 0, scrollRotationFrameTime;
   let scrollInput = NaN, scrollLastInputTime = -Infinity;
+  let scrollStackBlend = 1;
   let scrollRotationPending = false;
   let lastLogoTime;
   let lastBackgroundPaint = '';
@@ -454,15 +454,16 @@
     return logoProgress;
   }
   function scrollFanTiming(scroll) {
-    // IMG_2474: User Experience card begins 562 image pixels below the banner.
-    // IMG_2475: that same card begins 45 image pixels below the banner.
-    const span = scrollFanEnd - scrollFanStart;
+    // First screenshot: About's top edge just below the banner.
+    // Second screenshot: Concept Architecture reaches its measured endpoint.
+    const span = mainFillEnd - mainPatternFadeEnd;
     const blend = Number.isFinite(span) && span > 0
-      ? Math.max(0, Math.min(1, (scroll - scrollFanStart) / span)) : 0;
+      ? Math.max(0, Math.min(1, (scroll - mainPatternFadeEnd) / span)) : 0;
     return {
       blend,
       delay: scrollRotationDelay + (scrollRotationFinalDelay - scrollRotationDelay) * blend,
-      response: 42 + (scrollRotationFinalDelay - 42) * blend
+      response: 42 + (scrollRotationFinalDelay - 42) * blend,
+      catchUp: 900 + (scrollRotationFinalDelay - 900) * blend
     };
   }
   function updateScrollRotations(progress,time,reset,inputScroll) {
@@ -473,9 +474,9 @@
       scrollRotationHistory.length=0;
       scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
       scrollRotationStart=0;scrollLastInputTime=time;scrollInput=inputScroll;
-      scrollRotationPending=false;
+      scrollStackBlend=1;scrollRotationPending=false;
       layers.forEach(layer=>{
-        layer.scrollAngle=layer.scrollTarget=layer.scrollDelayedAngle=angle*layer.speed;
+        layer.scrollAngle=layer.scrollTarget=layer.scrollDelayedAngle=angle;
       });
       return;
     }
@@ -495,9 +496,10 @@
     // There is no stop detector, new easing phase or extra wait on release.
     let cursor=scrollRotationStart;
     const fan = scrollFanTiming(inputScroll);
-    // Time offset contracts to 8ms; the independent 8% speed progression
-    // remains active before, during and after the photographed interval.
+    // Contract both the delay and the older follower lag, so the visible fan
+    // actually closes as the per-layer interval reaches 0.8 milliseconds.
     const response=1-Math.exp(-dt/fan.response);
+    const catchUp=1-Math.exp(-dt/fan.catchUp);
     const activeMaxDelay=Math.max(0,...layers.map(layer=>layer.depth))*fan.delay;
     let unsettled=time-scrollLastInputTime<activeMaxDelay || logoAnimating;
     for(const layer of scrollRotationOrder){
@@ -507,18 +509,17 @@
       const from=scrollRotationHistory[cursor];
       const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
       const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
-      const delayedAngle=(from.angle+(to.angle-from.angle)*blend)*layer.speed;
-      layer.scrollTarget=layer.scrollDelayedAngle=delayedAngle;
+      const delayedAngle=from.angle+(to.angle-from.angle)*blend;
+      const speed=layer.speed+(1-layer.speed)*fan.blend;
+      layer.scrollTarget+=(delayedAngle-layer.scrollDelayedAngle)*speed;
+      layer.scrollDelayedAngle=delayedAngle;
+      layer.scrollTarget+=shortestAngle(delayedAngle-layer.scrollTarget)*catchUp;
       layer.scrollAngle=layer.depth===0?angle:
-        layer.scrollAngle+(layer.scrollTarget-layer.scrollAngle)*response;
-      // Settle to each layer's own slower path, never back to the front angle.
-      const destination=angle*layer.speed;
-      if(Math.abs(destination-layer.scrollAngle)>.00001 ||
-        Math.abs(destination-layer.scrollTarget)>.00001)unsettled=true;
+        layer.scrollAngle+shortestAngle(layer.scrollTarget-layer.scrollAngle)*response;
+      if(Math.abs(shortestAngle(angle-layer.scrollAngle))>.00001 ||
+        Math.abs(shortestAngle(angle-layer.scrollTarget))>.00001)unsettled=true;
     }
-    if(!unsettled)layers.forEach(layer=>{
-      layer.scrollAngle=layer.scrollTarget=angle*layer.speed;
-    });
+    if(!unsettled)layers.forEach(layer=>layer.scrollAngle=layer.scrollTarget=angle);
     scrollRotationPending=unsettled;
   }
   const randomFrom = seed => () => {
@@ -582,17 +583,6 @@
     const boxHeight = Math.max(0, Math.min(820, shortSide - header - inset));
     return Math.min(boxWidth, boxHeight * 922 / 1368) * 1.15;
   }
-  function measureScrollFanRange(width) {
-    const reference = document.querySelector('[data-scroll-fan-reference]');
-    const header = document.querySelector('.topbar');
-    if (!reference || !header) { scrollFanStart=scrollFanEnd=Infinity; return; }
-    const cardTop = reference.getBoundingClientRect().top + scrollPosition();
-    const bannerBottom = header.getBoundingClientRect().bottom;
-    // Both photographs are 706 pixels wide; use the same card border in both.
-    const photoScale = Math.min(width, 706) / 706;
-    scrollFanStart = Math.max(0, cardTop - bannerBottom - 562 * photoScale);
-    scrollFanEnd = Math.max(scrollFanStart + 1, cardTop - bannerBottom - 45 * photoScale);
-  }
   function measure(width, height) {
     // Pin the CSS and canvas geometry to the same viewport before measuring.
     if (syncOpeningViewport(width, height)) layoutDirty = true;
@@ -620,7 +610,6 @@
         scrollPosition()-header.getBoundingClientRect().bottom-conceptGap);
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
-    measureScrollFanRange(width);
     if (openingLogo) {
       const box = openingLogo.getBoundingClientRect();
       openingScaleFactor = openingMainScaleFactor();
@@ -720,7 +709,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -740,18 +729,17 @@
     const startX = openingCenter?.x ?? cx;
     const startY = openingCenter?.y ?? cy;
     const openingTravel = .5 * Math.min(height, mainBox.height);
-    const frontY = cy + travel + (startY - cy - openingTravel) * openingBlend;
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: cx + (startX - cx) * openingBlend,
-      y: frontY
+      y: cy + travel * (layers[layers.length - 1]?.speed ?? 1) +
+        (startY - cy - openingTravel * (layers[layers.length - 1]?.speed ?? 1)) * openingBlend
     };
     for (const layer of layers) {
       ink.save();
-      // All layers begin at the same centre. Every subsequent displacement
-      // is scaled by 0.92^depth, independently of the rotation's time offset.
+      const speed=layer.speed+(1-layer.speed)*scrollStackBlend;
       ink.translate(cx + (startX - cx) * openingBlend,
-        startY + (frontY - startY) * layer.speed);
+        cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       const opacity=mainLayerOpacity(layer,patternVisibility,fillVisibility);

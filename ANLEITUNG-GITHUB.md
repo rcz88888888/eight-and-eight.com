@@ -40,22 +40,13 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   Seitenfläche verwenden dasselbe Cremeweiß (#fdfcfa). Die Theme-Farbvorgabe
   wird bei Layoutmessungen direkt mit --page-cream synchronisiert.
   Die endgültige Darstellung der nativen Browserleisten steuert der Browser.
-- Jede weiter hinten liegende Hauptlogoebene folgt beim Scrollen dauerhaft
-  8 % langsamer als die unmittelbar davorliegende Ebene (Faktor 0,92 je Tiefe).
-  Das gilt für die Rotation und die vertikale Scrollbewegung. Die Ebenen
-  werden beim Scrollende nicht wieder auf die vordere Ebene angeglichen.
-- Der zusätzliche Zeitversatz sinkt zwischen den neuen Fotopunkten linear
-  von 0,08 auf 0,008 Sekunden pro Ebene. Der gemeinsame Messpunkt ist die
-  obere Rahmenkante der Karte „User Experience Concepts“: im ersten Foto
-  562 Bildpixel, im zweiten 45 Bildpixel unter der Bannerkante, jeweils bei
-  706 Bildpixeln Breite. Die Fotoabstände skalieren mit der Fensterbreite
-  bis 706 CSS-Pixeln; auf größeren Fenstern bleibt diese Referenz begrenzt.
-  Vorher gilt 0,08 Sekunden, danach 0,008 Sekunden. Beim Rückwärtsscrollen
-  läuft der gleiche Übergang entsprechend zurück.
-- Ein optisch neutraler Backdrop-Filter am festen Banner verhindert auf
-  betroffenen Safari-Versionen die Übernahme der Champagnerfläche als
-  Browserleisten-Farbquelle. Die Grund- und Themefarbe bleibt #fdfcfa.
-  Das Verhalten der nativen Browserleiste muss am jeweiligen Gerät geprüft werden.
+- Vom ersten Scrollpunkt (About direkt unter dem Banner) bis zum zweiten
+  (Concept Architecture am bisherigen Screenshot-Endpunkt) sinkt der
+  zeitliche Abstand zwischen benachbarten Hintergrund-Hauptlogoebenen
+  linear von 0,08 auf 0,0008 Sekunden. Vorher bleibt er bei 0,08 Sekunden,
+  danach bei 0,0008 Sekunden. Die zusätzliche Nachlaufglättung und die
+  Rotationsgeschwindigkeitsunterschiede nehmen im selben Verlauf ab,
+  damit die sichtbare Fächerung tatsächlich enger wird.
 
 - Das Startlogo und die acht Hauptlogoebenen teilen eine feste
   Viewporthöhen-Referenz. Auf Touchgeräten wird sie vor dem ersten Scrollen
@@ -93,12 +84,10 @@ Viewportseiten und Abgleich mit den bisherigen Querformatgrößen, Skalierungsbe
 Desktop-/Quer-/Hochformate, konstante Mustergröße aller neun Logos,
 Texturzuordnung, Cache-Wiederverwendung, Schutz gegen veraltete Ladevorgänge
 nach Größenänderungen, Dateiverweise und ZIP-Integrität.
-Die automatische Startsequenz ist unverändert. Die Scrollstaffelung wurde
+Die automatische Startsequenz ist unverändert. Der Scroll-Nachlauf wurde
 wie oben beschrieben angepasst. Zusätzlich geprüft: Browser-/Seitenfarbe,
-Fächerzeit an beiden Fotopunkten, dauerhafte 8-%-Staffelung, Zwischenwerte, Rückwärtsscrollen und
-Nachlauf nach dem Scrollende sowie die tatsächlich gezeichneten
-Canvas-Verschiebungen. Der Code der Startanimation wurde bytegenau mit
-der vorherigen Version verglichen.
+Fächerzeit an beiden Scrollpunkten, Zwischenwerte, Rückwärtsscrollen und
+Nachlauf nach dem Scrollende.
 Ein Live-Browsertest bzw. Test direkt in Messenger/WhatsApp war in dieser
 Umgebung nicht verfügbar. Die Schutzlogik wurde mit simulierten Browserleisten-,
 Initialisierungs-, Dreh- und Desktop-Größenänderungen geprüft.
