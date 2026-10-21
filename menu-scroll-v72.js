@@ -6,6 +6,42 @@
   const area = startSpeed / 2 + acceleration / 6;
   const ease = t => (startSpeed * t + (acceleration - startSpeed) * t * t / 2
     - acceleration * t * t * t / 3) / area;
+  // Menu journeys follow the same eight-turn scroll curve as the logo engine.
+  // Ramp from 8 rpm over half a second, cruise at 33/45 rpm, then ease to rest.
+  const scrollTurns = (position, limit) =>
+    4 * (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, position / limit))));
+  const positionForTurns = (turns, limit) =>
+    Math.acos(Math.min(1, Math.max(-1, 1 - turns / 4))) / Math.PI * limit;
+  function menuJourney(start, destination, limit) {
+    const from = scrollTurns(start, limit), to = scrollTurns(destination, limit);
+    const direction = Math.sign(to - from), distance = Math.abs(to - from);
+    const rpm = destination > start ? 33 : 45;
+    const ramp = .5, brake = .3, initialFraction = 8 / rpm;
+    const rampArea = ramp * (1 + initialFraction) / 2;
+    const brakeArea = brake / 2;
+    const peak = Math.min(rpm / 60, distance / (rampArea + brakeArea));
+    const cruise = peak > 0 ? Math.max(0, distance / peak - rampArea - brakeArea) : 0;
+    const duration = ramp + cruise + brake;
+    const integral = t => t * t * t - t * t * t * t / 2;
+    return {
+      duration: duration * 1000,
+      position(elapsed) {
+        const time = Math.min(duration, Math.max(0, elapsed / 1000));
+        let area;
+        if (time < ramp) {
+          const t = time / ramp;
+          area = ramp * (initialFraction * t + (1 - initialFraction) * integral(t));
+        } else if (time < ramp + cruise) {
+          area = rampArea + time - ramp;
+        } else {
+          const t = (time - ramp - cruise) / brake;
+          area = rampArea + cruise + brake * (t - integral(t));
+        }
+        if (time >= duration) return destination;
+        return positionForTurns(from + direction * Math.min(distance, peak * area), limit);
+      }
+    };
+  }
   const root = document.scrollingElement || document.documentElement;
   const scrollPosition = () => window.scrollY;
   const scrollTo = options => window.scrollTo(options);
@@ -72,6 +108,8 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       const session = active;
+      const menuNavigation = Boolean(link.closest('.site-nav'));
+      let journey;
       let startTime=null,start=0,destination=0,duration=0;
       const engine=window.EightEightEffects;
       const step=now=>{
@@ -84,10 +122,22 @@
             scrollTo({top:destination,behavior:'auto'});finish(target,hash);return;
           }
           duration=Math.min(8000,2400+Math.abs(distance)*.45);
+          if(menuNavigation){
+            journey=menuJourney(start,destination,Math.max(1,root.scrollHeight-window.innerHeight));
+            duration=journey.duration;
+          }
+        }
+        if(destinationDirty){
+          destination=destinationFor(target);destinationDirty=false;
+          if(menuNavigation){
+            start=scrollPosition();startTime=now;
+            journey=menuJourney(start,destination,Math.max(1,root.scrollHeight-window.innerHeight));
+            duration=journey.duration;
+          }
         }
         const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
-        if(destinationDirty){destination=destinationFor(target);destinationDirty=false;}
-        scrollTo({top:start+(destination-start)*ease(progress),behavior:'auto'});
+        const top=journey ? journey.position(now-startTime) : start+(destination-start)*ease(progress);
+        scrollTo({top,behavior:'auto'});
         if(progress===1)finish(target,hash);
         else if(!session.stopDriver)session.frame=requestAnimationFrame(step);
       };
