@@ -56,6 +56,7 @@
   let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
   let ringSprites = [], mainRingWidth = 0;
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
+  let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let mainBox;
   let openingScaleFactor=1;
@@ -481,8 +482,14 @@
     // First screenshot: About's top edge just below the banner.
     // Second screenshot: Concept Architecture reaches its measured endpoint.
     const span = mainFillEnd - mainPatternFadeEnd;
-    const blend = Number.isFinite(span) && span > 0
+    const closing = Number.isFinite(span) && span > 0
       ? Math.max(0, Math.min(1, (scroll - mainPatternFadeEnd) / span)) : 0;
+    // From Contact's photographed position, restore the original fan timing
+    // linearly with scroll distance; reach it exactly at the bottom of the page.
+    const returnSpan = scrollFanReturnEnd - scrollFanReturnStart;
+    const returning = Number.isFinite(returnSpan) && returnSpan > 0
+      ? Math.max(0, Math.min(1, (scroll - scrollFanReturnStart) / returnSpan)) : 0;
+    const blend = closing * (1 - returning);
     return {
       blend,
       delay: scrollRotationDelay + (scrollRotationFinalDelay - scrollRotationDelay) * blend,
@@ -632,6 +639,14 @@
       const conceptGap=Math.max(28,Math.min(48,width*70/706));
       mainFillEnd=Math.max(mainFillStart+1,concept.getBoundingClientRect().top+
         scrollPosition()-header.getBoundingClientRect().bottom-conceptGap);
+    }
+    const contact = document.querySelector('#contact');
+    if (contact && header) {
+      // Screenshot: Contact's upper border is 56px below the banner at 706px width.
+      const contactGap = Math.max(16, Math.min(48, width * 56 / 706));
+      scrollFanReturnStart = Math.max(mainFillEnd, contact.getBoundingClientRect().top +
+        scrollPosition() - header.getBoundingClientRect().bottom - contactGap);
+      scrollFanReturnEnd = Math.max(scrollFanReturnStart + 1, pageHeight - height);
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
