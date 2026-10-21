@@ -443,3 +443,19 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
     display: none;
   }
 }
+
+/* Concept development: editorial photograph replaces the process text strip. */
+.concept-photo {
+  margin: clamp(28px, 4vw, 45px) 0;
+  padding: 0;
+}
+.content-scroll .concept-photo img {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: clamp(12px, 2vw, 20px);
+}
