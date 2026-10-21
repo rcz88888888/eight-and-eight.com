@@ -451,9 +451,9 @@
     const largestLogoScale = Math.max(...layers.map(layer => layer.scale));
     const innermostRingScale = Math.min(...layers.map(layer => layer.scale * layer.ringScale));
     // Enlarge the complete ring stack uniformly. Its innermost point edge sits
-    // outside the largest logo's rotation envelope, with 1/16 logo-size clearance.
+    // outside the largest logo's rotation envelope, with 1/64 logo-size clearance.
     // Keep the existing local ring fits, shared motion and logo sizes intact.
-    const requiredInnerRadius = (logoRadius + logoExtent / 16) * largestLogoScale;
+    const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
     mainRingWidth = Math.max(originalRingWidth,
       requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale));
     for (const [index, layer] of layers.entries()) {
