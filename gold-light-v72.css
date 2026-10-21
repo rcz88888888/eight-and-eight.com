@@ -435,3 +435,11 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
 @supports (height: 100svh) {
   .rain-size-reference { width: 100svw; height: 100svh; }
 }
+
+/* Hide the stray menu edge inside the scrollable landscape navigation. */
+@media (max-width: 900px) and (orientation: landscape) {
+  body .site-nav::after {
+    content: none;
+    display: none;
+  }
+}

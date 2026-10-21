@@ -444,7 +444,18 @@
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
-    mainRingWidth=Number(openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('width')) || 0;
+    const ringGeometry = openingLogo?.querySelector('.hero-strobe-ring');
+    const originalRingWidth = Number(ringGeometry?.getAttribute('width')) || 0;
+    const logoRadius = Number(ringGeometry?.getAttribute('data-logo-radius')) || 0;
+    const logoExtent = Number(ringGeometry?.getAttribute('data-logo-extent')) || 0;
+    const largestLogoScale = Math.max(...layers.map(layer => layer.scale));
+    const innermostRingScale = Math.min(...layers.map(layer => layer.scale * layer.ringScale));
+    // Enlarge the complete ring stack uniformly. Its innermost point edge sits
+    // outside the largest logo's rotation envelope, with 1/16 logo-size clearance.
+    // Keep the existing local ring fits, shared motion and logo sizes intact.
+    const requiredInnerRadius = (logoRadius + logoExtent / 16) * largestLogoScale;
+    mainRingWidth = Math.max(originalRingWidth,
+      requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale));
     for (const [index, layer] of layers.entries()) {
       const pixels=922*scale*layer.scale*inkRatio;
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
