@@ -481,3 +481,28 @@ body > .main-logo-canvas {
   bottom: auto;
   max-height: none;
 }
+
+/* iOS: paint as document content rather than a toolbar-clipped fixed layer. */
+html.ios-document-animation .ios-animation-document-layer > canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+}
+@supports (height: 100lvh) {
+  html.ios-document-animation .animation-surface-reference {
+    height: calc(100lvh + env(safe-area-inset-bottom, 0px) + 128px);
+  }
+}
+
+.ios-animation-document-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  overflow: clip;
+  pointer-events: none;
+  z-index: 1;
+}

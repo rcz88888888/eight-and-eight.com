@@ -19,6 +19,26 @@
   const ringImage = new Image();
   const bg = background?.getContext('2d');
   const ink = logos?.getContext('2d');
+  // iOS clips fixed composited layers above its translucent browser controls.
+  // Document-positioned canvases can paint in the same region as page rules.
+  const documentSurface = CSS.supports('-webkit-touch-callout', 'none');
+  let documentSurfaceLayer;
+  if (documentSurface) {
+    root.classList.add('ios-document-animation');
+    documentSurfaceLayer = document.createElement('div');
+    documentSurfaceLayer.className = 'ios-animation-document-layer';
+    documentSurfaceLayer.setAttribute('aria-hidden', 'true');
+    document.body.prepend(documentSurfaceLayer);
+    for (const canvas of [background, logos]) if (canvas) documentSurfaceLayer.append(canvas);
+  }
+  let surfaceScroll = NaN;
+  function syncSurfacePosition(scroll) {
+    if (!documentSurface || scroll === surfaceScroll) return;
+    surfaceScroll = scroll;
+    for (const canvas of [background, logos]) {
+      if (canvas) canvas.style.transform = `translateY(${scroll}px)`;
+    }
+  }
   const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
     node,
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
@@ -626,6 +646,7 @@
     if (syncOpeningViewport(width, height)) layoutDirty = true;
     // All layout reads happen before the scroll frame's paints.
     pageHeight = Math.max(scrollHeight(), height);
+    if (documentSurfaceLayer) documentSurfaceLayer.style.height = `${pageHeight}px`;
     surfaceHeight = Math.ceil(Math.max(height, root.clientHeight,
       surfaceViewport.getBoundingClientRect().height,
       (window.visualViewport?.height || 0) + (window.visualViewport?.offsetTop || 0)));
@@ -836,6 +857,7 @@
       advanceStartRejoin(rejoinSince+rejoinDuration);idleSince=time;
     }
     for(const driver of [...frameDrivers])driver(time);
+    syncSurfacePosition(scrollPosition());
     const width = root.clientWidth;
     const height = innerHeight;
     const geometryDirty = layoutDirty || viewportDirty;
