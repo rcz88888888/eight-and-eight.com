@@ -13,21 +13,29 @@ Diese ZIP enthält 45 Dateien einschließlich dieser Anleitung und CNAME.
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
-## Scrollgesteuerte MP4-Videos (v214)
+## Scrollgesteuerte MP4-Videos (v215)
 
 Die drei bisherigen Fotoflächen enthalten echte MP4-Dateien. Sie wurden aus
 getrennten Fotoebenen gerendert, nicht mit einem KI-Bild-zu-Video-Modell.
 Die Kamera, das Gehäuse, das Brett und die Bildausschnitte stehen fest.
 
 - Uhrwerk: Die großen Zahnräder drehen gegensinnig unter den festen Brücken.
-  Die Unruh mit Spiralfeder schwingt. Das gesamte Bild wird nicht gedreht.
+  Ihr Drehweg ist gegenüber v214 um 75 % reduziert (Hauptrad: etwa 74,5°).
+  Die Unruh schwingt mit einem Viertel des bisherigen Ausschlags und vier
+  statt zehn Schwingungen. Das gesamte Bild wird nicht gedreht.
 - Schach: Das goldene Pferd folgt einem legalen L-Zug (1 + 2 Brettfelder)
   vom linken zum rechten markierten Bereich. Der Weg ist anhand der
   Brettschnittpunkte perspektivisch berechnet; Vordergrundbauern verdecken
   die Figur weiterhin korrekt. Schatten und Spiegelung bewegen sich mit.
+  Bezugspunkt ist die Mitte der Standfläche. Start, beide Zwischenfelder
+  und Ziel werden jeweils in der Feldmitte durchlaufen. Die Figur gleitet
+  ohne zusätzliches Anheben; ihre Größe folgt der Brett-Perspektive.
 - Goldlogo: Das Motiv bleibt fest, während die Metallreflexionen wandern.
 - Alle drei Sequenzen enthalten denselben Verlauf einer Sonne außerhalb
-  des Bildes, deutlichere Metallreflexionen, eine stärker am Bannerton
+  des Bildes über 18 Lichtpositionen mit stetigen Übergängen. Die Reflexionen
+  auf Figuren, Brett und Goldlogo sind deutlicher ausgeprägt. Die Kamera-
+  und Oberflächennormalen wurden auf dasselbe Koordinatensystem abgestimmt.
+  Erhalten bleiben eine stärker am Bannerton
   orientierte Champagnerhellgold-Abstimmung und den 8-%-Helligkeitsschritt.
 
 Jede Quelldatei enthält 96 Einzelbilder bei 24 Bildern pro Sekunde und ist
@@ -51,8 +59,10 @@ bestehende äußere Hintergrundunschärfe bleiben erhalten.
 
 Geprüft: Dekodierung aller 288 MP4-Frames, I-Frame-Struktur, Scroll-Zeitzuordnung,
 Anfang/Ende, Rückwärtslauf, Stillstand, schnelle Scrollwechsel, Ladefehler,
-reduzierte Bewegung, lokale Dateiverweise und ZIP-Integrität.
-Details zu Medien und Erzeugung stehen in VIDEO-MEDIEN-v214.md.
+reduzierte Bewegung, lokale Dateiverweise und ZIP-Integrität. Zusätzlich:
+vier Feldmitten des Springerwegs und ein isolierter Lichttest mit jeweils
+18 Positionen bei stillstehenden Motiven in allen drei Sequenzen.
+Details zu Medien und Erzeugung stehen in VIDEO-MEDIEN-v215.md.
 
 ## Feste Gestaltungsregeln
 
