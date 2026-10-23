@@ -1,6 +1,6 @@
 # Eight&Eight – Website mit Hintergrundringen
 
-Diese ZIP enthält 43 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 47 Dateien einschließlich dieser Anleitung und CNAME.
 Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
 
 ## Website hochladen
@@ -13,7 +13,34 @@ Diese ZIP enthält 43 Dateien einschließlich dieser Anleitung und CNAME.
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
-## Metallreflexionen beim Scrollen (v212)
+## Fotos und Textbewegung (v213)
+
+- Das Schachfoto liegt innerhalb des Partnership-Strategy-Feldes direkt
+  unter dem Absatz mit „ecosystems“, vor der unteren Feldlinie. Dieses Feld
+  nutzt auf breiten Bildschirmen die ganze verfügbare Zeilenbreite.
+- Die drei Fotos verwenden hellere Champagnergold-Materialien und eine
+  gemeinsame CSS-Helligkeit von 108 %. Sonne, Rauheit und Reflexionsstärke
+  sind bei allen drei Fotos gleich eingestellt.
+- Das Uhrwerkfoto dreht sich beim Vorbeiscrollen sanft von etwa −6,9° auf
+  +6,9° innerhalb seines festen Bildausschnitts. Die Textur wird so beschnitten,
+  dass keine leeren Bildecken sichtbar werden; die Oberflächennormalen drehen mit.
+- Die große goldene Pferdefigur vorne mittig bewegt sich zwischen 22 % und
+  78 % des Fotodurchlaufs zu einem angrenzenden Feld rechts vorne. Schatten,
+  Spiegelung und Metallreflexionen folgen ihr. Das feste Brett enthält keine
+  zweite Kopie der Figur. Die erwähnte Upload-Markierung war nicht sichtbar;
+  deshalb wurde diese Vordergrundfigur gewählt.
+- Texte in den Inhaltsfeldern sind am unteren Viewportrand gegenüber ihrer
+  bisherigen Darstellung zusätzlich 8 % vertikal gestreckt und erreichen
+  spätestens in der Bildmitte die bisherige Darstellung. Schrift, Umbruch,
+  volle Deckkraft und die bestehende äußere Hintergrundunschärfe bleiben
+  erhalten. Die Feldlinien bewegen sich nicht; Inhaltsfelder begrenzen Überstand.
+- Reduzierte Bewegung zeigt statische Fotos einschließlich der Pferdefigur
+  sowie die bisherige Texteinstellung. Bei fehlendem WebGL bleibt diese
+  statische Ansicht ebenfalls sichtbar.
+
+Die Bildasset- und Promptdokumentation steht in BILDASSETS-v213.md.
+
+## Gemeinsame Metallreflexionen beim Scrollen
 
 Die drei Fotos von Uhrwerk, Schachbrett und Goldlogo verwenden eine einzelne
 Sonne außerhalb des Bildausschnitts. Ihre Richtung durchläuft 18 Positionen,
@@ -22,7 +49,7 @@ dem Scrollen über das jeweilige Foto und kehrt sich beim Hochscrollen um.
 
 Die Fotos enthalten keine sichtbaren Sonnen oder direkten Strahlen. Statt
 beleuchtete Fotos übereinanderzublenden, berechnet WebGL die Reflexionen
-anhand eigener Oberflächennormalen und Materialrauheiten. Sand, Hintergrund
+anhand eigener Oberflächennormalen mit einheitlicher Materialrauheit. Sand, Hintergrund
 und offene Zwischenräume erhalten keine metallischen Glanzlichter.
 
 Die Bildgeometrie bleibt fest. Normalkarten werden erst in Bildnähe geladen;
