@@ -1,6 +1,6 @@
 # Eight&Eight – Website mit Hintergrundringen
 
-Diese ZIP enthält 47 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 45 Dateien einschließlich dieser Anleitung und CNAME.
 Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
 
 ## Website hochladen
@@ -13,54 +13,46 @@ Diese ZIP enthält 47 Dateien einschließlich dieser Anleitung und CNAME.
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
-## Fotos und Textbewegung (v213)
+## Scrollgesteuerte MP4-Videos (v214)
 
-- Das Schachfoto liegt innerhalb des Partnership-Strategy-Feldes direkt
-  unter dem Absatz mit „ecosystems“, vor der unteren Feldlinie. Dieses Feld
-  nutzt auf breiten Bildschirmen die ganze verfügbare Zeilenbreite.
-- Die drei Fotos verwenden hellere Champagnergold-Materialien und eine
-  gemeinsame CSS-Helligkeit von 108 %. Sonne, Rauheit und Reflexionsstärke
-  sind bei allen drei Fotos gleich eingestellt.
-- Das Uhrwerkfoto dreht sich beim Vorbeiscrollen sanft von etwa −6,9° auf
-  +6,9° innerhalb seines festen Bildausschnitts. Die Textur wird so beschnitten,
-  dass keine leeren Bildecken sichtbar werden; die Oberflächennormalen drehen mit.
-- Die große goldene Pferdefigur vorne mittig bewegt sich zwischen 22 % und
-  78 % des Fotodurchlaufs zu einem angrenzenden Feld rechts vorne. Schatten,
-  Spiegelung und Metallreflexionen folgen ihr. Das feste Brett enthält keine
-  zweite Kopie der Figur. Die erwähnte Upload-Markierung war nicht sichtbar;
-  deshalb wurde diese Vordergrundfigur gewählt.
-- Texte in den Inhaltsfeldern sind am unteren Viewportrand gegenüber ihrer
-  bisherigen Darstellung zusätzlich 8 % vertikal gestreckt und erreichen
-  spätestens in der Bildmitte die bisherige Darstellung. Schrift, Umbruch,
-  volle Deckkraft und die bestehende äußere Hintergrundunschärfe bleiben
-  erhalten. Die Feldlinien bewegen sich nicht; Inhaltsfelder begrenzen Überstand.
-- Reduzierte Bewegung zeigt statische Fotos einschließlich der Pferdefigur
-  sowie die bisherige Texteinstellung. Bei fehlendem WebGL bleibt diese
-  statische Ansicht ebenfalls sichtbar.
+Die drei bisherigen Fotoflächen enthalten echte MP4-Dateien. Sie wurden aus
+getrennten Fotoebenen gerendert, nicht mit einem KI-Bild-zu-Video-Modell.
+Die Kamera, das Gehäuse, das Brett und die Bildausschnitte stehen fest.
 
-Die Bildasset- und Promptdokumentation steht in BILDASSETS-v213.md.
+- Uhrwerk: Die großen Zahnräder drehen gegensinnig unter den festen Brücken.
+  Die Unruh mit Spiralfeder schwingt. Das gesamte Bild wird nicht gedreht.
+- Schach: Das goldene Pferd folgt einem legalen L-Zug (1 + 2 Brettfelder)
+  vom linken zum rechten markierten Bereich. Der Weg ist anhand der
+  Brettschnittpunkte perspektivisch berechnet; Vordergrundbauern verdecken
+  die Figur weiterhin korrekt. Schatten und Spiegelung bewegen sich mit.
+- Goldlogo: Das Motiv bleibt fest, während die Metallreflexionen wandern.
+- Alle drei Sequenzen enthalten denselben Verlauf einer Sonne außerhalb
+  des Bildes, deutlichere Metallreflexionen, eine stärker am Bannerton
+  orientierte Champagnerhellgold-Abstimmung und den 8-%-Helligkeitsschritt.
 
-## Gemeinsame Metallreflexionen beim Scrollen
+Jede Quelldatei enthält 96 Einzelbilder bei 24 Bildern pro Sekunde und ist
+4 Sekunden lang. Die Seite spielt sie nicht nach einer unabhängigen Uhr ab:
+Die Position beim Scrollen steuert den Videoframe. So durchläuft das Video
+seine gesamte Sequenz genau während des Vorbeiscrollens, unabhängig davon,
+wie schnell man scrollt. Anhalten hält den Frame an; Hochscrollen spult zurück.
 
-Die drei Fotos von Uhrwerk, Schachbrett und Goldlogo verwenden eine einzelne
-Sonne außerhalb des Bildausschnitts. Ihre Richtung durchläuft 18 Positionen,
-zwischen denen kontinuierlich interpoliert wird. Die Lichtbewegung folgt
-dem Scrollen über das jeweilige Foto und kehrt sich beim Hochscrollen um.
+Die MP4s enthalten ausschließlich einzeln suchbare H.264-I-Frames und keine
+Tonspur. Inline-/Stumm-Eigenschaften sind für iPhone gesetzt. Erst nach dem
+Laden eines dekodierten Bildes wird gespult. Schnelle Scrollanfragen werden
+auf die jeweils neueste Zielposition zusammengefasst. Bei reduzierter Bewegung
+oder einem Ladefehler bleibt das passende Posterbild sichtbar. Ein Test
+auf einem echten iPhone ist noch erforderlich.
 
-Die Fotos enthalten keine sichtbaren Sonnen oder direkten Strahlen. Statt
-beleuchtete Fotos übereinanderzublenden, berechnet WebGL die Reflexionen
-anhand eigener Oberflächennormalen mit einheitlicher Materialrauheit. Sand, Hintergrund
-und offene Zwischenräume erhalten keine metallischen Glanzlichter.
+Das Schachvideo bleibt innerhalb des Partnership-Strategy-Feldes direkt
+unter „ecosystems“. Der dezente Textverlauf aus v213 bleibt erhalten:
+zusätzliche 8 % vertikale Streckung am unteren Viewportrand, Rückkehr zur
+bisherigen Darstellung spätestens in der Bildmitte. Deckkraft, Schrift und
+bestehende äußere Hintergrundunschärfe bleiben erhalten.
 
-Die Bildgeometrie bleibt fest. Normalkarten werden erst in Bildnähe geladen;
-gezeichnet wird nur bei geändertem Scrollstand oder nach einer Größenänderung.
-Bei reduzierter Bewegung, fehlendem WebGL oder einer nicht geladenen Textur
-bleibt das zugehörige Foto sichtbar. Zusätzliche Bibliotheken sind nicht nötig.
-
-Geprüft: tatsächliche Shader-Kompilierung und 54 gerenderte Lichtpositionen,
-Vorwärts-/Rückwärtsscrollen, verzögertes Laden, Grafik-Kontextverlust und
-Wiederherstellung, fehlende Grafikunterstützung und reduzierte Bewegung.
-Ein visueller Test auf einem echten iPhone steht noch aus.
+Geprüft: Dekodierung aller 288 MP4-Frames, I-Frame-Struktur, Scroll-Zeitzuordnung,
+Anfang/Ende, Rückwärtslauf, Stillstand, schnelle Scrollwechsel, Ladefehler,
+reduzierte Bewegung, lokale Dateiverweise und ZIP-Integrität.
+Details zu Medien und Erzeugung stehen in VIDEO-MEDIEN-v214.md.
 
 ## Feste Gestaltungsregeln
 
