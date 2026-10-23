@@ -507,25 +507,18 @@ html.ios-document-animation .ios-animation-document-layer > canvas {
   z-index: 1;
 }
 
-/* Text stays opaque and sharp; only the background outside its glyphs blurs. */
-body .gold-text-light {
-  background-image: none !important;
-  color: var(--banner-logo-metal, #4b3a1f) !important;
-  -webkit-text-fill-color: var(--banner-logo-metal, #4b3a1f) !important;
-  text-shadow: none !important;
-}
-.text-backdrop-outline {
-  display: block;
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  z-index: -1;
-  pointer-events: none;
-  background: transparent !important;
-  -webkit-backdrop-filter: blur(.8px);
-  backdrop-filter: blur(.8px);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+/* A 0.8px cream halo dims the background outside the glyphs only.
+   Text shadows paint behind the unchanged opaque fill, with no letter blur,
+   stroke, opacity change or alteration to line spacing and text wrapping. */
+body .gold-text-light,
+body .gold-text-coverage {
+  text-shadow:
+    -.8px 0 0 var(--page-cream, #fdfcfa),
+     .8px 0 0 var(--page-cream, #fdfcfa),
+     0 -.8px 0 var(--page-cream, #fdfcfa),
+     0  .8px 0 var(--page-cream, #fdfcfa),
+    -.566px -.566px 0 var(--page-cream, #fdfcfa),
+     .566px -.566px 0 var(--page-cream, #fdfcfa),
+    -.566px  .566px 0 var(--page-cream, #fdfcfa),
+     .566px  .566px 0 var(--page-cream, #fdfcfa);
 }
