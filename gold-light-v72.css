@@ -459,3 +459,25 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
   object-fit: cover;
   border-radius: clamp(12px, 2vw, 20px);
 }
+
+/* Keep animation pixels behind Safari's translucent bottom browser controls. */
+.animation-surface-reference {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100vh;
+  visibility: hidden;
+  pointer-events: none;
+}
+@supports (height: 100lvh) {
+  .animation-surface-reference { height: 100lvh; }
+}
+body > .background-layers,
+body > .main-logo-canvas {
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+  max-height: none;
+}

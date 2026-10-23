@@ -47,6 +47,7 @@
   let pageHeight = 0;
   let sceneKey = '';
   let sceneViewportHeight = 0;
+  let surfaceHeight = 0;
   let particles = [];
   let rain = [], rainWidth = 0, rainHeight = 0, rainMaxWidth = 0;
   let rainTime = 0, lastRainTime;
@@ -64,6 +65,12 @@
   rainViewport.className = 'rain-size-reference';
   rainViewport.setAttribute('aria-hidden', 'true');
   document.body.append(rainViewport);
+  // Safari's visible height excludes toolbar space even while page content is
+  // composited beneath it. Measure the large viewport for drawing only.
+  const surfaceViewport = document.createElement('span');
+  surfaceViewport.className = 'animation-surface-reference';
+  surfaceViewport.setAttribute('aria-hidden', 'true');
+  document.body.append(surfaceViewport);
   const touchViewport = matchMedia('(hover: none) and (pointer: coarse)');
   let openingViewport, openingViewportLocked = false;
   const lockOpeningViewport = event => {
@@ -619,6 +626,9 @@
     if (syncOpeningViewport(width, height)) layoutDirty = true;
     // All layout reads happen before the scroll frame's paints.
     pageHeight = Math.max(scrollHeight(), height);
+    surfaceHeight = Math.ceil(Math.max(height, root.clientHeight,
+      surfaceViewport.getBoundingClientRect().height,
+      (window.visualViewport?.height || 0) + (window.visualViewport?.offsetTop || 0)));
     mainBox = main?.getBoundingClientRect();
     const about=document.querySelector('#about');
     const header=document.querySelector('.topbar');
@@ -665,10 +675,10 @@
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
     }
     if (!bg || !ink || !mainBox) return;
-    resizeSurface(background, bg, width, height, bgRatio);
-    resizeSurface(logos, ink, width, height, inkRatio);
+    resizeSurface(background, bg, width, surfaceHeight, bgRatio);
+    resizeSurface(logos, ink, width, surfaceHeight, inkRatio);
     background.style.width = logos.style.width = `${width}px`;
-    background.style.height = logos.style.height = `${height}px`;
+    background.style.height = logos.style.height = `${surfaceHeight}px`;
     // Rain uses the same pinned viewport, with the landscape size reference.
     const rainSizeWidth = rainReferenceWidth(openingViewport.viewportWidth, openingViewport.height);
     const portrait = matchMedia('(orientation: portrait)').matches;
@@ -729,13 +739,13 @@
     if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length || !mainBorderSprites.length || !mainSolidSprites.length) return;
     const {width, height, motionScroll} = state;
     const motionProgress = easedProgress;
-    const backgroundKey = `${sceneKey}:${width}:${height}:${rainTime}`;
+    const backgroundKey = `${sceneKey}:${width}:${height}:${surfaceHeight}:${rainTime}`;
     if (backgroundKey !== lastBackgroundPaint) {
-      bg.clearRect(0, 0, width, height);
+      bg.clearRect(0, 0, width, surfaceHeight);
       let visible = 0;
       for (const mark of rain) {
-        const top = -mark.height + mark.progress * (height + mark.height);
-        if (top + mark.height < 0 || top > height || mark.x + mark.width < 0 || mark.x > width) continue;
+        const top = -mark.height + mark.progress * (surfaceHeight + mark.height);
+        if (top + mark.height < 0 || top > surfaceHeight || mark.x + mark.width < 0 || mark.x > width) continue;
         const sprite = mark.sprite;
         bg.globalAlpha = mark.opacity;
         bg.drawImage(sprite, mark.x, top, mark.width, mark.height);
@@ -748,11 +758,11 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
-    ink.clearRect(0, 0, width, height);
+    ink.clearRect(0, 0, width, surfaceHeight);
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     const w = 922 * scale;
     const h = 1368 * scale;
@@ -814,7 +824,7 @@
     feed.clearRect(0, 0, width, feedHeight);
     for (const source of [background, logos]) {
       if (!source.width || !source.height) continue;
-      feed.drawImage(source, 0, 0, source.width, source.height * feedHeight / height,
+      feed.drawImage(source, 0, 0, source.width, source.height * feedHeight / surfaceHeight,
         0, 0, width, feedHeight);
     }
   }
