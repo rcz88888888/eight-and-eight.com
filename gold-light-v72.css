@@ -506,14 +506,3 @@ html.ios-document-animation .ios-animation-document-layer > canvas {
   pointer-events: none;
   z-index: 1;
 }
-
-/* A faint outer softness preserves the sharp letterforms. */
-.scroll-text-word {
-  display: inline-block;
-  vertical-align: baseline;
-  text-shadow: 0 0 .8px rgba(75, 58, 31, .22);
-  transform: translateY(calc(var(--text-line-index, 0) * var(--text-line-spread, 0px)));
-}
-@media (prefers-reduced-motion: reduce) {
-  .scroll-text-word { transform: none; }
-}
