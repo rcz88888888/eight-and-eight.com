@@ -1,6 +1,6 @@
 # Eight&Eight – Website mit Hintergrundringen
 
-Diese ZIP enthält 35 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 43 Dateien einschließlich dieser Anleitung und CNAME.
 Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
 
 ## Website hochladen
@@ -12,6 +12,28 @@ Diese ZIP enthält 35 Dateien einschließlich dieser Anleitung und CNAME.
 
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
+
+## Metallreflexionen beim Scrollen (v212)
+
+Die drei Fotos von Uhrwerk, Schachbrett und Goldlogo verwenden eine einzelne
+Sonne außerhalb des Bildausschnitts. Ihre Richtung durchläuft 18 Positionen,
+zwischen denen kontinuierlich interpoliert wird. Die Lichtbewegung folgt
+dem Scrollen über das jeweilige Foto und kehrt sich beim Hochscrollen um.
+
+Die Fotos enthalten keine sichtbaren Sonnen oder direkten Strahlen. Statt
+beleuchtete Fotos übereinanderzublenden, berechnet WebGL die Reflexionen
+anhand eigener Oberflächennormalen und Materialrauheiten. Sand, Hintergrund
+und offene Zwischenräume erhalten keine metallischen Glanzlichter.
+
+Die Bildgeometrie bleibt fest. Normalkarten werden erst in Bildnähe geladen;
+gezeichnet wird nur bei geändertem Scrollstand oder nach einer Größenänderung.
+Bei reduzierter Bewegung, fehlendem WebGL oder einer nicht geladenen Textur
+bleibt das zugehörige Foto sichtbar. Zusätzliche Bibliotheken sind nicht nötig.
+
+Geprüft: tatsächliche Shader-Kompilierung und 54 gerenderte Lichtpositionen,
+Vorwärts-/Rückwärtsscrollen, verzögertes Laden, Grafik-Kontextverlust und
+Wiederherstellung, fehlende Grafikunterstützung und reduzierte Bewegung.
+Ein visueller Test auf einem echten iPhone steht noch aus.
 
 ## Feste Gestaltungsregeln
 
@@ -72,7 +94,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
   Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
   zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
 - Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
-- Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
+- Der kleinste Abstand zu den Punkten entspricht einem Vierundsechzigstel der Logogröße.
 - Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
 - Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung in den letzten
   1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
