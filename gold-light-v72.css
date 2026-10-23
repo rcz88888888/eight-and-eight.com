@@ -507,11 +507,12 @@ html.ios-document-animation .ios-animation-document-layer > canvas {
   z-index: 1;
 }
 
-/* A 0.8px cream halo dims the background outside the glyphs only.
-   Text shadows paint behind the unchanged opaque fill, with no letter blur,
-   stroke, opacity change or alteration to line spacing and text wrapping. */
-body .gold-text-light,
-body .gold-text-coverage {
+/* Restore only the exterior 0.8px halo. An opaque foreground glyph is crucial:
+   the older transparent fill exposed the light shadow inside its letterforms. */
+body .gold-text-light {
+  background-image: none !important;
+  color: var(--banner-logo-metal, #4b3a1f) !important;
+  -webkit-text-fill-color: var(--banner-logo-metal, #4b3a1f) !important;
   text-shadow:
     -.8px 0 0 var(--page-cream, #fdfcfa),
      .8px 0 0 var(--page-cream, #fdfcfa),
