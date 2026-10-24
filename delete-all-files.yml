@@ -1,0 +1,84 @@
+# Ablageort im Repository: .github/workflows/delete-all-files.yml
+# Nur manuell starten. Loescht ALLE versionierten Dateien im gewaehlten Branch,
+# einschliesslich CNAME, versteckter Dateien und aller Workflowdateien.
+# Der Git-Verlauf, andere Branches und das Repository selbst bleiben erhalten.
+# Benoetigtes Actions-Secret: REPO_CLEANUP_TOKEN
+# Fine-grained PAT: nur dieses Repository; Contents und Workflows: Read and write.
+
+name: Alle Repository-Dateien loeschen
+
+'on':
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: delete-all-files-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  delete-files:
+    if: startsWith(github.ref, 'refs/heads/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Schreib-Token pruefen
+        env:
+          CLEANUP_TOKEN: ${{ secrets.REPO_CLEANUP_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLEANUP_TOKEN" ]]; then
+            echo '::error::Actions-Secret REPO_CLEANUP_TOKEN fehlt. Einen Fine-grained PAT fuer dieses Repository mit Contents und Workflows: Read and write hinterlegen.'
+            exit 1
+          fi
+
+      - name: Gewaehlten Branch laden
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.REPO_CLEANUP_TOKEN }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Alle Dateien entfernen und committen
+        env:
+          TARGET_REF: ${{ github.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$TARGET_REF" != refs/heads/* ]]; then
+            echo '::error::Nur ein Branch kann geleert werden.'
+            exit 1
+          fi
+
+          previous_commit=$(git rev-parse HEAD)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Git erfasst auch Punktdateien, Unterordner und diese Workflowdatei.
+          # Nur versionierte Repository-Dateien werden geloescht, nicht .git.
+          git rm -r -f --ignore-unmatch -- .
+
+          if git diff --cached --quiet; then
+            echo 'Der Branch enthaelt bereits keine Dateien.'
+            exit 0
+          fi
+
+          git commit -m 'Alle Repository-Dateien entfernen'
+          if [[ -n "$(git ls-tree -r --name-only HEAD)" ]]; then
+            echo '::error::Der neue Commit enthaelt noch Dateien.'
+            exit 1
+          fi
+
+          # Kein Force-Push: Zwischenzeitliche fremde Aenderungen werden nicht ueberschrieben.
+          git push origin "HEAD:$TARGET_REF"
+
+          {
+            printf '## Repository-Dateien entfernt\n\n'
+            printf 'Branch: `%s`\n\n' "$TARGET_REF"
+            printf 'Vorheriger Commit: `%s`\n\n' "$previous_commit"
+            printf 'Leerer Commit: `%s`\n\n' "$(git rev-parse HEAD)"
+            printf 'Alle versionierten Dateien einschliesslich der Workflowdateien wurden entfernt. Der Git-Verlauf bleibt erhalten.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
