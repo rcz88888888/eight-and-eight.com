@@ -577,16 +577,8 @@ body .gold-text-light {
 .service-grid > .partnership-strategy-card { grid-column: 1 / -1; }
 .content-scroll .service-grid article,
 .content-scroll .section-label { overflow: clip; }
-.scroll-text-run { display: contents; }
-.content-scroll .scroll-text-fragment {
-  display: inline-block;
-  position: relative;
-  vertical-align: baseline;
-  white-space: pre;
-  line-height: inherit;
-  overflow: visible;
-  transform: translateY(var(--line-scroll-y, 0px));
-  transform-origin: 0 0;
+body .content-scroll .gold-text-light[data-scroll-text] {
+  transform: var(--text-rest-transform) scaleY(var(--scroll-text-stretch, 1));
   will-change: auto;
 }
 @media (prefers-reduced-motion: reduce) {
