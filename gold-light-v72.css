@@ -360,16 +360,22 @@ body > .site-shell { z-index: 3; }
 .content-scroll .hero-wallpaper-logo { z-index: 0; }
 .topbar > .wordmark, .topbar > .menu-toggle { z-index: 2; }
 
-/* Landscape keeps the existing logo size, centred between the banner
-   and the first text-panel edge, as in the portrait flex layout. */
+/* Landscape: 150% of the previous logo size. The visible ink bounds, including
+   the 0.8px contour, leave 1/20 of their height above and below the artwork. */
 @media (orientation: landscape) {
-  .content-scroll .logo-stage { position: relative; overflow: visible; }
+  .content-scroll .logo-stage {
+    position: relative;
+    overflow: visible;
+    padding: 0;
+    height: calc(var(--opening-viewport-height) * 1.0480799320908666 + .88px);
+  }
   .content-scroll .hero-static-logo.hero-wallpaper-logo {
     position: absolute;
-    top: 50%;
+    /* The actual silhouette centre is y=677.41057 in the 1368px viewBox. */
+    top: calc(50% + var(--opening-viewport-height) * .005780201440542075);
     left: 50%;
-    width: calc(var(--opening-viewport-height) * .5392);
-    height: calc(var(--opening-viewport-height) * .8);
+    width: calc(var(--opening-viewport-height) * .8088);
+    height: calc(var(--opening-viewport-height) * 1.2);
     max-width: none;
     max-height: none;
     transform: translate(-50%, -50%);
@@ -379,9 +385,15 @@ body > .site-shell { z-index: 3; }
 /* v139: static transparent start artwork behind the banner pattern. */
 .banner-startlogo-projection { display: block; z-index: 0; background: transparent; }
 
-/* v140: reserve the complete opening logo box plus a 24px About gap. */
+/* The final wallpaper band remains the final in-flow element in landscape. */
 @media (orientation: landscape) {
-  .content-scroll .logo-stage { height: calc(var(--opening-viewport-height) * .77 + 24px); }
+  .content-scroll main > .logo-stage + .section { margin-top: 0; }
+  .content-scroll > .wallpaper-end {
+    display: block;
+    position: relative;
+    inset: auto;
+    margin-bottom: 0;
+  }
 }
 /* Keep the portrait hamburger thickness in every orientation. */
 body .topbar .menu-toggle > span {
@@ -565,8 +577,16 @@ body .gold-text-light {
 .service-grid > .partnership-strategy-card { grid-column: 1 / -1; }
 .content-scroll .service-grid article,
 .content-scroll .section-label { overflow: clip; }
-body .content-scroll .gold-text-light[data-scroll-text] {
-  transform: var(--text-rest-transform) scaleY(var(--scroll-text-stretch, 1));
+.scroll-text-run { display: contents; }
+.content-scroll .scroll-text-fragment {
+  display: inline-block;
+  position: relative;
+  vertical-align: baseline;
+  white-space: pre;
+  line-height: inherit;
+  overflow: visible;
+  transform: translateY(var(--line-scroll-y, 0px));
+  transform-origin: 0 0;
   will-change: auto;
 }
 @media (prefers-reduced-motion: reduce) {

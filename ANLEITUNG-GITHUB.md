@@ -1,7 +1,6 @@
-# Eight&Eight – Website mit Hintergrundringen
+# Eight and Eight – Website v218
 
 Diese ZIP enthält 45 Dateien einschließlich dieser Anleitung und CNAME.
-Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
 
 ## Website hochladen
 
@@ -10,59 +9,94 @@ Diese ZIP enthält 45 Dateien einschließlich dieser Anleitung und CNAME.
    Website-Repositorys hochladen. index.html muss direkt neben CNAME liegen.
 3. Vorhandene Dateien ersetzen und die Änderung committen.
 
-Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
-Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
+Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt. Alte Dateien
+werden durch das Hochladen neuer Dateien nicht automatisch gelöscht.
 
-## Scrollgesteuerte MP4-Videos (v215)
+## Springerzug bis 3/4 des Scrollwegs (v218)
 
-Die drei bisherigen Fotoflächen enthalten echte MP4-Dateien. Sie wurden aus
-getrennten Fotoebenen gerendert, nicht mit einem KI-Bild-zu-Video-Modell.
-Die Kamera, das Gehäuse, das Brett und die Bildausschnitte stehen fest.
+Der Springer steht spätestens bei 75 % des Vorbeiscrollens in der Mitte des
+Zielfelds. Dafür wird die Zeitzuordnung des Schachvideos über eine glatte,
+monotone Kurve angepasst: Bei 75 % wird Frame 161 erreicht, der die Landung
+zeigt. Bis zum Scrollende läuft die Sequenz weiter bis Frame 191. In diesem
+letzten Viertel bleibt der Springer auf seinem Zielfeld und das Licht wandert
+weiter. Es gibt keinen Sprung der Zeitkurve am 75-%-Punkt.
 
-- Uhrwerk: Die großen Zahnräder drehen gegensinnig unter den festen Brücken.
-  Ihr Drehweg ist gegenüber v214 um 75 % reduziert (Hauptrad: etwa 74,5°).
-  Die Unruh schwingt mit einem Viertel des bisherigen Ausschlags und vier
-  statt zehn Schwingungen. Das gesamte Bild wird nicht gedreht.
-- Schach: Das goldene Pferd folgt einem legalen L-Zug (1 + 2 Brettfelder)
-  vom linken zum rechten markierten Bereich. Der Weg ist anhand der
-  Brettschnittpunkte perspektivisch berechnet; Vordergrundbauern verdecken
-  die Figur weiterhin korrekt. Schatten und Spiegelung bewegen sich mit.
-  Bezugspunkt ist die Mitte der Standfläche. Start, beide Zwischenfelder
-  und Ziel werden jeweils in der Feldmitte durchlaufen. Die Figur gleitet
-  ohne zusätzliches Anheben; ihre Größe folgt der Brett-Perspektive.
-- Goldlogo: Das Motiv bleibt fest, während die Metallreflexionen wandern.
-- Alle drei Sequenzen enthalten denselben Verlauf einer Sonne außerhalb
-  des Bildes über 18 Lichtpositionen mit stetigen Übergängen. Die Reflexionen
-  auf Figuren, Brett und Goldlogo sind deutlicher ausgeprägt. Die Kamera-
-  und Oberflächennormalen wurden auf dasselbe Koordinatensystem abgestimmt.
-  Erhalten bleiben eine stärker am Bannerton
-  orientierte Champagnerhellgold-Abstimmung und den 8-%-Helligkeitsschritt.
+Die hochauflösenden Video- und Bilddateien aus v217 werden direkt verwendet.
+Uhrwerk und Goldlogo behalten ihre lineare Scroll-Zeitzuordnung. Geprüft:
+Landungsframe bei 75 %, monotone Zeitkurve, vollständiger Framebereich,
+Rückwärtslauf und dieselbe Zuordnung in Hoch- und Querformat.
 
-Jede Quelldatei enthält 96 Einzelbilder bei 24 Bildern pro Sekunde und ist
-4 Sekunden lang. Die Seite spielt sie nicht nach einer unabhängigen Uhr ab:
-Die Position beim Scrollen steuert den Videoframe. So durchläuft das Video
-seine gesamte Sequenz genau während des Vorbeiscrollens, unabhängig davon,
-wie schnell man scrollt. Anhalten hält den Frame an; Hochscrollen spult zurück.
+## Fotoqualität und Lichteffekte
 
-Die MP4s enthalten ausschließlich einzeln suchbare H.264-I-Frames und keine
-Tonspur. Inline-/Stumm-Eigenschaften sind für iPhone gesetzt. Erst nach dem
-Laden eines dekodierten Bildes wird gespult. Schnelle Scrollanfragen werden
-auf die jeweils neueste Zielposition zusammengefasst. Bei reduzierter Bewegung
-oder einem Ladefehler bleibt das passende Posterbild sichtbar. Ein Test
-auf einem echten iPhone ist noch erforderlich.
+Alle drei Fotosequenzen wurden aus den vorhandenen Originalquellen neu in
+1536 × 1024 Pixeln gerendert. Es gibt keine Verkleinerung auf 1152 × 768 mehr.
+Die Poster sind verlustfreie PNGs. Die H.264-Filme verwenden CRF 8, 48 fps und
+192 Frames statt zuvor 96. Ein Schlüsselbild alle acht Frames hält die
+Suchstrecke kurz. BT.709-Farbraum und Pegel werden explizit konvertiert und
+gekennzeichnet. Die Videos sind weiterhin videokomprimiert; die PNG-Poster
+sind pixelgleich mit dem ersten unkomprimierten Renderbild.
 
-Das Schachvideo bleibt innerhalb des Partnership-Strategy-Feldes direkt
-unter „ecosystems“. Der dezente Textverlauf aus v213 bleibt erhalten:
-zusätzliche 8 % vertikale Streckung am unteren Viewportrand, Rückkehr zur
-bisherigen Darstellung spätestens in der Bildmitte. Deckkraft, Schrift und
-bestehende äußere Hintergrundunschärfe bleiben erhalten.
+Die Lichtberechnung moduliert die fotografische Oberfläche relativ zur
+ursprünglichen Beleuchtung. Körnung, Schliffspuren, Gravuren, Eigenfarben und
+vorhandene Mikroreflexionen bleiben damit erhalten. Die bisherige zusätzliche
+Entsättigung und die deckende Addition heller Reflexionsflächen entfallen.
+Eine weiche Schulter betrifft nur die hellsten Spitzlichter. Die frühere
+Helligkeitserhöhung um 8 % bleibt erhalten.
 
-Geprüft: Dekodierung aller 288 MP4-Frames, I-Frame-Struktur, Scroll-Zeitzuordnung,
-Anfang/Ende, Rückwärtslauf, Stillstand, schnelle Scrollwechsel, Ladefehler,
-reduzierte Bewegung, lokale Dateiverweise und ZIP-Integrität. Zusätzlich:
-vier Feldmitten des Springerwegs und ein isolierter Lichttest mit jeweils
-18 Positionen bei stillstehenden Motiven in allen drei Sequenzen.
-Details zu Medien und Erzeugung stehen in VIDEO-MEDIEN-v215.md.
+Alle Filme verwenden denselben Verlauf einer außerhalb des Ausschnitts
+wandernden Sonne über 18 Positionen mit kontinuierlichen Zwischenwerten.
+Die Kamera steht fest. Das Uhrwerk bewegt nur seine Mechanik, mit dem um
+75 % reduzierten Drehweg aus v215. Die Unruh schwingt weiterhin kleiner und
+seltener. Der Springer durchläuft Start, beide Zwischenfelder und Ziel in
+der jeweiligen Feldmitte; Standfläche, Schatten und Perspektive sind gekoppelt.
+Das Goldlogo liegt fest im Sand. Die Fotosequenzen wurden aus Fotoebenen und
+Oberflächeninformationen gerendert, nicht mit einem generativen Videomodell.
+
+Die Scrollposition steuert direkt den Videoframe. Anhalten hält das Bild an;
+Rückwärtsscrollen spult zurück. Die Dateidauer von vier Sekunden ist keine
+unabhängige Abspieluhr. Bei reduzierter Bewegung oder einem Ladefehler bleibt
+das hochauflösende PNG-Poster sichtbar. Das Schachvideo bleibt im selben
+Partnership-Strategy-Feld direkt unter „ecosystems“.
+
+## Einheitliches Anrücken aller Textzeilen
+
+Die frühere Zusatzstreckung ganzer Textblöcke ist entfernt. Stattdessen wird
+jede tatsächlich umbrochene Textzeile verschoben. Die vorhandenen Schriftformen,
+Schriftgrößen, statischen Grundtransformationen, Zeilenhöhen und Feldhöhen
+bleiben erhalten. Links und ihre Ereignisbehandlung werden nicht kopiert.
+
+Eine einzige, von der Bildschirmposition abhängige Kurve gilt für alle Zeilen.
+Am unteren Viewportrand beträgt die zusätzliche lokale Zeilenspreizung 8 %;
+sie nimmt beim Herunterscrollen stetig ab und ist in der Mitte des gesamten
+Viewports null. Dort und darüber entspricht der Abstand wieder dem Ausgangswert.
+Inline-Fragmente derselben Zeile bewegen sich gemeinsam. Die Textfarbe bleibt
+vollständig deckend. Die äußere Hintergrundunschärfe folgt den Zeilen, ohne
+den Buchstabeninnenraum zu verwischen oder einen weißen Rand zu malen.
+
+Zeilen werden nur bei Layout- oder Schriftänderungen neu ermittelt. Während
+des Scrollens werden ausschließlich Transformationswerte gesetzt; es gibt
+keine zeichenweisen Layoutmessungen und keinen Neuaufbau des Textes pro Frame.
+Die native Zeilenaufteilung wird nach Breitenänderungen neu aufgenommen.
+
+## Querformat aus v216
+
+Startlogo, alle Hauptlogos und Timecoderinge bleiben im Querformat um 50 %
+vergrößert. Die beidseitigen Abstände des vordersten Logos betragen weiterhin
+1/20 seiner sichtbaren Höhe. Der Endbanner bleibt das letzte Element im
+Seitenfluss. Die Korrektur der iOS-Seitenhöhe, die feste Größenreferenz bei
+bewegten Browserleisten und die an die Displayframes angepasste Regenbewegung
+bleiben erhalten.
+
+## Prüfung
+
+Geprüft werden die Medienauflösung, 192 Frames pro Clip, Vollständigkeit der
+Dekodierung, Schlüsselbildabstände, Farbraum, Video-Suchverhalten, Poster,
+vier Feldmitten des Springerwegs, Lichtvariation bei stillstehenden Motiven,
+Textinhalt und Linkidentität, dieselbe Zeilenkurve bei allen Textfragmenten,
+stetiges Anrücken bis zur Viewportmitte, Neuumbruch bei Breitenänderungen,
+reduzierte Bewegung, Dateiverweise und ZIP-Integrität. Die DOM- und Scrolltests
+verwenden simulierte Browserwerte. Ein visueller Browsertest und ein Test auf
+einem echten iPhone konnten hier nicht durchgeführt werden.
 
 ## Feste Gestaltungsregeln
 

@@ -3,6 +3,7 @@
   const root = document.documentElement;
   const scrollPosition = () => window.scrollY;
   const scrollHeight = () => (document.scrollingElement || root).scrollHeight;
+  const contentShell = document.querySelector('.site-shell');
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
@@ -68,7 +69,6 @@
   let sceneKey = '';
   let sceneViewportHeight = 0;
   let surfaceHeight = 0;
-  let particles = [];
   let rain = [], rainWidth = 0, rainHeight = 0, rainMaxWidth = 0;
   let rainTime = 0, lastRainTime;
   let lastMainPaint = '';
@@ -79,6 +79,7 @@
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
+  let mainGeometryKey = '';
   let mainBox;
   let openingScaleFactor=1;
   const rainViewport = document.createElement('span');
@@ -119,6 +120,7 @@
   const TAU = Math.PI * 2;
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
+  let lastHeroAngle;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
   let handoffSince, handoffMain = 0, handoffActive = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
@@ -349,7 +351,11 @@
       const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
       layer.idleVisibility=idleRotationVisibility(elapsed);
     }
-    if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
+    const heroAngle=shortestAngle(heroIdleAngle);
+    if(openingLogo && heroAngle!==lastHeroAngle){
+      openingLogo.style.setProperty('--hero-idle-angle',`${heroAngle}rad`);
+      lastHeroAngle=heroAngle;
+    }
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const ringSpriteFor = pixels => ringSprites.find(sprite => sprite.width >= pixels) || ringSprites[ringSprites.length - 1];
@@ -380,6 +386,9 @@
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     if (!(scale > 0)) return;
     const pixels = parseFloat(getComputedStyle(root).getPropertyValue('--wallpaper-tile-size')) || 220;
+    const key = `${scale}:${pixels}:${openingScaleFactor}`;
+    if (key === mainGeometryKey) return;
+    mainGeometryKey = key;
     for (const layer of layers) {
       // Also keep the native SVG fallback correct before canvas is ready.
       layer.node.style.setProperty('--layer-scale', layer.scale * openingScaleFactor);
@@ -489,7 +498,7 @@
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
       layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*layer.ringScale*inkRatio);
     }
-    for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
+    for (const mark of rain) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
     if (reset || logoProgress === undefined || reduced.matches) {
@@ -580,12 +589,6 @@
     if(!unsettled)layers.forEach(layer=>layer.scrollAngle=layer.scrollTarget=angle);
     scrollRotationPending=unsettled;
   }
-  const randomFrom = seed => () => {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
   const schedule = () => {
     if (!raf && !document.hidden) raf = requestAnimationFrame(render);
   };
@@ -645,7 +648,13 @@
     // Pin the CSS and canvas geometry to the same viewport before measuring.
     if (syncOpeningViewport(width, height)) layoutDirty = true;
     // All layout reads happen before the scroll frame's paints.
-    pageHeight = Math.max(scrollHeight(), height);
+    // Measure actual document content, excluding the absolute iOS paint layer.
+    // Otherwise its old height keeps scrollHeight too large after rotation or
+    // a shorter layout, leaving empty scroll space after the bottom banner.
+    const contentBottom = contentShell
+      ? contentShell.getBoundingClientRect().bottom + scrollPosition()
+      : scrollHeight();
+    pageHeight = Math.max(height, Math.ceil(contentBottom));
     if (documentSurfaceLayer) documentSurfaceLayer.style.height = `${pageHeight}px`;
     surfaceHeight = Math.ceil(Math.max(height, root.clientHeight,
       surfaceViewport.getBoundingClientRect().height,
@@ -706,23 +715,11 @@
     const key = `${width}:${Math.round(pageHeight)}:${portrait}:${rainSizeWidth.toFixed(1)}`;
     if (key === sceneKey) { rainWidth=width;rainHeight=height;cacheSpriteChoices(); return; }
     sceneKey = key;
-    const rand = randomFrom(88888888);
     const count = portrait ? 2222 : 8888;
-    // Preserve the seeded density, sizes, opacity and individual speeds.
+    // Preserve rain density, sizes, opacity and individual speeds.
     // Browser toolbar height changes do not rebuild this scene.
     if (!sceneViewportHeight || width !== lastWidth) sceneViewportHeight = height;
     const stableHeight = sceneViewportHeight;
-    particles = Array.from({length: count}, (_, i) => {
-      const fraction = i === 0 ? 0 : i === count - 1 ? 1 : rand() ** 2.6;
-      const w = rainSizeWidth * (.004 + .436 * fraction);
-      return {
-        x: rand() * (width + rainSizeWidth) - rainSizeWidth / 2 - w / 2,
-        y: rand() * (pageHeight + stableHeight) - stableHeight / 2,
-        width: w, height: w * 1368 / 922,
-        opacity: (.08 + rand() * .24) * .2206456,
-        speed: .16 + rand() * .56
-      };
-    });
     rainWidth=width;rainHeight=height;rainMaxWidth=rainSizeWidth;
     const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
     const poolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
@@ -739,7 +736,7 @@
       progress:initial?Math.random():0,sprite:spriteFor(width*bgRatio)};
   }
   function advanceRain(time,width,height) {
-    if(lastRainTime!==undefined && time-lastRainTime<1000/60-.5)return;
+    // Advance on the display's RAF cadence, including 120-Hz screens.
     const dt=lastRainTime===undefined?0:Math.min(.1,Math.max(0,(time-lastRainTime)/1000));
     lastRainTime=time;
     if(reduced.matches)return;
@@ -929,11 +926,7 @@
   document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;handoffSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
-  if ('ResizeObserver' in window) {
-    const observer = new ResizeObserver(() => {
-      if (scrollHeight() !== pageHeight) invalidate();
-    });
-    observer.observe(document.querySelector('.site-shell'));
-  }
+  if (contentShell && 'ResizeObserver' in window)
+    new ResizeObserver(invalidate).observe(contentShell);
   schedule();
 })();
