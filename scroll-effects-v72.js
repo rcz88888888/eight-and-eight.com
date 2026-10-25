@@ -11,6 +11,8 @@
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
   const openingLogo = document.querySelector('.hero-static-logo');
+  const openingStage = openingLogo?.closest('.logo-stage');
+  let lastHeroAngle;
   const bannerMask = document.querySelector('.banner-content-mask');
   const bannerFeed = document.querySelector('.banner-logo-feed');
   const feed = bannerFeed?.getContext('2d');
@@ -200,85 +202,9 @@
     }
     return 0;
   }
-  // A downward gesture at the rotating start first reassembles all nine
-  // logos. Keep document position at zero until that short phase completes.
-  const rejoinDuration = 800;
-  let rejoinSince, rejoinHero = 0, rejoinMain = 0;
-  function needsStartRejoin() {
-    return !reduced.matches && (idleMode==='running' || idleMode==='settling') &&
-      (Math.abs(shortestAngle(heroIdleAngle))>.000001 || heroSpeed>.000001 ||
-        layers.some(layer=>Math.abs(shortestAngle(layer.idleAngle))>.000001));
-  }
-  function beginStartRejoin(time) {
-    if(idleMode==='rejoining' || !needsStartRejoin())return false;
-    rejoinSince=time;
-    rejoinHero=shortestAngle(heroIdleAngle);rejoinMain=shortestAngle(mainIdleAngle);
-    layers.forEach(layer=>layer.rejoinAngle=shortestAngle(layer.idleAngle));
-    heroSpeed=0;handoffActive=false;handoffSince=undefined;idleSince=undefined;
-    idleMode='rejoining';idlePreviousScroll=0;
-    schedule();return true;
-  }
-  function advanceStartRejoin(time) {
-    const t=Math.min(1,Math.max(0,(time-rejoinSince)/rejoinDuration));
-    const remaining=1-smoothEnd(t);
-    heroIdleAngle=rejoinHero*remaining;mainIdleAngle=rejoinMain*remaining;
-    layers.forEach(layer=>layer.idleAngle=layer.rejoinAngle*remaining);
-    if(t===1){
-      heroIdleAngle=mainIdleAngle=heroSpeed=0;
-      layers.forEach(layer=>layer.idleAngle=0);
-      idleMode='waiting';idleSince=time;idlePreviousScroll=0;
-    }
-  }
-  const inLocalControl = target => target?.closest?.(
-    '.site-nav, input, textarea, select, [contenteditable="true"]');
-  function consumeStartScroll(downward,time) {
-    if(idleMode==='rejoining')advanceStartRejoin(time);
-    if(idleMode==='rejoining')return true;
-    return downward && scrollPosition()<=.5 && beginStartRejoin(time);
-  }
-  window.addEventListener('wheel',event=>{
-    if(event.ctrlKey || inLocalControl(event.target) || !event.cancelable)return;
-    if(consumeStartScroll(event.deltaY>0,performance.now()))event.preventDefault();
-  },{passive:false,capture:true});
-  let touchY, touchSuppressed=false, touchLocal=false;
-  window.addEventListener('touchstart',event=>{
-    touchY=event.touches.length===1?event.touches[0].clientY:undefined;
-    touchSuppressed=false;touchLocal=!!inLocalControl(event.target);
-  },{passive:true,capture:true});
-  window.addEventListener('touchmove',event=>{
-    if(event.touches.length!==1){touchY=undefined;touchSuppressed=false;return;}
-    const y=event.touches[0].clientY;
-    const delta=touchY===undefined?0:touchY-y;touchY=y;
-    if(touchLocal || !event.cancelable)return;
-    if(consumeStartScroll(delta>0,performance.now())){
-      event.preventDefault();touchSuppressed=true;
-    } else if(touchSuppressed){
-      // Once a touch gesture has been cancelled, iOS will not resume native
-      // scrolling mid-gesture. Apply only its subsequent deltas until release.
-      event.preventDefault();
-      window.scrollBy({top:delta,behavior:'auto'});
-    }
-  },{passive:false,capture:true});
-  for(const type of ['touchend','touchcancel'])window.addEventListener(type,()=>{
-    touchY=undefined;touchSuppressed=false;touchLocal=false;
-  },{passive:true,capture:true});
-  window.addEventListener('keydown',event=>{
-    if(inLocalControl(event.target) || event.target?.closest?.('a,button') ||
-      event.ctrlKey || event.altKey || event.metaKey)return;
-    const down=event.key==='ArrowDown' || event.key==='PageDown' ||
-      event.key==='End' || (event.key===' ' && !event.shiftKey);
-    const scrollKey=down || ['ArrowUp','PageUp','Home',' '].includes(event.key);
-    if(scrollKey && consumeStartScroll(down,performance.now()))event.preventDefault();
-  },{capture:true});
-  window.addEventListener('scroll',()=>{
-    // Covers scrollbar drags and non-cancellable momentum events. Explicit
-    // menu navigation retains its existing shared animation driver.
-    if(!frameDrivers.size && idlePreviousScroll<=.5 && scrollPosition()>.5)
-      beginStartRejoin(performance.now());
-    if(idleMode==='rejoining' && !frameDrivers.size && scrollPosition()!==0)
-      window.scrollTo({top:0,behavior:'auto'});
-    schedule();
-  },{passive:true});
+  // Native scrolling remains passive during the idle-to-scroll handoff.
+  // Existing rotational offsets blend out below without blocking the gesture
+  // or forcibly sending the document back to scroll position zero.
   function updateIdleRotation(time, scroll) {
     const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
     idleLastTime = time;
@@ -290,8 +216,6 @@
       handoffSince=undefined;handoffActive=false;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.idleAngle=0);
-    } else if(idleMode==='rejoining'){
-      advanceStartRejoin(time);
     } else if (!atTop || moved) {
       // Remove the idle offsets along each logo's shortest path. The
       // original scroll angle keeps updating underneath this 600ms handoff.
@@ -353,7 +277,11 @@
       const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
       layer.idleVisibility=idleRotationVisibility(elapsed);
     }
-    if(openingLogo)openingLogo.style.setProperty('--hero-idle-angle',`${shortestAngle(heroIdleAngle)}rad`);
+    const heroAngle = shortestAngle(heroIdleAngle);
+    if (openingLogo && heroAngle !== lastHeroAngle) {
+      openingLogo.style.setProperty('--hero-idle-angle', `${heroAngle}rad`);
+      lastHeroAngle = heroAngle;
+    }
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const ringSpriteFor = pixels => ringSprites.find(sprite => sprite.width >= pixels) || ringSprites[ringSprites.length - 1];
@@ -654,7 +582,13 @@
     surfaceHeight = Math.ceil(Math.max(height, root.clientHeight,
       surfaceViewport.getBoundingClientRect().height,
       (window.visualViewport?.height || 0) + (window.visualViewport?.offsetTop || 0)));
-    mainBox = main?.getBoundingClientRect();
+    if (main) {
+      const box = main.getBoundingClientRect();
+      // Toolbar motion changes the visible viewport, not the logo's rotation axis.
+      mainBox = {width: box.width, height: box.height,
+        left: (width - box.width) / 2,
+        top: (openingViewport.height - box.height) / 2};
+    }
     const about=document.querySelector('#about');
     const header=document.querySelector('.topbar');
     if(about && header){
@@ -685,7 +619,8 @@
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
-      const box = openingLogo.getBoundingClientRect();
+      // Measure the unrotated layout container, never a rotating SVG's bounds.
+      const box = openingStage.getBoundingClientRect();
       openingScaleFactor = openingMainScaleFactor();
       openingCenter = {x: box.left + box.width / 2,
         y: box.top + scrollPosition() + box.height / 2};
@@ -794,7 +729,7 @@
     const ringDiameter = mainRingWidth * scale;
     const cx = mainBox.left + mainBox.width / 2;
     const cy = mainBox.top + mainBox.height / 2;
-    const travel = (.5 - motionProgress) * Math.min(height, mainBox.height);
+    const travel = (.5 - motionProgress) * Math.min(openingViewport.height, mainBox.height);
     // All eight centers coincide with the opening emblem at scroll zero.
     // Fade this correction smoothly during the first quarter of the page,
     // retaining the established depth-dependent movement further down.
@@ -802,18 +737,18 @@
     const openingBlend = 1 - startPhase ** 3 * (startPhase * (startPhase * 6 - 15) + 10);
     const startX = openingCenter?.x ?? cx;
     const startY = openingCenter?.y ?? cy;
-    const openingTravel = .5 * Math.min(height, mainBox.height);
+    const openingTravel = .5 * Math.min(openingViewport.height, mainBox.height);
+    // One common centre for all eight logos and rings. Their angular fanning
+    // stays independent, but it cannot introduce a separate orbital translation.
+    const centerX = cx + (startX - cx) * openingBlend;
+    const centerY = cy + travel + (startY - cy - openingTravel) * openingBlend;
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
-      x: cx + (startX - cx) * openingBlend,
-      y: cy + travel * (layers[layers.length - 1]?.speed ?? 1) +
-        (startY - cy - openingTravel * (layers[layers.length - 1]?.speed ?? 1)) * openingBlend
+      x: centerX, y: centerY
     };
     for (const layer of layers) {
       ink.save();
-      const speed=layer.speed+(1-layer.speed)*scrollStackBlend;
-      ink.translate(cx + (startX - cx) * openingBlend,
-        cy + travel * speed + (startY - cy - openingTravel * speed) * openingBlend);
+      ink.translate(centerX, centerY);
       ink.rotate(layer.scrollAngle + layer.idleAngle);
       ink.scale(layer.scale, layer.scale);
       const opacity=mainLayerOpacity(layer,patternVisibility,fillVisibility);
@@ -857,9 +792,6 @@
     raf = 0;
     if (document.hidden) return;
     const controlledScroll=frameDrivers.size>0;
-    if(controlledScroll && idleMode==='rejoining'){
-      advanceStartRejoin(rejoinSince+rejoinDuration);idleSince=time;
-    }
     for(const driver of [...frameDrivers])driver(time);
     syncSurfacePosition(scrollPosition());
     const width = root.clientWidth;

@@ -23,17 +23,29 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Querformat
 
-- Startlogo: Breite von 0,5392 auf 0,8088 der stabilen Viewporthöhe; Höhe von 0,8 auf 1,2. Dies entspricht jeweils +50 %.
-- Die acht Hintergrund-Hauptlogos werden wie bisher aus der Größe des Startlogos abgeleitet und wachsen deshalb ebenfalls um 50 %. Ihre Punktringe folgen derselben gemeinsamen Skalierung.
-- Der Startbereich reserviert jetzt 1,5 Viewporthöhen plus 48 Pixel. Das lässt auch der Drehhülle des Startlogos Platz zwischen oberem Banner und erster Inhaltslinie. Bei kleinen Querformat-Displays ist dieser größere Bereich scrollbar.
+- Startlogo und alle acht Hauptlogos sind gegenüber der vorherigen Version um genau 18 % verkleinert: Breite 0,663216 statt 0,8088 und Höhe 0,984 statt 1,2 der stabilisierten Viewporthöhe. Die Punktringe folgen der gemeinsamen Skalierung.
+- Zwischen sichtbarer Logoform und oberem Banner bleiben 2,5 % der Fensterbreite frei, begrenzt auf 12–40 CSS-Pixel. Das entspricht dem Abstand von etwa 38 Pixeln im 1536 Pixel breiten Referenz-Screenshot.
+- Derselbe Abstand liegt zwischen sichtbarer Logoform und der nächsten Feldlinie. Der Startbereich wird dafür aus der sichtbaren Höhe der zentrierten Logoform und zweimal diesem Abstand berechnet. Transparente Ränder der SVG zählen nicht als Motivabstand.
 - Die Referenz für die Regenlogos und ihre bisherige Größenverteilung bleiben erhalten.
 - Die Tapetenkachel bleibt 220 CSS-Pixel groß; sie wächst beim Vergrößern der Logos nicht mit.
+- Die Hochformat-Regeln sind unverändert.
 
 ## Unterer Banner
 
 - Der Tapetenbanner ist das letzte Element des Seiteninhalts, ohne nachfolgenden Abstand und mit zusätzlicher Berücksichtigung des unteren Safe-Area-Inset.
 - Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
 - Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
+
+## Ruhigere Rotation und stabiler Mittelpunkt
+
+- Die sichtbare Logoform einschließlich der kleinen Punkte wurde in allen neun SVGs um ihren vollständigen Begrenzungsrahmen zentriert. Dadurch sitzt dieselbe Motivmitte auf der Drehachse des Startlogos und der acht Hauptlogos.
+- Alle acht Hauptlogos und ihre Punktringe verwenden nun denselben Mittelpunkt. Die bisherigen unterschiedlichen Rotationswinkel und Größen bleiben erhalten; die Ebenen erhalten keine voneinander abweichenden seitlichen oder vertikalen Umlaufbahnen mehr.
+- Der Mittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Die stabilisierte Viewporthöhe hält die Hintergrundachse bei Änderungen mobiler Browserleisten fest.
+- Der erste Scrollimpuls wird während der Startrotation nicht mehr für eine Rückstellpause blockiert und die Seite wird nicht mehr auf den Seitenanfang zurückgesetzt. Die vorhandene weiche Winkelübergabe übernimmt beim Scrollen.
+- Die acht weichen Lichtdurchläufe pro Foto bleiben erhalten. Feste Lichtmasken werden nun über CSS-Transformationen verschoben; gegenläufig verschobene Fototexturen bleiben pixelgenau auf dem Basisfoto liegen. Die Lichtmasken müssen dadurch beim Scrollen nicht ständig neu berechnet werden.
+- Die Tempostufen und Wartezeiten der Startsequenz, die aktuelle Querformat-Skalierung, die verlustfreien Fotodateien und der untere Banner bleiben erhalten.
+
+Prüfung dieser Korrektur: gemeinsame Canvas-Drehpunkte an sieben Scrollpositionen; neun ausgerichtete SVGs; identische Drehmitte im Hochformat 393 × 852, Querformat 896 × 414 und Desktopformat 1280 × 800; 24 weiterlaufende Lichtdurchläufe mit exaktem Rückwärtslauf; pixelgenaue Ausrichtung ihrer Fototexturen; keine Scrollblockade und kein erzwungener Rücksprung zum Seitenanfang. Ein direkter iPhone-Safari-Test steht weiter aus.
 
 ## Prüfung
 

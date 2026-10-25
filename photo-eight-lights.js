@@ -32,21 +32,24 @@
       layer.className = 'photo-area-reflection';
       layer.dataset.lightSource = source.name;
       layer.setAttribute('aria-hidden', 'true');
-      layer.style.backgroundImage = `url("${base.getAttribute('src')}")`;
+      const texture = document.createElement('span');
+      texture.className = 'photo-reflection-texture';
+      texture.style.backgroundImage = `url("${base.getAttribute('src')}")`;
+      layer.append(texture);
       // A feathered strip, not a visible light disc. The texture is fixed;
       // only this mask passes over it, as the previous left/centre/right light did.
       const mask = `linear-gradient(${source.angle}deg,
-        transparent calc(var(--light-position, -40%) - 28%),
-        rgba(0,0,0,.18) calc(var(--light-position, -40%) - 18%),
-        rgba(0,0,0,.68) calc(var(--light-position, -40%) - 8%),
-        #000 var(--light-position, -40%),
-        rgba(0,0,0,.68) calc(var(--light-position, -40%) + 8%),
-        rgba(0,0,0,.18) calc(var(--light-position, -40%) + 18%),
-        transparent calc(var(--light-position, -40%) + 28%))`;
+        transparent calc(50% - 28%),
+        rgba(0,0,0,.18) calc(50% - 18%),
+        rgba(0,0,0,.68) calc(50% - 8%),
+        #000 50%,
+        rgba(0,0,0,.68) calc(50% + 8%),
+        rgba(0,0,0,.18) calc(50% + 18%),
+        transparent calc(50% + 28%))`;
       layer.style.maskImage = mask;
       layer.style.webkitMaskImage = mask;
       frame.append(layer);
-      return {layer, source, index};
+      return {layer, texture, source, index};
     });
     return {frame, lights, top: 0, height: 0, progress: NaN, live: false};
   });
@@ -64,11 +67,15 @@
       const progress = clamp((state.scroll + state.height - item.top) /
         Math.max(1, state.height - headerHeight + item.height));
       if (progress === item.progress) continue;
-      for (const {layer, source} of item.lights) {
+      for (const {layer, texture, source} of item.lights) {
         // Eight staggered, continuous passes from left through centre to right.
         // A complete scroll moves every band into and out of the picture.
         const position = -40 + progress * 285 - source.delay;
-        layer.style.setProperty('--light-position', `${position.toFixed(4)}%`);
+        const shift = position - 50;
+        // Fixed raster masks are moved by the compositor. Counter-translate
+        // the texture so every photographed detail remains exactly stationary.
+        layer.style.transform = `translate3d(${shift.toFixed(4)}%, 0, 0)`;
+        texture.style.transform = `translate3d(${(-shift).toFixed(4)}%, 0, 0)`;
         layer.style.opacity = source.strength.toFixed(4);
       }
       item.progress = progress;

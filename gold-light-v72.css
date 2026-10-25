@@ -368,8 +368,8 @@ body > .site-shell { z-index: 3; }
     position: absolute;
     top: 50%;
     left: 50%;
-    width: calc(var(--opening-viewport-height) * .8088);
-    height: calc(var(--opening-viewport-height) * 1.2);
+    width: calc(var(--opening-viewport-height) * .663216);
+    height: calc(var(--opening-viewport-height) * .984);
     max-width: none;
     max-height: none;
     transform: translate(-50%, -50%);
@@ -382,8 +382,11 @@ body > .site-shell { z-index: 3; }
 /* v140: reserve the complete opening logo box plus a 24px About gap. */
 @media (orientation: landscape) {
   .content-scroll .logo-stage {
-    /* The enlarged rotating logo's diagonal fits between both panel edges. */
-    height: calc(var(--opening-viewport-height) * 1.5 + 48px);
+    /* Screenshot: about 38px clearance at 1536px width. Match the visible
+       artwork, rather than its transparent SVG margins, above and below. */
+    --landscape-logo-gap: clamp(12px, 2.5vw, 40px);
+    height: calc(var(--opening-viewport-height) * .7812959494 +
+      var(--landscape-logo-gap) + var(--landscape-logo-gap));
   }
 }
 /* Keep the portrait hamburger thickness in every orientation. */
@@ -583,7 +586,20 @@ body .gold-text-light {
   opacity: 0;
   pointer-events: none;
 }
-.photo-eight-lights[data-live] > .photo-area-reflection { will-change: mask-image; }
+.photo-area-reflection > .photo-reflection-texture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+.photo-eight-lights[data-live] > .photo-area-reflection,
+.photo-eight-lights[data-live] .photo-reflection-texture { will-change: transform; }
+.content-scroll .hero-static-logo.hero-wallpaper-logo {
+  will-change: transform;
+  backface-visibility: hidden;
+}
 @media (prefers-reduced-motion: reduce) {
   .photo-eight-lights > .photo-area-reflection { display: none; }
 }
