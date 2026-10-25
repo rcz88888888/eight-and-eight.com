@@ -15,8 +15,8 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 - Schachfoto ohne sichtbare Sonne, Strahlen, Sternreflexe oder polygonale Lens Flares; weiches Licht und Metallreflexionen.
 - Alle drei Fotos wurden mit dem integrierten Bildbearbeitungswerkzeug bearbeitet, mit acht außerhalb des Bildes liegenden diffusen Flächenlichtern als Vorgabe.
-- Acht getrennte digitale Reflexionsanteile pro Foto reagieren auf den Scrollfortschritt. Ihre Intensität ändert sich; die Fotomotive bleiben unbewegt.
-- Jede Reflexion verwendet die unveränderte Fototextur, eine breite weiche Lichtmaske und eine geringe Deckkraft. Keine weißen Kreise oder sichtbaren Lichtquellen im Bild.
+- Acht getrennte weiche Lichtverläufe pro Foto wandern beim Scrollen von links über die Mitte nach rechts. Jeder Verlauf hat eine eigene Richtung und einen versetzten Durchlauf. Beim Zurückscrollen laufen dieselben Lichtverläufe exakt rückwärts; die Fotomotive bleiben unbewegt.
+- Jede Reflexion verwendet die unveränderte Fototextur und eine mit dem Scrollfortschritt wandernde, breit gefiederte Lichtmaske. Keine weißen Kreise oder sichtbaren Lichtquellen im Bild.
 - Die drei neuen Fotos sind verlustfreie PNGs mit 1536 × 1024 Pixeln. Sie wurden nach der Bildbearbeitung weder verkleinert noch verlustbehaftet nachkomprimiert.
 - Bei reduzierter Bewegung bleiben die neu ausgeleuchteten Fotos statisch.
 - Nicht mehr benötigte alte Foto- und Beleuchtungsdateien sind entfernt.
@@ -37,7 +37,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Prüfung
 
-Geprüft: Darstellung in Chromium bei 896 × 414, 393 × 852 und 1280 × 800 CSS-Pixeln; acht Reflexionsanteile in jedem der drei Fotos; aktive scrollabhängige Intensitäten; PNG-Auflösung; Platz im Startbereich; Übereinstimmung von Bannerende und Dokumentende; lokale Dateiverweise; JavaScript-Syntax und ZIP-Integrität.
+Geprüft: Darstellung in Chromium bei 896 × 414, 393 × 852 und 1280 × 800 CSS-Pixeln; acht Reflexionsanteile in jedem der drei Fotos; acht scrollabhängig wandernde Lichtmasken, Rückwärtslauf und unveränderte Fotogeometrie; PNG-Auflösung; Platz im Startbereich; Übereinstimmung von Bannerende und Dokumentende; lokale Dateiverweise; JavaScript-Syntax und ZIP-Integrität.
 Ein Test auf einem echten iPhone mit Safari war nicht möglich. Die Vorschau enthält keine nativen Safari-Browserleisten.
 
 ## Bildbearbeitung – Originalprompts

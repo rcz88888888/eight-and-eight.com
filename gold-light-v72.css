@@ -569,7 +569,7 @@ body .gold-text-light {
   .content-scroll .photo-scroll-light > .photo-light-frame { display: none; }
 }
 
-/* All photographs share eight soft, off-camera area-light reflections. */
+/* Eight soft reflection bands pass across the photographs with scrolling. */
 .content-scroll .photo-eight-lights { isolation: isolate; }
 .photo-eight-lights > .photo-area-reflection {
   position: absolute;
@@ -583,7 +583,7 @@ body .gold-text-light {
   opacity: 0;
   pointer-events: none;
 }
-.photo-eight-lights[data-live] > .photo-area-reflection { will-change: opacity; }
+.photo-eight-lights[data-live] > .photo-area-reflection { will-change: mask-image; }
 @media (prefers-reduced-motion: reduce) {
   .photo-eight-lights > .photo-area-reflection { display: none; }
 }
