@@ -23,7 +23,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Querformat
 
-- Startlogo und alle acht Hauptlogos sind gegenüber der vorherigen Version um genau 18 % verkleinert: Breite 0,663216 statt 0,8088 und Höhe 0,984 statt 1,2 der stabilisierten Viewporthöhe. Die Punktringe folgen der gemeinsamen Skalierung.
+- Startlogo und alle acht Hauptlogos sind gegenüber der vorherigen Version um genau 18 % verkleinert: Breite 0,663216 statt 0,8088 und Höhe 0,984 statt 1,2 der stabilisierten Viewporthöhe. Alle acht Timecode-/Punktringe sind im Querformat zusätzlich um 100 % gegenüber der vorherigen Version vergrößert, also im Durchmesser verdoppelt. Die Logos behalten die um 18 % verkleinerte Größe. Die gemeinsame Drehmitte, Staffelung und Winkelbewegung der Ringe bleiben erhalten. Im Hochformat bleiben die Ringe unverändert.
 - Zwischen sichtbarer Logoform und oberem Banner bleiben 2,5 % der Fensterbreite frei, begrenzt auf 12–40 CSS-Pixel. Das entspricht dem Abstand von etwa 38 Pixeln im 1536 Pixel breiten Referenz-Screenshot.
 - Derselbe Abstand liegt zwischen sichtbarer Logoform und der nächsten Feldlinie. Der Startbereich wird dafür aus der sichtbaren Höhe der zentrierten Logoform und zweimal diesem Abstand berechnet. Transparente Ränder der SVG zählen nicht als Motivabstand.
 - Die Referenz für die Regenlogos und ihre bisherige Größenverteilung bleiben erhalten.

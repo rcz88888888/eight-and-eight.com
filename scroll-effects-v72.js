@@ -414,8 +414,9 @@
     // outside the largest logo's rotation envelope, with 1/64 logo-size clearance.
     // Keep the existing local ring fits, shared motion and logo sizes intact.
     const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
+    const ringEnlargement = matchMedia('(orientation: landscape)').matches ? 2 : 1;
     mainRingWidth = Math.max(originalRingWidth,
-      requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale));
+      requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale)) * ringEnlargement;
     for (const [index, layer] of layers.entries()) {
       const pixels=922*scale*layer.scale*inkRatio;
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
