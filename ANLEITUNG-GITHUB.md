@@ -1,93 +1,57 @@
-# Eight&Eight – Website mit Hintergrundringen
+# Eight&Eight – Website, acht diffuse Lichtquellen
 
-Diese ZIP enthält 35 Dateien einschließlich dieser Anleitung und CNAME.
-Ältere, nicht eingebundene Versionen und doppelte Bilddateien sind entfernt.
+Diese ZIP enthält 40 Dateien einschließlich dieser Anleitung und CNAME.
 
 ## Website hochladen
 
 1. ZIP entpacken.
-2. Den Inhalt von eight-and-eight.com-main in die Hauptebene des bestehenden
-   Website-Repositorys hochladen. index.html muss direkt neben CNAME liegen.
+2. Den Inhalt von eight-and-eight.com-main in die Hauptebene des bestehenden Website-Repositorys hochladen. index.html muss direkt neben CNAME liegen.
 3. Vorhandene Dateien ersetzen und die Änderung committen.
 
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
-## Feste Gestaltungsregeln
+## Fotos und Licht
 
-- Regen-Hintergrundlogos verwenden in jedem Modus die Größenreferenz des
-  Querformats. Dafür werden die längere und kürzere Viewportseite wie im
-  Querformat ausgewertet. Beim Wechsel zwischen Hoch- und Querformat
-  derselben Viewportabmessungen bleibt der Größenbereich identisch.
-  Die Referenz nutzt stabile kleine Viewporteinheiten, damit mobile
-  Browserleisten die Regengröße beim Scrollen nicht verändern.
-- Diese Regengrößen sind unabhängig von der Größe der Haupt-/Startlogos.
-  Zufällige Größenverteilung, Sichtbarkeit, Fallgeschwindigkeit und die
-  bisherige unterschiedliche Regenmenge je Ausrichtung bleiben erhalten.
+- Schachfoto ohne sichtbare Sonne, Strahlen, Sternreflexe oder polygonale Lens Flares; weiches Licht und Metallreflexionen.
+- Alle drei Fotos wurden mit dem integrierten Bildbearbeitungswerkzeug bearbeitet, mit acht außerhalb des Bildes liegenden diffusen Flächenlichtern als Vorgabe.
+- Acht getrennte digitale Reflexionsanteile pro Foto reagieren auf den Scrollfortschritt. Ihre Intensität ändert sich; die Fotomotive bleiben unbewegt.
+- Jede Reflexion verwendet die unveränderte Fototextur, eine breite weiche Lichtmaske und eine geringe Deckkraft. Keine weißen Kreise oder sichtbaren Lichtquellen im Bild.
+- Die drei neuen Fotos sind verlustfreie PNGs mit 1536 × 1024 Pixeln. Sie wurden nach der Bildbearbeitung weder verkleinert noch verlustbehaftet nachkomprimiert.
+- Bei reduzierter Bewegung bleiben die neu ausgeleuchteten Fotos statisch.
+- Nicht mehr benötigte alte Foto- und Beleuchtungsdateien sind entfernt.
 
-- Die Tapetenkachel ist überall 220 CSS-Pixel breit und hoch, entsprechend
-  dem bisherigen Smartphone-Hochformat. Diese Größe gilt unabhängig von
-  Gerät, Bildschirmbreite, Ausrichtung und Größe der jeweiligen Logoebene.
-- Startlogo, alle acht Hauptlogoebenen, oberer und unterer Banner sowie
-  die erweiterte Menüfläche verwenden dieselbe Mustergröße.
-- Die zentrale CSS-Variable --wallpaper-tile-size definiert diesen Wert.
-  SVG- und Canvas-Logos gleichen ihre jeweilige Zeichenskalierung aus,
-  damit das Muster beim Vergrößern einer Logoebene nicht mitwächst.
+## Querformat
 
-## Enthaltene Änderungen
+- Startlogo: Breite von 0,5392 auf 0,8088 der stabilen Viewporthöhe; Höhe von 0,8 auf 1,2. Dies entspricht jeweils +50 %.
+- Die acht Hintergrund-Hauptlogos werden wie bisher aus der Größe des Startlogos abgeleitet und wachsen deshalb ebenfalls um 50 %. Ihre Punktringe folgen derselben gemeinsamen Skalierung.
+- Der Startbereich reserviert jetzt 1,5 Viewporthöhen plus 48 Pixel. Das lässt auch der Drehhülle des Startlogos Platz zwischen oberem Banner und erster Inhaltslinie. Bei kleinen Querformat-Displays ist dieser größere Bereich scrollbar.
+- Die Referenz für die Regenlogos und ihre bisherige Größenverteilung bleiben erhalten.
+- Die Tapetenkachel bleibt 220 CSS-Pixel groß; sie wächst beim Vergrößern der Logos nicht mit.
 
-- Die Browser-Farbvorgabe, der HTML-/Body-Hintergrund und die eigentliche
-  Seitenfläche verwenden dasselbe Cremeweiß (#fdfcfa). Die Theme-Farbvorgabe
-  wird bei Layoutmessungen direkt mit --page-cream synchronisiert.
-  Die endgültige Darstellung der nativen Browserleisten steuert der Browser.
-- Vom ersten Scrollpunkt (About direkt unter dem Banner) bis zum zweiten
-  (Concept Architecture am bisherigen Screenshot-Endpunkt) sinkt der
-  zeitliche Abstand zwischen benachbarten Hintergrund-Hauptlogoebenen
-  linear von 0,08 auf 0,0008 Sekunden. Vorher bleibt er bei 0,08 Sekunden,
-  danach bei 0,0008 Sekunden. Die zusätzliche Nachlaufglättung und die
-  Rotationsgeschwindigkeitsunterschiede nehmen im selben Verlauf ab,
-  damit die sichtbare Fächerung tatsächlich enger wird.
+## Unterer Banner
 
-- Das Startlogo und die acht Hauptlogoebenen teilen eine feste
-  Viewporthöhen-Referenz. Auf Touchgeräten wird sie vor dem ersten Scrollen
-  festgehalten, damit ein-/ausfahrende Browserleisten in eingebetteten
-  Browsern (z. B. Messenger/WhatsApp) die Logos nicht nachträglich skalieren.
-- Beim Drehen bzw. tatsächlichen Ändern der Fensterbreite wird neu gemessen.
-  Auf Desktopgeräten funktioniert auch das Verändern der Fensterhöhe weiter.
-- Die Referenz gilt ebenfalls für die Regengrößen. Die sichtbare Canvasfläche
-  darf sich weiterhin an das Fenster anpassen, ohne die Logogrößen zu ändern.
+- Der Tapetenbanner ist das letzte Element des Seiteninhalts, ohne nachfolgenden Abstand und mit zusätzlicher Berücksichtigung des unteren Safe-Area-Inset.
+- Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
+- Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
 
-- Im Querformat entspricht die nächste Hintergrundebene der tatsächlichen
-  Größe des vordersten Startlogos. Alle weiteren sieben Ebenen behalten
-  ihre bisherige relative Größenstaffelung. Die Ringe folgen ihren Ebenen.
+## Prüfung
 
-- Das vorderste Startlogo sitzt auf Desktop und im Querformat mittig zwischen
-  Bannerkante und der ersten Textfeldlinie. Der Mittelpunkt folgt der Höhe
-  des Startbereichs; die Größe des vordersten Startlogos bleibt erhalten.
+Geprüft: Darstellung in Chromium bei 896 × 414, 393 × 852 und 1280 × 800 CSS-Pixeln; acht Reflexionsanteile in jedem der drei Fotos; aktive scrollabhängige Intensitäten; PNG-Auflösung; Platz im Startbereich; Übereinstimmung von Bannerende und Dokumentende; lokale Dateiverweise; JavaScript-Syntax und ZIP-Integrität.
+Ein Test auf einem echten iPhone mit Safari war nicht möglich. Die Vorschau enthält keine nativen Safari-Browserleisten.
 
-- Der Ring des vordersten Startlogos ist ausgeblendet.
-- Die acht schwächeren Hauptlogoebenen behalten ihre sandgoldenen Punktringe
-  auch beim Herunterscrollen im Hintergrund.
-- Alle acht Hauptlogo-Ebenen tragen denselben Punktering mit ihrer jeweiligen
-  Größe, Sichtbarkeit, Rotation und Staffelung. Die Ringbilder werden gemeinsam
-  zwischengespeichert und ohne zusätzliche Animationsschleife gezeichnet.
-- Der Ring besteht nur aus Punkten; beide durchgehenden Randlinien sind entfernt.
-- Der kleinste Abstand zu den Punkten entspricht einem Sechzehntel der Logogröße.
-- Gleichmäßige Punktabstände und transparente Zwischenräume bleiben erhalten.
-- Neue Tempofolge mit 8/33/45 rpm, linearer Beschleunigung in den letzten
-  1,8 Sekunden auf 888 rpm, anschließendem Abbremsen bis zum Stillstand,
-  Stoppphasen und sieben einzelnen Umdrehungen bei 8 rpm.
+## Bildbearbeitung – Originalprompts
 
-Die Positionierung im Hochformat bleibt erhalten.
-Aktuelle Prüfung: JavaScript-Syntax, identische Regengrößen bei vertauschten
-Viewportseiten und Abgleich mit den bisherigen Querformatgrößen, Skalierungsberechnungen für fünf
-Desktop-/Quer-/Hochformate, konstante Mustergröße aller neun Logos,
-Texturzuordnung, Cache-Wiederverwendung, Schutz gegen veraltete Ladevorgänge
-nach Größenänderungen, Dateiverweise und ZIP-Integrität.
-Die automatische Startsequenz ist unverändert. Der Scroll-Nachlauf wurde
-wie oben beschrieben angepasst. Zusätzlich geprüft: Browser-/Seitenfarbe,
-Fächerzeit an beiden Scrollpunkten, Zwischenwerte, Rückwärtsscrollen und
-Nachlauf nach dem Scrollende.
-Ein Live-Browsertest bzw. Test direkt in Messenger/WhatsApp war in dieser
-Umgebung nicht verfügbar. Die Schutzlogik wurde mit simulierten Browserleisten-,
-Initialisierungs-, Dreh- und Desktop-Größenänderungen geprüft.
+Verwendet wurde das integrierte Bildbearbeitungswerkzeug, nicht ein nachträglicher Python-Bildfilter. Nachstehend stehen die vollständigen Bildbearbeitungsaufträge.
+
+### partnership-strategy-chess-eight-lights.png
+
+Use case: lighting-weather. Edit target: the brass and silver chessboard photograph. REMOVE the visible upper-left sun/glowing hotspot, all sun rays, lens flare polygon chain, starburst sparkles and sun discs. Replace that background with a calm softly blurred warm neutral studio backdrop. Keep the exact chess-piece arrangement, foreground knight, all board geometry, framing, camera angle, materials and scratches. Create a final premium photorealistic website photo, full 1536x1024 resolution, retain microscopic realistic texture and depth. Relight with exactly EIGHT separate large diffused area lights outside the camera view: upper-left soft key, upper-right soft fill, left broad strip, right broad strip, overhead diffusion, back-left rim, back-right rim, low front soft bounce. All eight contribute soft subtle broad material reflections. Warm PALE CHAMPAGNE GOLD and warm platinum, restrained exposure, natural contrast. Light sources themselves completely invisible. Only diffuse illumination and soft realistic reflections in the existing metal. NO sun, NO light disc, NO visible lamp, NO starburst, NO beams, NO flare circles/polygons, NO added objects, NO text. Keep subject fixed, precise composition and detailed photographic realism. This is the actual single photo asset, not a collage or a website mockup.
+
+### concept-clockwork-eight-lights.png
+
+Use case: lighting-weather. Edit target: the mechanical watch movement photograph. Keep every gear, bridge, screw, ruby, hairspring, crop and camera angle unchanged; no mechanical motion. Create a final premium photorealistic website photo, full 1536x1024 resolution, retain microscopic realistic texture and depth. Relight with exactly EIGHT separate large diffused area lights outside the camera view: upper-left soft key, upper-right soft fill, left broad strip, right broad strip, overhead diffusion, back-left rim, back-right rim, low front soft bounce. All eight contribute soft subtle broad material reflections. Warm PALE CHAMPAGNE GOLD and warm platinum, restrained exposure, natural contrast. Light sources themselves completely invisible. Only diffuse illumination and soft realistic reflections in the existing metal. NO sun, NO light disc, NO visible lamp, NO starburst, NO beams, NO flare circles/polygons, NO added objects, NO text. Keep subject fixed, precise composition and detailed photographic realism. This is the actual single photo asset, not a collage or a website mockup.
+
+### contact-gold-eight-lights.png
+
+Use case: lighting-weather. Edit target: the solid gold Eight and Eight emblem lying on sand. Preserve the exact emblem geometry, all small gold discs, their number and positions, the sand texture, framing and camera angle. Do not change or add any part of the logo. Create a final premium photorealistic website photo, full 1536x1024 resolution, retain microscopic realistic texture and depth. Relight with exactly EIGHT separate large diffused area lights outside the camera view: upper-left soft key, upper-right soft fill, left broad strip, right broad strip, overhead diffusion, back-left rim, back-right rim, low front soft bounce. All eight contribute soft subtle broad material reflections. Warm PALE CHAMPAGNE GOLD and warm platinum, restrained exposure, natural contrast. Light sources themselves completely invisible. Only diffuse illumination and soft realistic reflections in the existing metal. NO sun, NO light disc, NO visible lamp, NO starburst, NO beams, NO flare circles/polygons, NO added objects, NO text. Keep subject fixed, precise composition and detailed photographic realism. This is the actual single photo asset, not a collage or a website mockup.

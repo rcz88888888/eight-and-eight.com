@@ -368,8 +368,8 @@ body > .site-shell { z-index: 3; }
     position: absolute;
     top: 50%;
     left: 50%;
-    width: calc(var(--opening-viewport-height) * .5392);
-    height: calc(var(--opening-viewport-height) * .8);
+    width: calc(var(--opening-viewport-height) * .8088);
+    height: calc(var(--opening-viewport-height) * 1.2);
     max-width: none;
     max-height: none;
     transform: translate(-50%, -50%);
@@ -381,7 +381,10 @@ body > .site-shell { z-index: 3; }
 
 /* v140: reserve the complete opening logo box plus a 24px About gap. */
 @media (orientation: landscape) {
-  .content-scroll .logo-stage { height: calc(var(--opening-viewport-height) * .77 + 24px); }
+  .content-scroll .logo-stage {
+    /* The enlarged rotating logo's diagonal fits between both panel edges. */
+    height: calc(var(--opening-viewport-height) * 1.5 + 48px);
+  }
 }
 /* Keep the portrait hamburger thickness in every orientation. */
 body .topbar .menu-toggle > span {
@@ -505,6 +508,8 @@ html.ios-document-animation .ios-animation-document-layer > canvas {
   overflow: clip;
   pointer-events: none;
   z-index: 1;
+  /* Viewport-following canvases must not add scroll space after the footer. */
+  contain: strict;
 }
 
 /* Text stays opaque and sharp; only the background outside its glyphs blurs. */
@@ -562,4 +567,32 @@ body .gold-text-light {
 .photo-scroll-light[data-live] > .photo-light-frame { will-change: opacity; }
 @media (prefers-reduced-motion: reduce) {
   .content-scroll .photo-scroll-light > .photo-light-frame { display: none; }
+}
+
+/* All photographs share eight soft, off-camera area-light reflections. */
+.content-scroll .photo-eight-lights { isolation: isolate; }
+.photo-eight-lights > .photo-area-reflection {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.photo-eight-lights[data-live] > .photo-area-reflection { will-change: opacity; }
+@media (prefers-reduced-motion: reduce) {
+  .photo-eight-lights > .photo-area-reflection { display: none; }
+}
+
+/* The final wallpaper band is the document's last painted content. */
+.site-shell, .content-scroll { padding-bottom: 0; margin-bottom: 0; }
+.content-scroll > .wallpaper-end {
+  display: block;
+  margin: 0;
+  height: calc(220px + env(safe-area-inset-bottom, 0px));
+  border-bottom: 0 !important;
 }

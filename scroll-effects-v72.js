@@ -2,7 +2,11 @@
   'use strict';
   const root = document.documentElement;
   const scrollPosition = () => window.scrollY;
-  const scrollHeight = () => (document.scrollingElement || root).scrollHeight;
+  const contentShell = document.querySelector('.site-shell');
+  // Measure actual content, never the animation layer which follows the viewport.
+  const scrollHeight = () => contentShell
+    ? Math.max(root.clientHeight, contentShell.offsetTop + contentShell.offsetHeight)
+    : (document.scrollingElement || root).scrollHeight;
   const background = document.querySelector('.background-layers');
   const logos = document.querySelector('.main-logo-canvas');
   const main = document.querySelector('.parallax-logo');
