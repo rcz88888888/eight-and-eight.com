@@ -133,7 +133,7 @@
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
   const startRotationStagger = .18;
-  let spinCursor = 0, spinTotalTurns = 0;
+  let spinCursor = 0, spinTotalTurns = 0, spinCycleAngle = 0;
   const spinSegments=[], spinMotionWindows=[];
   function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth') {
     const from=fromRpm/60, to=toRpm/60;
@@ -152,20 +152,8 @@
   appendSpin(spinStageDuration-spinTransitionDuration-1.8,45);
   // The final 1.8 seconds of the 45-rpm stage accelerate linearly.
   appendSpin(1.8,45,888,'linear');
-  const stopSegment=appendSpin(spinTransitionDuration,888,0,'stop');
-  // Keep the 2.8s stop monotonic, but shape its easing so the logo ends
-  // on a whole turn. No angle correction or extra rotation after stopping.
-  const stoppedTurns=Math.ceil(spinTotalTurns);
-  const stopTurns=stoppedTurns-stopSegment.turns;
-  const stopArea=q=>1-10/(3*q+1)+15/(4*q+1)-6/(5*q+1);
-  let stopLow=1,stopHigh=16;
-  for(let i=0;i<60;i++){
-    const q=(stopLow+stopHigh)/2;
-    if(stopArea(q)*stopSegment.from*stopSegment.duration<stopTurns)stopLow=q;
-    else stopHigh=q;
-  }
-  const stopPower=(stopLow+stopHigh)/2;
-  spinTotalTurns=stoppedTurns;
+  // The 1.8-second rise is followed immediately by a frozen orientation.
+  // There is no extra braking segment or angle snap to a whole revolution.
   spinMotionWindows.push({start:0,end:spinCursor});
   appendSpin(8,0);
   // One revolution at 8 rpm is exactly 7.5 seconds. Each is followed by
@@ -177,15 +165,11 @@
   }
   const spinDuration=spinCursor;
   function spinPhase(seconds) {
-    if(seconds<=0 || seconds>=spinDuration)return 0;
+    if(seconds<=0)return 0;
+    if(seconds>=spinDuration)return TAU*spinTotalTurns;
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      if(segment===stopSegment){
-        const q=stopPower;
-        const integral=x-10*x**(3*q+1)/(3*q+1)+15*x**(4*q+1)/(4*q+1)-6*x**(5*q+1)/(5*q+1);
-        return TAU*(segment.turns+segment.duration*segment.from*integral);
-      }
       return TAU*(segment.turns+segment.duration*(segment.from*x+
         (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x))));
     }
@@ -196,7 +180,6 @@
     for(const segment of spinSegments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
-      if(segment===stopSegment)return TAU*segment.from*(1-smoothEnd(x**stopPower));
       return TAU*(segment.from+(segment.to-segment.from)*
         (segment.curve==='linear'?x:smoothEnd(x)));
     }
@@ -214,6 +197,7 @@
     if (reduced.matches) {
       idleMode='waiting';idleSince=time;
       handoffSince=undefined;handoffActive=false;
+      spinCycleAngle=0;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.idleAngle=0);
     } else if (!atTop || moved) {
@@ -249,7 +233,7 @@
         heroIdleAngle=settleHero*envelope+wobble;
         mainIdleAngle=settleMain*envelope;
         layers.forEach(layer=>layer.idleAngle=layer.settleAngle*envelope);
-        if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
+        if(t===1){spinCycleAngle=0;heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
       if(idleMode==='waiting') {
         // The shared eight-second pause begins after the delayed scroll
@@ -261,14 +245,15 @@
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
-        mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
+        mainIdleAngle=heroIdleAngle=spinCycleAngle+spinPhase(elapsed);
         // Start-only 0.18s stagger; scroll fanning follows its separate scroll interval.
-        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
+        layers.forEach(layer=>layer.idleAngle=spinCycleAngle+spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
         const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
         if(elapsed>=lastFinish){
           // Begin the shared pause only once all nine logos have arrived.
-          mainIdleAngle=heroIdleAngle=heroSpeed=0;
-          layers.forEach(layer=>layer.idleAngle=0);
+          spinCycleAngle=shortestAngle(spinCycleAngle+TAU*spinTotalTurns);
+          mainIdleAngle=heroIdleAngle=spinCycleAngle;heroSpeed=0;
+          layers.forEach(layer=>layer.idleAngle=spinCycleAngle);
           idleMode='waiting';idleSince=time-8000;
         }
       }

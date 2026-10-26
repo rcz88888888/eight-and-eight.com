@@ -36,6 +36,13 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
 - Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
 
+## Schlussphase der Startanimation
+
+- Die Schlussphase dauert insgesamt 1,8 Sekunden: lineare Beschleunigung von 45 auf 888 rpm, unmittelbar danach Stop.
+- Die bisher zusätzlich anschließende 2,8-Sekunden-Abbremsphase ist entfernt.
+- Beim Stop bleibt die exakt erreichte Winkelposition stehen. Es gibt keinen Sprung auf eine volle Umdrehung. Diese Position wird auch über die nachfolgenden Pausen und Wiederholungen hinweg fortgeführt.
+- Die anschließende Pause, die sieben einzelnen Umdrehungen bei 8 rpm und die Staffelung der Hintergrundebenen bleiben erhalten.
+
 ## Ruhigere Rotation und stabiler Mittelpunkt
 
 - Die sichtbare Logoform einschließlich der kleinen Punkte wurde in allen neun SVGs um ihren vollständigen Begrenzungsrahmen zentriert. Dadurch sitzt dieselbe Motivmitte auf der Drehachse des Startlogos und der acht Hauptlogos.
