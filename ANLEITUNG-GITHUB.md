@@ -1,6 +1,11 @@
 # Eight&Eight – Aufrechte Stopps und gemeinsame Drehmitte
 
-Diese ZIP enthält 39 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Weitere Referenzen
+
+- Warner Music Group und Vodafone sind unter Work / Customers & Cooperators ergänzt. Das Raster enthält jetzt 16 Referenzlogos.
+- Beide Logos verwenden die hochgeladenen Originalmotive und Originalfarben. Beim Warner-PNG wurden ausschließlich transparente Außenränder verlustfrei entfernt. Das Vodafone-Logo bleibt eine Vektordatei; dessen Zeichenfläche ist im Seitenverhältnis des vorhandenen viewBox angegeben.
 
 ## Website hochladen
 
