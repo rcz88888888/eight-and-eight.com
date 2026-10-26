@@ -454,6 +454,12 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
 .concept-photo {
   margin: clamp(28px, 4vw, 45px) 0;
   padding: 0;
+  --photo-radius: clamp(12px, 2vw, 20px);
+  border-radius: var(--photo-radius);
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-clip-path: inset(0 round var(--photo-radius));
+  clip-path: inset(0 round var(--photo-radius));
 }
 .content-scroll .concept-photo img {
   display: block;
@@ -463,7 +469,7 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
   height: auto;
   aspect-ratio: 3 / 2;
   object-fit: cover;
-  border-radius: clamp(12px, 2vw, 20px);
+  border-radius: var(--photo-radius);
 }
 
 /* Keep animation pixels behind Safari's translucent bottom browser controls. */
@@ -538,70 +544,10 @@ body .gold-text-light {
   mask-size: 100% 100%;
 }
 
-/* Directional photo lighting stays below the existing banner content mask. */
-.content-scroll .photo-scroll-light {
-  position: relative;
-  z-index: 1;
-  display: block;
-  overflow: hidden;
-  border-radius: clamp(12px, 2vw, 20px);
-}
-.content-scroll .photo-scroll-light > .photo-light-base {
-  position: relative;
-  display: block;
-  z-index: 0;
-  width: 100%;
-  height: auto;
-  border-radius: 0;
-}
-.content-scroll .photo-scroll-light > .photo-light-frame {
-  display: block;
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  object-fit: cover;
-  opacity: 0;
-  pointer-events: none;
-}
-.content-scroll .photo-scroll-light > .photo-light-right { z-index: 2; }
-.photo-scroll-light[data-live] > .photo-light-frame { will-change: opacity; }
-@media (prefers-reduced-motion: reduce) {
-  .content-scroll .photo-scroll-light > .photo-light-frame { display: none; }
-}
-
-/* Eight soft reflection bands pass across the photographs with scrolling. */
-.content-scroll .photo-eight-lights { isolation: isolate; }
-.photo-eight-lights > .photo-area-reflection {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: block;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  mix-blend-mode: screen;
-  opacity: 0;
-  pointer-events: none;
-}
-.photo-area-reflection > .photo-reflection-texture {
-  position: absolute;
-  inset: 0;
-  display: block;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-.photo-eight-lights[data-live] > .photo-area-reflection,
-.photo-eight-lights[data-live] .photo-reflection-texture { will-change: transform; }
+/* Keep the rotating logo on its compositor layer. */
 .content-scroll .hero-static-logo.hero-wallpaper-logo {
   will-change: transform;
   backface-visibility: hidden;
-}
-@media (prefers-reduced-motion: reduce) {
-  .photo-eight-lights > .photo-area-reflection { display: none; }
 }
 
 /* The final wallpaper band is the document's last painted content. */

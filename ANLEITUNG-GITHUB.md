@@ -1,6 +1,6 @@
-# Eight&Eight – Website, acht diffuse Lichtquellen
+# Eight&Eight – Runde Fotoecken und sieben Innenringe
 
-Diese ZIP enthält 40 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 39 Dateien einschließlich dieser Anleitung und CNAME.
 
 ## Website hochladen
 
@@ -11,15 +11,13 @@ Diese ZIP enthält 40 Dateien einschließlich dieser Anleitung und CNAME.
 Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
 Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
-## Fotos und Licht
+## Fotos ohne zusätzliche Lichtüberlagerungen
 
-- Schachfoto ohne sichtbare Sonne, Strahlen, Sternreflexe oder polygonale Lens Flares; weiches Licht und Metallreflexionen.
-- Alle drei Fotos wurden mit dem integrierten Bildbearbeitungswerkzeug bearbeitet, mit acht außerhalb des Bildes liegenden diffusen Flächenlichtern als Vorgabe.
-- Acht getrennte weiche Lichtverläufe pro Foto wandern beim Scrollen von links über die Mitte nach rechts. Jeder Verlauf hat eine eigene Richtung und einen versetzten Durchlauf. Beim Zurückscrollen laufen dieselben Lichtverläufe exakt rückwärts; die Fotomotive bleiben unbewegt.
-- Jede Reflexion verwendet die unveränderte Fototextur und eine mit dem Scrollfortschritt wandernde, breit gefiederte Lichtmaske. Keine weißen Kreise oder sichtbaren Lichtquellen im Bild.
-- Die drei neuen Fotos sind verlustfreie PNGs mit 1536 × 1024 Pixeln. Sie wurden nach der Bildbearbeitung weder verkleinert noch verlustbehaftet nachkomprimiert.
-- Bei reduzierter Bewegung bleiben die neu ausgeleuchteten Fotos statisch.
-- Nicht mehr benötigte alte Foto- und Beleuchtungsdateien sind entfernt.
+- Alle zusätzlichen Foto-Lichtverläufe und Reflexionsüberlagerungen sind entfernt. Die Fotos bleiben beim Scrollen statisch.
+- Das bisherige Foto-Lichtskript, seine Einbindung und die dazugehörigen CSS-Ebenen sind aus dem Paket entfernt.
+- Die vorhandene natürliche Beleuchtung in den Fotodateien bleibt erhalten. Die Fotos selbst wurden nicht verändert, verkleinert oder nachkomprimiert.
+- Die drei Fotos sind weiterhin verlustfreie PNGs mit 1536 × 1024 Pixeln.
+- Alle vier Ecken jedes Fotos sind identisch rund und zusätzlich durch eine runde Schnittkante gesichert.
 
 ## Querformat
 
@@ -36,6 +34,14 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
 - Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
 
+## Runde Fotoecken und sieben Innenringe
+
+- Alle drei Fotos werden an einer einheitlichen runden Schnittkante begrenzt. Die Rundung gilt für die Fotodatei selbst und für sämtliche darüberliegenden Darstellungsebenen. Es gibt keine abweichenden rechteckigen Fotoecken.
+- Sieben zusätzliche Timecode-Ringbänder setzen die vorhandenen Ringe nach innen fort. Ihre radialen Grenzen folgen dem Kehrwert der Größenstaffelung der sieben weiteren Hauptlogos.
+- Die Sichtbarkeiten werden von denselben sieben Hauptlogoebenen übernommen und nehmen nach innen ab. Drehwinkel und zeitliche Staffelung folgen diesen Ebenen; der Mittelpunkt bleibt gemeinsam.
+- Die vier Punktreihen jedes neuen Ringbandes reichen bis zu den gemeinsamen radialen Grenzen. Eine kleine Überlappung verhindert freie Zwischenringe. Kreispunkte bleiben rund.
+- Die Ringtexturen werden nur bei relevanten Größenänderungen zwischengespeichert. Es gibt keine zusätzliche Animationsschleife und keine sieben zusätzlichen Hauptlogos.
+
 ## Schlussphase der Startanimation
 
 - Die Schlussphase dauert insgesamt 1,8 Sekunden: lineare Beschleunigung von 45 auf 888 rpm, unmittelbar danach Stop.
@@ -49,19 +55,19 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Alle acht Hauptlogos und ihre Punktringe verwenden nun denselben Mittelpunkt. Die bisherigen unterschiedlichen Rotationswinkel und Größen bleiben erhalten; die Ebenen erhalten keine voneinander abweichenden seitlichen oder vertikalen Umlaufbahnen mehr.
 - Der Mittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Die stabilisierte Viewporthöhe hält die Hintergrundachse bei Änderungen mobiler Browserleisten fest.
 - Der erste Scrollimpuls wird während der Startrotation nicht mehr für eine Rückstellpause blockiert und die Seite wird nicht mehr auf den Seitenanfang zurückgesetzt. Die vorhandene weiche Winkelübergabe übernimmt beim Scrollen.
-- Die acht weichen Lichtdurchläufe pro Foto bleiben erhalten. Feste Lichtmasken werden nun über CSS-Transformationen verschoben; gegenläufig verschobene Fototexturen bleiben pixelgenau auf dem Basisfoto liegen. Die Lichtmasken müssen dadurch beim Scrollen nicht ständig neu berechnet werden.
+- Die zusätzlichen Foto-Lichtüberlagerungen sind anschließend auf Wunsch vollständig entfernt worden.
 - Die Tempostufen und Wartezeiten der Startsequenz, die aktuelle Querformat-Skalierung, die verlustfreien Fotodateien und der untere Banner bleiben erhalten.
 
-Prüfung dieser Korrektur: gemeinsame Canvas-Drehpunkte an sieben Scrollpositionen; neun ausgerichtete SVGs; identische Drehmitte im Hochformat 393 × 852, Querformat 896 × 414 und Desktopformat 1280 × 800; 24 weiterlaufende Lichtdurchläufe mit exaktem Rückwärtslauf; pixelgenaue Ausrichtung ihrer Fototexturen; keine Scrollblockade und kein erzwungener Rücksprung zum Seitenanfang. Ein direkter iPhone-Safari-Test steht weiter aus.
+Prüfung der Rotationskorrektur: gemeinsame Canvas-Drehpunkte an sieben Scrollpositionen, neun ausgerichtete SVGs, identische Drehmitte im Hoch- und Querformat sowie im Desktopformat, keine Scrollblockade und kein erzwungener Rücksprung zum Seitenanfang. Die Foto-Lichtüberlagerungen wurden später vollständig entfernt. Ein direkter iPhone-Safari-Test steht weiter aus.
 
 ## Prüfung
 
-Geprüft: Darstellung in Chromium bei 896 × 414, 393 × 852 und 1280 × 800 CSS-Pixeln; acht Reflexionsanteile in jedem der drei Fotos; acht scrollabhängig wandernde Lichtmasken, Rückwärtslauf und unveränderte Fotogeometrie; PNG-Auflösung; Platz im Startbereich; Übereinstimmung von Bannerende und Dokumentende; lokale Dateiverweise; JavaScript-Syntax und ZIP-Integrität.
+Geprüft: sieben neue Innenringbänder, fallende inverse Größen und zugehörige Sichtbarkeiten, radiale Anschlüsse ohne freie Zwischenringe, Textur-Cache ohne erneute Berechnung pro Animationsbild, einheitliche Rundung aller Fotos, Entfernen sämtlicher zusätzlicher Foto-Lichtebenen, unveränderte Bilddateien, lokale Dateiverweise, JavaScript-Syntax und ZIP-Integrität. Die erste Fassung wurde vor der anschließenden Entfernung der Foto-Lichter in der Vorschau mit aktiven Lichtverläufen geprüft.
 Ein Test auf einem echten iPhone mit Safari war nicht möglich. Die Vorschau enthält keine nativen Safari-Browserleisten.
 
-## Bildbearbeitung – Originalprompts
+## Bildbearbeitung – historische Originalprompts
 
-Verwendet wurde das integrierte Bildbearbeitungswerkzeug, nicht ein nachträglicher Python-Bildfilter. Nachstehend stehen die vollständigen Bildbearbeitungsaufträge.
+Diese Prompts dokumentieren die frühere Erstellung der unverändert verwendeten Fotodateien. Die zusätzliche scrollgesteuerte Foto-Beleuchtung ist inzwischen entfernt. Verwendet wurde das integrierte Bildbearbeitungswerkzeug.
 
 ### partnership-strategy-chess-eight-lights.png
 

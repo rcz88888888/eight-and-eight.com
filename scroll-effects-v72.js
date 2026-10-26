@@ -66,6 +66,53 @@
     const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
     layer.ringScale = Math.max(1, ringScale / layer.scale);
   }
+  // Mirror the seven size/opacity steps inward from the existing nearest ring.
+  // The inverse logo scales define shared radial boundaries. Each new dotted
+  // band fills the interval to the preceding boundary, avoiding empty seams.
+  const ringRows = [
+    {count: 171, radius: 563, dot: 3.35, phase: 0},
+    {count: 177, radius: 572, dot: 3.35, phase: .5},
+    {count: 182, radius: 581, dot: 3.85, phase: 0},
+    {count: 188, radius: 590, dot: 3.15, phase: .5}
+  ];
+  const frontRingLayer = innerRingOrder[0];
+  const inwardStart = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
+  let inwardBoundary = inwardStart;
+  const innerRings = innerRingOrder.slice(1, 8).map(source => {
+    const innerRatio = inwardStart * frontRingLayer.scale / source.scale;
+    const outerRatio = inwardBoundary + frontRingLayer.scale * ringEdgeOverlap / 1280;
+    inwardBoundary = innerRatio;
+    return {source, innerRatio, outerRatio,
+      diameterFactor: 2 * outerRatio * 640 / ringOuterRadius,
+      sprite: null, size: 0};
+  });
+  function cacheInnerRingSprites(diameter, ratio) {
+    for (const ring of innerRings) {
+      const size = Math.max(32, Math.min(2048, Math.ceil(diameter * ring.diameterFactor * ratio)));
+      if (ring.sprite && ring.size === size) continue;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const context = canvas.getContext('2d');
+      const unit = size / (ring.diameterFactor);
+      context.setTransform(unit, 0, 0, unit, size / 2, size / 2);
+      context.fillStyle = '#c2b594';
+      const radialScale = (ring.outerRatio - ring.innerRatio) / (ringOuterRadius - ringInnerRadius);
+      for (const row of ringRows) {
+        const radius = ring.innerRatio + (row.radius - ringInnerRadius) * radialScale;
+        const dot = row.dot * radialScale;
+        context.beginPath();
+        for (let point = 0; point < row.count; point++) {
+          const angle = (point + row.phase) * Math.PI * 2 / row.count;
+          const x = Math.sin(angle) * radius, y = -Math.cos(angle) * radius;
+          context.moveTo(x + dot, y);
+          context.arc(x, y, dot, 0, Math.PI * 2);
+        }
+        context.fill();
+      }
+      ring.sprite = canvas; ring.size = size;
+    }
+    if (logos) logos.dataset.innerRingCount = String(innerRings.length);
+  }
   let raf = 0;
   let layoutDirty = true;
   let viewportDirty = true;
@@ -407,6 +454,7 @@
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSpriteFor(pixels);layer.solidSprite=mainSolidSpriteFor(pixels);
       layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*layer.ringScale*inkRatio);
     }
+    cacheInnerRingSprites(mainRingWidth * scale, inkRatio);
     for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
@@ -754,6 +802,16 @@
         const diameter = ringDiameter * layer.ringScale;
         ink.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
       }
+      ink.restore();
+    }
+    for (const ring of innerRings) {
+      if (!ring.sprite || !(ringDiameter > 0)) continue;
+      const diameter = ringDiameter * ring.diameterFactor;
+      ink.save();
+      ink.translate(centerX, centerY);
+      ink.rotate(ring.source.scrollAngle + ring.source.idleAngle);
+      ink.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
+      ink.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
       ink.restore();
     }
     if (!root.classList.contains('canvas-logos-ready')) {
