@@ -176,17 +176,18 @@
   let handoffSince, handoffMain = 0, handoffActive = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
+  const smoothDerivative = x => 30*x*x*(1-x)*(1-x);
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
   const startRotationStagger = .18;
-  let spinCursor = 0, spinTotalTurns = 0, spinCycleAngle = 0;
+  let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[], spinMotionWindows=[];
-  function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth') {
+  function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
     const from=fromRpm/60, to=toRpm/60;
     const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,
-      turns:spinTotalTurns,curve};
-    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2;
+      turns:spinTotalTurns,curve,correction};
+    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2+correction;
     spinSegments.push(segment);
     return segment;
   }
@@ -197,10 +198,12 @@
   appendSpin(spinStageDuration-spinTransitionDuration,33);
   appendSpin(spinTransitionDuration,33,45);
   appendSpin(spinStageDuration-spinTransitionDuration-1.8,45);
-  // The final 1.8 seconds of the 45-rpm stage accelerate linearly.
-  appendSpin(1.8,45,888,'linear');
-  // The 1.8-second rise is followed immediately by a frozen orientation.
-  // There is no extra braking segment or angle snap to a whole revolution.
+  // Align the final acceleration with a whole revolution before the stop.
+  // The small phase correction has zero slope at both ends, retaining the
+  // 1.8-second duration and the exact 45/888-rpm endpoint speeds, without a snap.
+  const finalTurns = spinTotalTurns + 1.8*(45+888)/120;
+  appendSpin(1.8,45,888,'linear',Math.round(finalTurns)-finalTurns);
+  // Stop immediately in the home orientation, without an extra braking stage.
   spinMotionWindows.push({start:0,end:spinCursor});
   appendSpin(8,0);
   // One revolution at 8 rpm is exactly 7.5 seconds. Each is followed by
@@ -218,7 +221,8 @@
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x))));
+        (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x)))+
+        segment.correction*smoothEnd(x));
     }
     return 0;
   }
@@ -228,7 +232,8 @@
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       return TAU*(segment.from+(segment.to-segment.from)*
-        (segment.curve==='linear'?x:smoothEnd(x)));
+        (segment.curve==='linear'?x:smoothEnd(x))+
+        segment.correction*smoothDerivative(x)/segment.duration);
     }
     return 0;
   }
@@ -244,7 +249,6 @@
     if (reduced.matches) {
       idleMode='waiting';idleSince=time;
       handoffSince=undefined;handoffActive=false;
-      spinCycleAngle=0;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.idleAngle=0);
     } else if (!atTop || moved) {
@@ -280,7 +284,7 @@
         heroIdleAngle=settleHero*envelope+wobble;
         mainIdleAngle=settleMain*envelope;
         layers.forEach(layer=>layer.idleAngle=layer.settleAngle*envelope);
-        if(t===1){spinCycleAngle=0;heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
+        if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
       if(idleMode==='waiting') {
         // The shared eight-second pause begins after the delayed scroll
@@ -292,15 +296,14 @@
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
-        mainIdleAngle=heroIdleAngle=spinCycleAngle+spinPhase(elapsed);
+        mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
         // Start-only 0.18s stagger; scroll fanning follows its separate scroll interval.
-        layers.forEach(layer=>layer.idleAngle=spinCycleAngle+spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
+        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
         const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
         if(elapsed>=lastFinish){
           // Begin the shared pause only once all nine logos have arrived.
-          spinCycleAngle=shortestAngle(spinCycleAngle+TAU*spinTotalTurns);
-          mainIdleAngle=heroIdleAngle=spinCycleAngle;heroSpeed=0;
-          layers.forEach(layer=>layer.idleAngle=spinCycleAngle);
+          mainIdleAngle=heroIdleAngle=heroSpeed=0;
+          layers.forEach(layer=>layer.idleAngle=0);
           idleMode='waiting';idleSince=time-8000;
         }
       }
@@ -309,7 +312,8 @@
       const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
       layer.idleVisibility=idleRotationVisibility(elapsed);
     }
-    const heroAngle = shortestAngle(heroIdleAngle);
+    const wrappedHeroAngle = shortestAngle(heroIdleAngle);
+    const heroAngle = Math.abs(wrappedHeroAngle)<1e-10 ? 0 : wrappedHeroAngle;
     if (openingLogo && heroAngle !== lastHeroAngle) {
       openingLogo.style.setProperty('--hero-idle-angle', `${heroAngle}rad`);
       lastHeroAngle = heroAngle;
@@ -586,13 +590,15 @@
     const viewportHeight = probe.height || height;
     if (!(width > 0) || !(viewportHeight > 0)) return false;
     const widthChanged = openingViewport && openingViewport.width !== width;
+    const landscape = matchMedia('(orientation: landscape)').matches;
+    const orientationChanged = openingViewport && openingViewport.landscape !== landscape;
     // Let an embedded browser finish its initial layout before the first
     // gesture. After that, height-only toolbar/zoom resizes keep logo sizes fixed.
-    if (widthChanged) openingViewportLocked = false;
+    if (widthChanged || orientationChanged) openingViewportLocked = false;
     const canResizeHeight = !touchViewport.matches || !openingViewportLocked;
-    if (openingViewport && !widthChanged &&
+    if (openingViewport && !widthChanged && !orientationChanged &&
         (!canResizeHeight || openingViewport.height === viewportHeight)) return false;
-    openingViewport = {width, viewportWidth, height: viewportHeight};
+    openingViewport = {width, viewportWidth, height: viewportHeight, landscape};
     root.style.setProperty('--opening-viewport-height', `${viewportHeight}px`);
     return true;
   }
@@ -616,15 +622,23 @@
     surfaceHeight = Math.ceil(Math.max(height, root.clientHeight,
       surfaceViewport.getBoundingClientRect().height,
       (window.visualViewport?.height || 0) + (window.visualViewport?.offsetTop || 0)));
+    const header = document.querySelector('.topbar');
+    const headerBottom = header?.getBoundingClientRect().bottom || 0;
+    // Keep logo sizes pinned, but centre their shared axis in the actual
+    // visible area below the banner as mobile browser controls expand/retract.
+    // Pinch zoom retains the layout centre rather than following zoom panning.
+    const visual = window.visualViewport;
+    const useVisual = visual && Math.abs((visual.scale || 1)-1)<.01 && visual.height>0;
+    const visibleTop = useVisual ? visual.offsetTop : 0;
+    const visibleBottom = useVisual ? visibleTop+visual.height : height;
+    const contentTop = Math.min(visibleBottom,Math.max(visibleTop,headerBottom));
     if (main) {
       const box = main.getBoundingClientRect();
-      // Toolbar motion changes the visible viewport, not the logo's rotation axis.
       mainBox = {width: box.width, height: box.height,
         left: (width - box.width) / 2,
-        top: (openingViewport.height - box.height) / 2};
+        top: (contentTop + visibleBottom - box.height) / 2};
     }
     const about=document.querySelector('#about');
-    const header=document.querySelector('.topbar');
     if(about && header){
       // Screenshot endpoint: About's top edge just beneath the banner.
       const gap=Math.max(16,Math.min(24,width*40/706));
@@ -731,8 +745,7 @@
   }
   function paintCanvas(state, easedProgress) {
     if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length || !mainBorderSprites.length || !mainSolidSprites.length) return;
-    const {width, height, motionScroll} = state;
-    const motionProgress = easedProgress;
+    const {width, height} = state;
     const backgroundKey = `${sceneKey}:${width}:${height}:${surfaceHeight}:${rainTime}`;
     if (backgroundKey !== lastBackgroundPaint) {
       bg.clearRect(0, 0, width, surfaceHeight);
@@ -752,7 +765,9 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const center = commonLogoCenter(patternVisibility);
+    const {x:centerX, y:centerY} = center;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -761,21 +776,6 @@
     const w = 922 * scale;
     const h = 1368 * scale;
     const ringDiameter = mainRingWidth * scale;
-    const cx = mainBox.left + mainBox.width / 2;
-    const cy = mainBox.top + mainBox.height / 2;
-    const travel = (.5 - motionProgress) * Math.min(openingViewport.height, mainBox.height);
-    // All eight centers coincide with the opening emblem at scroll zero.
-    // Fade this correction smoothly during the first quarter of the page,
-    // retaining the established depth-dependent movement further down.
-    const startPhase = Math.min(1, Math.max(0, motionProgress * 4));
-    const openingBlend = 1 - startPhase ** 3 * (startPhase * (startPhase * 6 - 15) + 10);
-    const startX = openingCenter?.x ?? cx;
-    const startY = openingCenter?.y ?? cy;
-    const openingTravel = .5 * Math.min(openingViewport.height, mainBox.height);
-    // One common centre for all eight logos and rings. Their angular fanning
-    // stays independent, but it cannot introduce a separate orbital translation.
-    const centerX = cx + (startX - cx) * openingBlend;
-    const centerY = cy + travel + (startY - cy - openingTravel) * openingBlend;
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: centerX, y: centerY
@@ -817,6 +817,14 @@
     if (!root.classList.contains('canvas-logos-ready')) {
       root.classList.add('logo-rain-ready', 'canvas-logos-ready');
     }
+  }
+  function commonLogoCenter(patternVisibility) {
+    const x = mainBox.left + mainBox.width / 2;
+    const y = mainBox.top + mainBox.height / 2;
+    // Only the opening wallpaper fade moves the common pivot from the start
+    // emblem to the visible content centre. There is no later page-long drift.
+    return {x: x+((openingCenter?.x ?? x)-x)*patternVisibility,
+      y: y+((openingCenter?.y ?? y)-y)*patternVisibility};
   }
   // Copy the same rendered frame, cropped to the banner. Do not create or
   // animate another set of logos: position, rotation and opacity match.
@@ -904,6 +912,10 @@
   };
   addEventListener('resize', resize, {passive: true});
   window.visualViewport?.addEventListener('resize', resize, {passive: true});
+  window.visualViewport?.addEventListener('scroll', resize, {passive: true});
+  addEventListener('orientationchange', () => {
+    openingViewportLocked=false;invalidate();
+  }, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
   document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;handoffSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });

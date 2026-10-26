@@ -1,4 +1,4 @@
-# Eight&Eight – Runde Fotoecken und sieben Innenringe
+# Eight&Eight – Aufrechte Stopps und gemeinsame Drehmitte
 
 Diese ZIP enthält 39 Dateien einschließlich dieser Anleitung und CNAME.
 
@@ -31,6 +31,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 ## Unterer Banner
 
 - Der Tapetenbanner ist das letzte Element des Seiteninhalts, ohne nachfolgenden Abstand und mit zusätzlicher Berücksichtigung des unteren Safe-Area-Inset.
+- Beide Tapetenbanner sind an allen vier Kanten eingerahmt: oben, unten und beidseitig links und rechts. Alle gegenüberliegenden Randlinien verwenden dieselbe Farbe und Stärke: 1,5 CSS-Pixel im Hochformat, 0,8 CSS-Pixel im Querformat.
 - Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
 - Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
 
@@ -44,25 +45,28 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 ## Schlussphase der Startanimation
 
-- Die Schlussphase dauert insgesamt 1,8 Sekunden: lineare Beschleunigung von 45 auf 888 rpm, unmittelbar danach Stop.
+- Die Schlussphase dauert insgesamt 1,8 Sekunden: Beschleunigung von 45 auf 888 rpm, unmittelbar danach Stop in Ausgangsposition.
 - Die bisher zusätzlich anschließende 2,8-Sekunden-Abbremsphase ist entfernt.
-- Beim Stop bleibt die exakt erreichte Winkelposition stehen. Es gibt keinen Sprung auf eine volle Umdrehung. Diese Position wird auch über die nachfolgenden Pausen und Wiederholungen hinweg fortgeführt.
+- Eine kleine, weich verteilte Winkelkorrektur innerhalb der Schlussbeschleunigung schließt die Sequenz bei genau 23 vollen Umdrehungen ab. Die Geschwindigkeit an Anfang und Ende bleibt exakt 45 beziehungsweise 888 rpm; die Korrektur verschwindet dort ohne zusätzlichen Geschwindigkeitssprung. Die Beschleunigung bleibt durchgehend vorwärts gerichtet.
+- Jeder anschließende Stop liegt ebenfalls in der aufrechten Ausgangsposition. Die sieben einzelnen vollen Umdrehungen und spätere Wiederholungen übernehmen keinen Restwinkel. Es gibt weder ein nachträgliches Zurückspringen noch eine zusätzliche Abbremsphase.
 - Die anschließende Pause, die sieben einzelnen Umdrehungen bei 8 rpm und die Staffelung der Hintergrundebenen bleiben erhalten.
 
 ## Ruhigere Rotation und stabiler Mittelpunkt
 
 - Die sichtbare Logoform einschließlich der kleinen Punkte wurde in allen neun SVGs um ihren vollständigen Begrenzungsrahmen zentriert. Dadurch sitzt dieselbe Motivmitte auf der Drehachse des Startlogos und der acht Hauptlogos.
 - Alle acht Hauptlogos und ihre Punktringe verwenden nun denselben Mittelpunkt. Die bisherigen unterschiedlichen Rotationswinkel und Größen bleiben erhalten; die Ebenen erhalten keine voneinander abweichenden seitlichen oder vertikalen Umlaufbahnen mehr.
-- Der Mittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Die stabilisierte Viewporthöhe hält die Hintergrundachse bei Änderungen mobiler Browserleisten fest.
+- Der Startmittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Während die Tapete in den Hauptlogos ausblendet, geht die gemeinsame Drehmitte weich von dieser Startposition zur Mitte des sichtbaren Bereichs unter dem oberen Banner über.
+- Sobald die Tapete vollständig verschwunden ist, bleiben Hauptlogos und alle äußeren und inneren Ringe auf dieser gemeinsamen Mitte. Es gibt keine weitere Verschiebung über die restliche Scrollstrecke. Die vorhandenen Drehwinkel und die Staffelung beim Scrollen bleiben erhalten.
+- Im Hoch- und Querformat wird die Achse zwischen tatsächlichem Bannerende und sichtbarem Fensterrand berechnet. Mobile Browserleisten werden über VisualViewport berücksichtigt, mit innerHeight als Rückfall. Die Logogrößen bleiben bei mobilen Leistenänderungen stabil. Beim Orientierungswechsel wird die Größenreferenz neu gemessen; beim Zoomen bleibt die Achse auf die Layoutmitte bezogen.
 - Der erste Scrollimpuls wird während der Startrotation nicht mehr für eine Rückstellpause blockiert und die Seite wird nicht mehr auf den Seitenanfang zurückgesetzt. Die vorhandene weiche Winkelübergabe übernimmt beim Scrollen.
 - Die zusätzlichen Foto-Lichtüberlagerungen sind anschließend auf Wunsch vollständig entfernt worden.
 - Die Tempostufen und Wartezeiten der Startsequenz, die aktuelle Querformat-Skalierung, die verlustfreien Fotodateien und der untere Banner bleiben erhalten.
 
-Prüfung der Rotationskorrektur: gemeinsame Canvas-Drehpunkte an sieben Scrollpositionen, neun ausgerichtete SVGs, identische Drehmitte im Hoch- und Querformat sowie im Desktopformat, keine Scrollblockade und kein erzwungener Rücksprung zum Seitenanfang. Die Foto-Lichtüberlagerungen wurden später vollständig entfernt. Ein direkter iPhone-Safari-Test steht weiter aus.
+Die Fotoecken, sieben Innenringe, unveränderten Fotodateien und das Entfernen der zusätzlichen Foto-Lichtüberlagerungen aus der vorigen Fassung bleiben erhalten.
 
 ## Prüfung
 
-Geprüft: sieben neue Innenringbänder, fallende inverse Größen und zugehörige Sichtbarkeiten, radiale Anschlüsse ohne freie Zwischenringe, Textur-Cache ohne erneute Berechnung pro Animationsbild, einheitliche Rundung aller Fotos, Entfernen sämtlicher zusätzlicher Foto-Lichtebenen, unveränderte Bilddateien, lokale Dateiverweise, JavaScript-Syntax und ZIP-Integrität. Die erste Fassung wurde vor der anschließenden Entfernung der Foto-Lichter in der Vorschau mit aktiven Lichtverläufen geprüft.
+Geprüft: aufrechte Stopps der Startsequenz und aller sieben Folgeumdrehungen einschließlich gestaffelter Ebenen, kontinuierliche Winkelkorrektur mit 1,8 Sekunden und 45/888-rpm-Grenzen, gemeinsame Drehpunkte vor/nach dem Tapetenübergang, alle vier Randlinien an beiden Bannern, lokale Dateiverweise, JavaScript-Syntax und ZIP-Integrität. Die Fotos und Ringstaffelung bleiben unverändert.
 Ein Test auf einem echten iPhone mit Safari war nicht möglich. Die Vorschau enthält keine nativen Safari-Browserleisten.
 
 ## Bildbearbeitung – historische Originalprompts

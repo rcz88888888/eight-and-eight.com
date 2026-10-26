@@ -556,5 +556,13 @@ body .gold-text-light {
   display: block;
   margin: 0;
   height: calc(220px + env(safe-area-inset-bottom, 0px));
-  border-bottom: 0 !important;
+}
+
+/* Both wallpaper banners are framed on all four edges. */
+:root { --banner-edge-width: 1.5px; }
+@media (orientation: landscape) {
+  :root { --banner-edge-width: .8px; }
+}
+.topbar, .content-scroll > .wallpaper-end {
+  border: var(--banner-edge-width) solid var(--metallic-gold) !important;
 }
