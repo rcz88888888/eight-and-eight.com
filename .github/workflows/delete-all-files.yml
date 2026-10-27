@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   delete_all:
-    runson: ubuntulatest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
