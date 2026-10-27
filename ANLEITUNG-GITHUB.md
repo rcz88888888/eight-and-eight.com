@@ -1,6 +1,12 @@
-# Eight&Eight – Exakte Bannerkante und flüssigere Logoanimation
+# Eight&Eight – 26 Referenzen, exakte Bannerkante und flüssigere Logoanimation
 
-Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 51 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Weitere Kooperationspartner
+
+- Unter Work / Customers & Cooperators sind BMW, Porsche, Microsoft, Hilton, Siemens, ZDF, Vans, Zoo York, Jägermeister und EastWest ergänzt. Zusammen mit den bestehenden Referenzen sind es 26 Logos.
+- Die gelieferten Motive und Farben bleiben erhalten. Ausschließlich vollständig transparente Außenränder sind bei Bedarf verlustfrei beschnitten; es gibt keine Neuzeichnung, Umfärbung oder verlustbehaftete Neukompression.
+- Alle neuen Bilder besitzen feste natürliche Breiten- und Höhenangaben, laden bei Bedarf und verwenden dasselbe responsive Raster, dieselben Trennlinien sowie die korrigierte Bannerabdeckung wie die bisherigen Referenzen.
 
 ## Exakte Abdeckung an der Bannerkante
 
@@ -17,8 +23,8 @@ Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
 - Die Hauptlogo-Konturen verwenden nach Möglichkeit einen einmal vorbereiteten Vektorpfad. Dadurch müssen nicht in jedem Bild acht große, überwiegend transparente Konturbilder überlagert werden. Für Browser ohne passende Pfadunterstützung bleibt die bisherige Textur als Rückfall erhalten.
 - Ringbänder, deren gesamte Punktfläche außerhalb der Zeichenfläche liegt, werden vor dem Zeichnen übersprungen. Zahl, Positionen, Größen und Sichtbarkeiten aller tatsächlich sichtbaren Ringe bleiben unverändert.
 - Der Banner zeichnet denselben Szenenzustand direkt in seinen Ausschnitt. Das bisherige Kopieren der zwei gerade veränderten, großen Canvasflächen entfällt. Es gibt weiterhin nur einen Animationszustand und einen gemeinsamen Takt.
-- Alle 16 Referenzlogos haben bereits vor dem Laden fest reservierte Bildproportionen. Ihr Laden löst keine pauschale Neuberechnung aller Logo-Texturen und Textmasken mehr aus. Die drei Fotos werden nacheinander in freien Browserzeiten geladen und dekodiert. Ihre runden Schnittkanten erhalten eine eigene begrenzte Zeichenfläche.
-- Die PNG- und SVG-Dateien selbst sind unverändert. Fotoauflösung, Bilddetails, 16 Referenzen, Randlinien, Startsequenz, Stopppositionen und scrollgesteuerte Rückdrehung bleiben erhalten.
+- Alle 26 Referenzlogos haben bereits vor dem Laden fest reservierte Bildproportionen. Ihr Laden löst keine pauschale Neuberechnung aller Logo-Texturen und Textmasken mehr aus. Die drei Fotos werden nacheinander in freien Browserzeiten geladen und dekodiert. Ihre runden Schnittkanten erhalten eine eigene begrenzte Zeichenfläche.
+- Die bisherigen PNG- und SVG-Dateien selbst sind unverändert. Fotoauflösung, Bilddetails, vorhandene Referenzen, Randlinien, Startsequenz, Stopppositionen und scrollgesteuerte Rückdrehung bleiben erhalten.
 
 Prüfung: kontinuierliche Vorwärtsrotation bei schnellem Scrollen, kein zusätzlicher Rotationsimpuls durch Browserleisten, gleichmäßige Regen-Zeitschritte, Texturwiederverwendung bei zehn aufeinanderfolgenden Viewportänderungen, konservatives Überspringen vollständig unsichtbarer Ringe, Rückdrehung für Mausrad/Touch/Tastatur, alle aufrechten Stopps und gemeinsame Drehpunkte. Die Browser-Vorschau wurde in wiederholten Scroll-Durchläufen verglichen. Messwerte aus dieser Vorschau sind keine Zusage einer bestimmten Bildrate auf dem iPhone; ein direkter iPhone-Safari-Test ist hier nicht verfügbar.
 
