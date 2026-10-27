@@ -1,17 +1,17 @@
 name: Delete All Files
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
 jobs:
-delete_all:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout repository
-uses: actions/checkout@v4
-- name: Delete all files
-run: |
-git rm -r --cached .
-git add --all
-git commit -m "Delete all files in repository"
-git push origin main
+  delete_all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Delete all files
+        run: |
+          git rm -r --cached .
+          git add --all
+          git commit -m "Delete all files in repository"
+          git push origin main
