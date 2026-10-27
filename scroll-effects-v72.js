@@ -174,6 +174,8 @@
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
   let handoffSince, handoffMain = 0, handoffActive = false;
+  let startScrollReturn = null, startScrollReleased = false;
+  let touchScrollY = null, touchScrollConsumed = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothDerivative = x => 30*x*x*(1-x)*(1-x);
@@ -237,9 +239,70 @@
     }
     return 0;
   }
-  // Native scrolling remains passive during the idle-to-scroll handoff.
-  // Existing rotational offsets blend out below without blocking the gesture
-  // or forcibly sending the document back to scroll position zero.
+  function beginStartScrollReturn(nativeScroll = false) {
+    if (startScrollReleased || (!nativeScroll && scrollPosition() > .5) || frameDrivers.size ||
+        document.querySelector('.site-nav.open') ||
+        (idleMode !== 'running' && idleMode !== 'settling')) return false;
+    const hero = shortestAngle(heroIdleAngle);
+    const mainAngle = shortestAngle(mainIdleAngle);
+    const angles = layers.map(layer => shortestAngle(layer.idleAngle + layer.scrollAngle));
+    const maximum = Math.max(Math.abs(hero), Math.abs(mainAngle), ...angles.map(Math.abs));
+    if (maximum < .0001) return false;
+    startScrollReturn = {hero, mainAngle, progress: 0, distance: 0,
+      span: Math.max(48, maximum / Math.PI * 180)};
+    layers.forEach((layer, index) => {
+      layer.returnAngle = angles[index];
+      layer.returnVisibility = layer.idleVisibility;
+      layer.idleAngle = angles[index];
+      layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
+    });
+    heroIdleAngle = hero; mainIdleAngle = mainAngle; heroSpeed = 0;
+    handoffActive = false; handoffSince = undefined;
+    scrollRotationHistory.length = 0;
+    scrollRotationPending = false;
+    logoProgress = 0; logoAnimating = false;
+    idleMode = 'scroll-return'; idleSince = undefined;
+    return true;
+  }
+  function consumeStartScroll(delta, event) {
+    if (reduced.matches || document.querySelector('.site-nav.open') || !event.cancelable ||
+        !Number.isFinite(delta) || Math.abs(delta) < .01)
+      return false;
+    if (!startScrollReturn && !beginStartScrollReturn()) return false;
+    event.preventDefault();
+    advanceStartScrollReturn(delta);
+    return true;
+  }
+  function advanceStartScrollReturn(delta) {
+    startScrollReturn.distance = Math.min(startScrollReturn.span,
+      startScrollReturn.distance + Math.abs(delta));
+    startScrollReturn.progress = startScrollReturn.distance / startScrollReturn.span;
+    schedule();
+  }
+  function captureNativeStartScroll() {
+    const distance = scrollPosition();
+    if (reduced.matches || frameDrivers.size || distance <= .5) return;
+    // Scrollbar/accessibility input, or a browser event that was not cancelable,
+    // follows the same return phase before the frame can move the page content.
+    if (startScrollReturn || (idlePreviousScroll <= .5 && beginStartScrollReturn(true))) {
+      advanceStartScrollReturn(distance);
+      window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+    }
+  }
+  function finishStartScrollReturn(time) {
+    startScrollReturn = null; startScrollReleased = true;
+    heroIdleAngle = mainIdleAngle = heroSpeed = 0;
+    layers.forEach(layer => {
+      layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
+    });
+    scrollRotationHistory.length = 0;
+    scrollRotationPending = false; scrollRotationFrameTime = undefined;
+    scrollInput = NaN; logoProgress = 0; logoAnimating = false;
+    handoffActive = false; handoffSince = undefined;
+    idleMode = 'waiting'; idleSince = time;
+  }
+  // At the start, scroll distance first returns every emblem to its home angle.
+  // Page navigation resumes only after a complete home-position frame is drawn.
   function updateIdleRotation(time, scroll) {
     const dt = idleLastTime === undefined ? 0 : Math.min(.064, Math.max(0, (time-idleLastTime)/1000));
     idleLastTime = time;
@@ -247,10 +310,16 @@
     idlePreviousScroll = scroll;
     const atTop = scroll <= .5;
     if (reduced.matches) {
+      if (startScrollReturn) finishStartScrollReturn(time);
       idleMode='waiting';idleSince=time;
       handoffSince=undefined;handoffActive=false;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.idleAngle=0);
+    } else if (startScrollReturn) {
+      const remaining = 1 - smoothEnd(startScrollReturn.progress);
+      heroIdleAngle = startScrollReturn.hero * remaining;
+      mainIdleAngle = startScrollReturn.mainAngle * remaining;
+      layers.forEach(layer => { layer.idleAngle = layer.returnAngle * remaining; });
     } else if (!atTop || moved) {
       // Remove the idle offsets along each logo's shortest path. The
       // original scroll angle keeps updating underneath this 600ms handoff.
@@ -291,7 +360,7 @@
         // rotations have also reached their starting orientations.
         if(scrollRotationPending)idleSince=time;
         if(idleSince===undefined)idleSince=time;
-        if(time-idleSince>=8000){idleMode='running';spinSince=time;}
+        if(time-idleSince>=8000){idleMode='running';spinSince=time;startScrollReleased=false;}
       }
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);
@@ -310,7 +379,9 @@
     }
     for(const layer of layers){
       const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
-      layer.idleVisibility=idleRotationVisibility(elapsed);
+      layer.idleVisibility=startScrollReturn
+        ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
+        : idleRotationVisibility(elapsed);
     }
     const wrappedHeroAngle = shortestAngle(heroIdleAngle);
     const heroAngle = Math.abs(wrappedHeroAngle)<1e-10 ? 0 : wrappedHeroAngle;
@@ -847,7 +918,10 @@
     raf = 0;
     if (document.hidden) return;
     const controlledScroll=frameDrivers.size>0;
+    // Explicit menu navigation remains available during a partial return.
+    if (controlledScroll && startScrollReturn) finishStartScrollReturn(time);
     for(const driver of [...frameDrivers])driver(time);
+    captureNativeStartScroll();
     syncSurfacePosition(scrollPosition());
     const width = root.clientWidth;
     const height = innerHeight;
@@ -865,12 +939,13 @@
     advanceRain(time,width,height);
     paintCanvas(state, easedProgress);
     paintBannerFeed(width, height);
+    if (startScrollReturn?.progress === 1) finishStartScrollReturn(time);
     const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}`;
     if (geometryDirty || subscriberState !== lastSubscriberState) {
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if ((!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -908,6 +983,43 @@
   wallpaperImage.src='wallpaper-ornament-mask-v45.png';
   image.src = 'eight-and-eight-logo-dark-v18.png';
   window.addEventListener('scroll', schedule, {passive: true});
+  const editingScrollTarget = target => target?.isContentEditable ||
+    /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName || '');
+  window.addEventListener('wheel', event => {
+    if (event.ctrlKey || editingScrollTarget(event.target)) return;
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1;
+    consumeStartScroll(event.deltaY * unit, event);
+  }, {passive: false, capture: true});
+  window.addEventListener('touchstart', event => {
+    touchScrollY = event.touches.length === 1 ? event.touches[0].clientY : null;
+    touchScrollConsumed = false;
+  }, {passive: true, capture: true});
+  window.addEventListener('touchmove', event => {
+    if (event.touches.length !== 1 || editingScrollTarget(event.target)) {
+      touchScrollY = null; return;
+    }
+    const y = event.touches[0].clientY;
+    const delta = touchScrollY === null ? 0 : touchScrollY - y;
+    touchScrollY = y;
+    if (consumeStartScroll(delta, event)) touchScrollConsumed = true;
+    else if (touchScrollConsumed && event.cancelable) {
+      // Safari does not restart native scrolling halfway through a prevented
+      // touch gesture. Continue that same swipe after all home angles are drawn.
+      event.preventDefault();
+      window.scrollBy({top: delta, left: 0, behavior: 'instant'});
+    }
+  }, {passive: false, capture: true});
+  for (const type of ['touchend', 'touchcancel']) window.addEventListener(type, () => {
+    touchScrollY = null; touchScrollConsumed = false;
+  }, {passive: true, capture: true});
+  window.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey || editingScrollTarget(event.target)) return;
+    if (event.key === ' ' && event.target?.closest?.('a,button,[role="button"]')) return;
+    const distances = {ArrowDown: 40, ArrowUp: -40, PageDown: innerHeight*.85,
+      PageUp: -innerHeight*.85, End: innerHeight, Home: -innerHeight,
+      ' ': innerHeight*.85*(event.shiftKey ? -1 : 1)};
+    if (consumeStartScroll(distances[event.key], event)) event.stopImmediatePropagation();
+  }, {capture: true});
   const resize = () => {
     if (root.clientWidth !== lastWidth) layoutDirty = true;
     viewportDirty = true;

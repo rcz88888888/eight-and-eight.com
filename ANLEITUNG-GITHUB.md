@@ -1,6 +1,13 @@
-# Eight&Eight – Kleinerer, langsamerer Logoregen mit mehr Logos
+# Eight&Eight – Scroll-Rückdrehung vor der Seitennavigation
 
 Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Abbruch der Startanimation durch Scrollen
+
+- Wird die laufende Startrotation am Seitenanfang durch Scrollen unterbrochen, bleibt der Seiteninhalt zunächst am Start. Der Scrollweg dreht das Startlogo, alle acht Hauptlogos und die daran gebundenen Ringe gemeinsam in ihre jeweilige Ausgangsausrichtung zurück.
+- Die Rückdrehung verwendet die tatsächlich sichtbaren, auch zeitversetzten Winkel. Jede Ebene kehrt auf dem kürzesten Drehweg zurück. Ohne weitere Scrollbewegung bleibt die Rückdrehung stehen; es gibt keine automatische 600-ms-Rückdrehung während gleichzeitigem Seitenscrollen.
+- Erst nachdem alle Logos vollständig aufrecht gezeichnet wurden, wird das normale Seitenscrollen freigegeben. Derselbe Touch-Wisch kann nach dieser Freigabe weiter nach unten navigieren. Mausrad und Scrolltasten werden ebenfalls berücksichtigt.
+- Die Sperre gilt nur für das Unterbrechen einer verdrehten Startanimation am Seitenanfang. Bei bereits aufrechten Logos, weiter unten auf der Seite, im geöffneten Menü und bei reduzierter Bewegung wird der normale Scrollweg nicht abgefangen. Explizite Menü-Navigation bleibt verfügbar.
 
 ## Zufälliger Logoregen
 
@@ -71,7 +78,7 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 - Der Startmittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Während die Tapete in den Hauptlogos ausblendet, geht die gemeinsame Drehmitte weich von dieser Startposition zur Mitte des sichtbaren Bereichs unter dem oberen Banner über.
 - Sobald die Tapete vollständig verschwunden ist, bleiben Hauptlogos und alle äußeren und inneren Ringe auf dieser gemeinsamen Mitte. Es gibt keine weitere Verschiebung über die restliche Scrollstrecke. Die vorhandenen Drehwinkel und die Staffelung beim Scrollen bleiben erhalten.
 - Im Hoch- und Querformat wird die Achse zwischen tatsächlichem Bannerende und sichtbarem Fensterrand berechnet. Mobile Browserleisten werden über VisualViewport berücksichtigt, mit innerHeight als Rückfall. Die Logogrößen bleiben bei mobilen Leistenänderungen stabil. Beim Orientierungswechsel wird die Größenreferenz neu gemessen; beim Zoomen bleibt die Achse auf die Layoutmitte bezogen.
-- Der erste Scrollimpuls wird während der Startrotation nicht mehr für eine Rückstellpause blockiert und die Seite wird nicht mehr auf den Seitenanfang zurückgesetzt. Die vorhandene weiche Winkelübergabe übernimmt beim Scrollen.
+- Beim ersten Scrollimpuls während der Startrotation wird zunächst die oben beschriebene scrollgesteuerte Rückdrehung ausgeführt. Erst anschließend bewegt sich der Seiteninhalt. Weiter unten bleibt die vorhandene Winkelstaffelung beim Scrollen erhalten.
 - Die zusätzlichen Foto-Lichtüberlagerungen sind anschließend auf Wunsch vollständig entfernt worden.
 - Die Tempostufen und Wartezeiten der Startsequenz, die aktuelle Querformat-Skalierung, die verlustfreien Fotodateien und der untere Banner bleiben erhalten.
 
