@@ -328,6 +328,16 @@ body { height: auto; min-height: 100%; overflow: visible; }
 /* v94: no light layer is allowed above content glyphs or company artwork. */
 .content-scroll .gold-text-light,
 .content-scroll .partner-slot img { position: relative; z-index: 1; }
+.partner-grid .partner-slot img {
+  /* One reserved display size for every company mark. Transparent file
+     margins are trimmed losslessly, so padding cannot change the logo scale. */
+  width: min(100%, 200px);
+  height: 140px;
+  max-width: 100%;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+}
 .portfolio-shimmer { display: none !important; }
 
 /* The transparent start logo scrolls natively with its opening stage. */
@@ -451,6 +461,7 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
 
 /* Concept development: editorial photograph replaces the process text strip. */
 .concept-photo {
+  position: relative;
   margin: clamp(28px, 4vw, 45px) 0;
   padding: 0;
   --photo-radius: clamp(12px, 2vw, 20px);
@@ -472,6 +483,34 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
   border-radius: var(--photo-radius);
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+/* Relight material details above the untouched full-resolution photograph.
+   All three overlays share the figure's existing rounded clipping boundary. */
+.concept-photo .photo-scroll-relight {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0;
+}
+.concept-photo[data-light-ready] .photo-scroll-relight { opacity: 1; }
+.photo-scroll-relight .photo-light-pose {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-image: var(--photo-light-atlas);
+  background-repeat: no-repeat;
+  background-size: 200.5208333333% 200.78125%;
+}
+.photo-scroll-relight .photo-light-pose-1 { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .concept-photo .photo-scroll-relight { display: none; }
 }
 
 /* Keep animation pixels behind Safari's translucent bottom browser controls. */

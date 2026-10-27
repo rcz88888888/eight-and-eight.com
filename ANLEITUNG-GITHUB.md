@@ -1,119 +1,36 @@
-# Eight&Eight – 26 Referenzen, exakte Bannerkante und flüssigere Logoanimation
+# Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
-Diese ZIP enthält 51 Dateien einschließlich dieser Anleitung und CNAME.
+Diese ZIP enthält 55 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
 
-## Weitere Kooperationspartner
+## Work / Customers & Cooperators
 
-- Unter Work / Customers & Cooperators sind BMW, Porsche, Microsoft, Hilton, Siemens, ZDF, Vans, Zoo York, Jägermeister und EastWest ergänzt. Zusammen mit den bestehenden Referenzen sind es 26 Logos.
-- Die gelieferten Motive und Farben bleiben erhalten. Ausschließlich vollständig transparente Außenränder sind bei Bedarf verlustfrei beschnitten; es gibt keine Neuzeichnung, Umfärbung oder verlustbehaftete Neukompression.
-- Alle neuen Bilder besitzen feste natürliche Breiten- und Höhenangaben, laden bei Bedarf und verwenden dasselbe responsive Raster, dieselben Trennlinien sowie die korrigierte Bannerabdeckung wie die bisherigen Referenzen.
+26 Referenzen stehen nach Unternehmensarten zusammen: Fahrzeuge, Technik und Telekommunikation, Veranstaltungen und Arbeitsräume, Hotels, Film und Fernsehen, Musik und Audio sowie Lifestyle.
 
-## Exakte Abdeckung an der Bannerkante
+Alle Logos verwenden dieselbe zentrierte Darstellungsfläche von maximal 200 × 140 CSS-Pixeln. Schmale Bildschirme begrenzen deren Breite automatisch. Die Originalproportionen bleiben erhalten. Vollständig transparente Außenränder wurden verlustfrei entfernt, damit die tatsächlichen Motive statt unterschiedlich großer Dateiränder eingepasst werden. Farben, Zeichnung und alle sichtbaren Bildpixel bleiben erhalten. Das vorhandene Raster mit einer, zwei oder drei Spalten und seinen Trennlinien bleibt bestehen.
 
-- Die Abdeckung für scrollenden Text und Referenzlogos endet genau am gemessenen unteren Außenrand des oberen Banners. Der bisherige Abzug von 3 CSS-Pixeln ist entfernt; dadurch können Inhalte nicht mehr in den unteren Bannerstreifen hineinragen.
-- Die tatsächliche Kante wird einschließlich ihrer Bruchteile eines CSS-Pixels übernommen, ohne Rundung nach innen oder außen. Das vermeidet zugleich einen zusätzlichen cremeweißen Streifen unter der Linie. Bei geöffneter Navigation gilt deren tatsächlicher unterer Rand.
-- Der CSS-Rückfall verwendet ebenfalls die volle Bannerhöhe. Animation, Tapetenmuster, Bannerlinien und Logogrößen bleiben unverändert; es gibt keine zusätzliche Berechnung während des Scrollens.
+Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF, Vans, Zoo York, Jägermeister und EastWest sind enthalten.
 
-## Ruhigere Animation beim Scrollen
+## Detailliertes Licht auf allen drei Fotos
 
-- Die Winkel beim Scrollen bleiben über ganze Umdrehungen hinweg kontinuierlich. Die Kurzweg-Normalisierung wurde aus der laufenden Scrollrotation entfernt; sie bleibt bei der ausdrücklich gewünschten Rückdrehung zum Start aktiv. Beim Öffnen des Fächers springt die zeitliche Abtastung nicht mehr in die Vergangenheit zurück.
-- Der Logoregen folgt jedem verfügbaren Animationsbild mit dessen tatsächlichem Zeitabstand. Der bisherige starre 60-Hz-Zeitfilter konnte bei leicht schwankenden Bildabständen zusätzliche Bilder überspringen. Anzahl, Sichtbarkeiten, halbierte Maximalgröße und halbierte maximale Fallgeschwindigkeit bleiben erhalten.
-- Texturen und unsichtbare SVG-Geometrien werden bei Bewegungen mobiler Browserleisten wiederverwendet. Die Drehphase bezieht sich auf eine stabile Fensterhöhe; Änderungen der sichtbaren Fläche verschieben die gemeinsame Drehmitte weich.
-- Eine ungenutzte Vorbereitung von 2.222 beziehungsweise 8.888 unsichtbaren Objekten ist entfernt. Gezeichnet und aktualisiert wird weiterhin der vorhandene sichtbare Regen-Pool mit der zuletzt gewünschten Erhöhung um 10 Prozent.
-- Die Hauptlogo-Konturen verwenden nach Möglichkeit einen einmal vorbereiteten Vektorpfad. Dadurch müssen nicht in jedem Bild acht große, überwiegend transparente Konturbilder überlagert werden. Für Browser ohne passende Pfadunterstützung bleibt die bisherige Textur als Rückfall erhalten.
-- Ringbänder, deren gesamte Punktfläche außerhalb der Zeichenfläche liegt, werden vor dem Zeichnen übersprungen. Zahl, Positionen, Größen und Sichtbarkeiten aller tatsächlich sichtbaren Ringe bleiben unverändert.
-- Der Banner zeichnet denselben Szenenzustand direkt in seinen Ausschnitt. Das bisherige Kopieren der zwei gerade veränderten, großen Canvasflächen entfällt. Es gibt weiterhin nur einen Animationszustand und einen gemeinsamen Takt.
-- Alle 26 Referenzlogos haben bereits vor dem Laden fest reservierte Bildproportionen. Ihr Laden löst keine pauschale Neuberechnung aller Logo-Texturen und Textmasken mehr aus. Die drei Fotos werden nacheinander in freien Browserzeiten geladen und dekodiert. Ihre runden Schnittkanten erhalten eine eigene begrenzte Zeichenfläche.
-- Die bisherigen PNG- und SVG-Dateien selbst sind unverändert. Fotoauflösung, Bilddetails, vorhandene Referenzen, Randlinien, Startsequenz, Stopppositionen und scrollgesteuerte Rückdrehung bleiben erhalten.
+- Uhrwerk, Schach und Goldlogo erhalten jeweils acht diffuse, außerhalb des Bildes liegende Lichtquellen mit unterschiedlichen Wegen und Gewichtungen. Ihre Richtungen folgen ausschließlich dem lokalen Scrollfortschritt. Zurückscrollen ergibt dieselbe Beleuchtung an derselben Position; im Stillstand läuft keine zusätzliche Fotoanimation.
+- Vorhandene Oberflächenkarten in voller Auflösung richten die Reflexionen an den Rundungen, Kanten und Metallflächen aus. Die fotografierten Bearbeitungsspuren und feinen Strukturen beeinflussen die Reflexion zusätzlich. Hintergrund und Sand erhalten nur eine zurückhaltende diffuse Änderung. Es gibt keine sichtbaren Sonnen, Strahlen, Linsenreflexe oder Bewegungen der Motive.
+- Die drei Originalfotos bleiben unverändert als native Bilder sichtbar: jeweils 1536 × 1024 Pixel, identische PNG-Dateien und vollständige Details. Das Licht liegt als transparente Soft-Light-Ebene darüber. Es ersetzt, verkleinert, komprimiert oder verwischt die Fotos nicht.
+- Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
+- Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
 
-Prüfung: kontinuierliche Vorwärtsrotation bei schnellem Scrollen, kein zusätzlicher Rotationsimpuls durch Browserleisten, gleichmäßige Regen-Zeitschritte, Texturwiederverwendung bei zehn aufeinanderfolgenden Viewportänderungen, konservatives Überspringen vollständig unsichtbarer Ringe, Rückdrehung für Mausrad/Touch/Tastatur, alle aufrechten Stopps und gemeinsame Drehpunkte. Die Browser-Vorschau wurde in wiederholten Scroll-Durchläufen verglichen. Messwerte aus dieser Vorschau sind keine Zusage einer bestimmten Bildrate auf dem iPhone; ein direkter iPhone-Safari-Test ist hier nicht verfügbar.
+## Banner und Animation
 
-## Abbruch der Startanimation durch Scrollen
+Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation, einschließlich gebrochener CSS-Pixel. Beide Tapetenbanner besitzen ihre Randlinien an allen vier Seiten und schließen bündig mit den Außenkanten ab. Der untere Banner bleibt das letzte Seitenelement. Der Browserfarbton bleibt Cremeweiß #fdfcfa.
 
-- Wird die laufende Startrotation am Seitenanfang durch Scrollen unterbrochen, bleibt der Seiteninhalt zunächst am Start. Der Scrollweg dreht das Startlogo, alle acht Hauptlogos und die daran gebundenen Ringe gemeinsam in ihre jeweilige Ausgangsausrichtung zurück.
-- Die Rückdrehung verwendet die tatsächlich sichtbaren, auch zeitversetzten Winkel. Jede Ebene kehrt auf dem kürzesten Drehweg zurück. Ohne weitere Scrollbewegung bleibt die Rückdrehung stehen; es gibt keine automatische 600-ms-Rückdrehung während gleichzeitigem Seitenscrollen.
-- Erst nachdem alle Logos vollständig aufrecht gezeichnet wurden, wird das normale Seitenscrollen freigegeben. Derselbe Touch-Wisch kann nach dieser Freigabe weiter nach unten navigieren. Mausrad und Scrolltasten werden ebenfalls berücksichtigt.
-- Die Sperre gilt nur für das Unterbrechen einer verdrehten Startanimation am Seitenanfang. Bei bereits aufrechten Logos, weiter unten auf der Seite, im geöffneten Menü und bei reduzierter Bewegung wird der normale Scrollweg nicht abgefangen. Explizite Menü-Navigation bleibt verfügbar.
+Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wiederverwendete Konturen und Ringtexturen, gemeinsamer Szenenzustand für Banner und Hauptfläche sowie eine gemeinsame Mitte unter dem oberen Banner. Sieben zusätzliche Ringbänder laufen nach innen weiter. Größen, Sichtbarkeiten, Staffelung und die bisherige Querformat-Skalierung bleiben erhalten.
 
-## Zufälliger Logoregen
+Der Logoregen behält die halbierte Maximalgröße, die halbierte maximale Geschwindigkeit (mindestens zwei bis acht Sekunden pro Fall) sowie die Erhöhung der maximalen Anzahl um 10 Prozent in allen Modi.
 
-- Die maximale Breite und Höhe der Regenlogos ist halbiert: maximal 22 % statt 44 % der bestehenden Regen-Größenreferenz. Die kleinsten Logos behalten ihre bisherige Größe.
-- Der schnellste vollständige Fall dauert mindestens zwei statt einer Sekunde. Die maximale normierte Fallgeschwindigkeit ist damit halbiert. Die langsame Grenze von acht Sekunden bleibt erhalten.
-- In allen Modi wird die bisherige maximale Anzahl gleichzeitig fallender Logos um 10 % erhöht und auf volle Logos aufgerundet. Die bisherige Hochformat-Reduzierung wird vor dieser Erhöhung angewendet.
-- Zufällige Positionen, Größenverteilung, Sichtbarkeiten und fortlaufendes Nachfallen bleiben erhalten. Startlogo, Hauptlogos und Timecoderinge verwenden ihre bisherigen Größen und Geschwindigkeiten.
-
-## Weitere Referenzen
-
-- Warner Music Group und Vodafone sind unter Work / Customers & Cooperators ergänzt. Das Raster enthält jetzt 16 Referenzlogos.
-- Beide Logos verwenden die hochgeladenen Originalmotive und Originalfarben. Beim Warner-PNG wurden ausschließlich transparente Außenränder verlustfrei entfernt. Das Vodafone-Logo bleibt eine Vektordatei; dessen Zeichenfläche ist im Seitenverhältnis des vorhandenen viewBox angegeben.
-
-## Website hochladen
-
-1. ZIP entpacken.
-2. Den Inhalt von eight-and-eight.com-main in die Hauptebene des bestehenden Website-Repositorys hochladen. index.html muss direkt neben CNAME liegen.
-3. Vorhandene Dateien ersetzen und die Änderung committen.
-
-Ein ZIP-Upload löscht bereits im GitHub-Repository vorhandene Altdateien nicht.
-Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
-
-## Fotos ohne zusätzliche Lichtüberlagerungen
-
-- Alle zusätzlichen Foto-Lichtverläufe und Reflexionsüberlagerungen sind entfernt. Die Fotos bleiben beim Scrollen statisch.
-- Das bisherige Foto-Lichtskript, seine Einbindung und die dazugehörigen CSS-Ebenen sind aus dem Paket entfernt.
-- Die vorhandene natürliche Beleuchtung in den Fotodateien bleibt erhalten. Die Fotos selbst wurden nicht verändert, verkleinert oder nachkomprimiert.
-- Die drei Fotos sind weiterhin verlustfreie PNGs mit 1536 × 1024 Pixeln.
-- Alle vier Ecken jedes Fotos sind identisch rund und zusätzlich durch eine runde Schnittkante gesichert.
-
-## Querformat
-
-- Startlogo und alle acht Hauptlogos sind gegenüber der vorherigen Version um genau 18 % verkleinert: Breite 0,663216 statt 0,8088 und Höhe 0,984 statt 1,2 der stabilisierten Viewporthöhe. Alle acht Timecode-/Punktringe sind im Querformat zusätzlich um 100 % gegenüber der vorherigen Version vergrößert, also im Durchmesser verdoppelt. Die Logos behalten die um 18 % verkleinerte Größe. Die gemeinsame Drehmitte, Staffelung und Winkelbewegung der Ringe bleiben erhalten. Im Hochformat bleiben die Ringe unverändert.
-- Zwischen sichtbarer Logoform und oberem Banner bleiben 2,5 % der Fensterbreite frei, begrenzt auf 12–40 CSS-Pixel. Das entspricht dem Abstand von etwa 38 Pixeln im 1536 Pixel breiten Referenz-Screenshot.
-- Derselbe Abstand liegt zwischen sichtbarer Logoform und der nächsten Feldlinie. Der Startbereich wird dafür aus der sichtbaren Höhe der zentrierten Logoform und zweimal diesem Abstand berechnet. Transparente Ränder der SVG zählen nicht als Motivabstand.
-- Die Referenz für die Regenlogos und ihre bisherige Größenverteilung bleiben erhalten.
-- Die Tapetenkachel bleibt 220 CSS-Pixel groß; sie wächst beim Vergrößern der Logos nicht mit.
-- Die Hochformat-Regeln sind unverändert.
-
-## Unterer Banner
-
-- Der Tapetenbanner ist das letzte Element des Seiteninhalts, ohne nachfolgenden Abstand und mit zusätzlicher Berücksichtigung des unteren Safe-Area-Inset.
-- Beide Tapetenbanner sind an allen vier Kanten eingerahmt: oben, unten und beidseitig links und rechts. Alle gegenüberliegenden Randlinien verwenden dieselbe Farbe und Stärke: 1,5 CSS-Pixel im Hochformat, 0,8 CSS-Pixel im Querformat.
-- Die Randlinien der Banner werden direkt als native Außenrahmen gezeichnet. Die bisherige doppelte Konstruktion aus transparentem Außenrahmen und nach innen versetzter Rahmenmaske ist für beide Banner entfernt. Dadurch gibt es außen neben den Randlinien keine schmalen cremeweißen Zwischenstreifen. Andere Inhaltsrahmen behalten ihre vorhandene Darstellung.
-- Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
-- Der obere Browserbereich erhält dieselbe Cremeweiß-Vorgabe #fdfcfa wie der Website-Hintergrund. Zusätzlich zu theme-color sowie html/body-Hintergrund enthält die Seite am oberen Rand eine leere, textbeschnittene Farbfläche für Safaris Farbübernahme. Sie liefert die Cremefarbe, ohne einen sichtbaren Streifen, zusätzliche Abstände oder eine Abdeckung des Tapetenmusters zu zeichnen. Native Browserleisten bleiben vom Browser gesteuert; ein direkter iPhone-Safari-Test ist hier nicht verfügbar.
-
-## Runde Fotoecken und sieben Innenringe
-
-- Alle drei Fotos werden an einer einheitlichen runden Schnittkante begrenzt. Die Rundung gilt für die Fotodatei selbst und für sämtliche darüberliegenden Darstellungsebenen. Es gibt keine abweichenden rechteckigen Fotoecken.
-- Sieben zusätzliche Timecode-Ringbänder setzen die vorhandenen Ringe nach innen fort. Ihre radialen Grenzen folgen dem Kehrwert der Größenstaffelung der sieben weiteren Hauptlogos.
-- Die Sichtbarkeiten werden von denselben sieben Hauptlogoebenen übernommen und nehmen nach innen ab. Drehwinkel und zeitliche Staffelung folgen diesen Ebenen; der Mittelpunkt bleibt gemeinsam.
-- Die vier Punktreihen jedes neuen Ringbandes reichen bis zu den gemeinsamen radialen Grenzen. Eine kleine Überlappung verhindert freie Zwischenringe. Kreispunkte bleiben rund.
-- Die Ringtexturen werden nur bei relevanten Größenänderungen zwischengespeichert. Es gibt keine zusätzliche Animationsschleife und keine sieben zusätzlichen Hauptlogos.
-
-## Schlussphase der Startanimation
-
-- Die Schlussphase dauert insgesamt 1,8 Sekunden: Beschleunigung von 45 auf 888 rpm, unmittelbar danach Stop in Ausgangsposition.
-- Die bisher zusätzlich anschließende 2,8-Sekunden-Abbremsphase ist entfernt.
-- Eine kleine, weich verteilte Winkelkorrektur innerhalb der Schlussbeschleunigung schließt die Sequenz bei genau 23 vollen Umdrehungen ab. Die Geschwindigkeit an Anfang und Ende bleibt exakt 45 beziehungsweise 888 rpm; die Korrektur verschwindet dort ohne zusätzlichen Geschwindigkeitssprung. Die Beschleunigung bleibt durchgehend vorwärts gerichtet.
-- Jeder anschließende Stop liegt ebenfalls in der aufrechten Ausgangsposition. Die sieben einzelnen vollen Umdrehungen und spätere Wiederholungen übernehmen keinen Restwinkel. Es gibt weder ein nachträgliches Zurückspringen noch eine zusätzliche Abbremsphase.
-- Die anschließende Pause, die sieben einzelnen Umdrehungen bei 8 rpm und die Staffelung der Hintergrundebenen bleiben erhalten.
-
-## Ruhigere Rotation und stabiler Mittelpunkt
-
-- Die sichtbare Logoform einschließlich der kleinen Punkte wurde in allen neun SVGs um ihren vollständigen Begrenzungsrahmen zentriert. Dadurch sitzt dieselbe Motivmitte auf der Drehachse des Startlogos und der acht Hauptlogos.
-- Alle acht Hauptlogos und ihre Punktringe verwenden nun denselben Mittelpunkt. Die bisherigen unterschiedlichen Rotationswinkel und Größen bleiben erhalten; die Ebenen erhalten keine voneinander abweichenden seitlichen oder vertikalen Umlaufbahnen mehr.
-- Der Startmittelpunkt wird am ungedrehten Startbereich gemessen, nicht am jeweils gedrehten SVG-Rechteck. Während die Tapete in den Hauptlogos ausblendet, geht die gemeinsame Drehmitte weich von dieser Startposition zur Mitte des sichtbaren Bereichs unter dem oberen Banner über.
-- Sobald die Tapete vollständig verschwunden ist, bleiben Hauptlogos und alle äußeren und inneren Ringe auf dieser gemeinsamen Mitte. Es gibt keine weitere Verschiebung über die restliche Scrollstrecke. Die vorhandenen Drehwinkel und die Staffelung beim Scrollen bleiben erhalten.
-- Im Hoch- und Querformat wird die Achse zwischen tatsächlichem Bannerende und sichtbarem Fensterrand berechnet. Mobile Browserleisten werden über VisualViewport berücksichtigt, mit innerHeight als Rückfall. Die Logogrößen bleiben bei mobilen Leistenänderungen stabil. Beim Orientierungswechsel wird die Größenreferenz neu gemessen; beim Zoomen bleibt die Achse auf die Layoutmitte bezogen.
-- Beim ersten Scrollimpuls während der Startrotation wird zunächst die oben beschriebene scrollgesteuerte Rückdrehung ausgeführt. Erst anschließend bewegt sich der Seiteninhalt. Weiter unten bleibt die vorhandene Winkelstaffelung beim Scrollen erhalten.
-- Die zusätzlichen Foto-Lichtüberlagerungen sind anschließend auf Wunsch vollständig entfernt worden.
-- Die Tempostufen und Wartezeiten der Startsequenz, die aktuelle Querformat-Skalierung, die verlustfreien Fotodateien und der untere Banner bleiben erhalten.
-
-Die Fotoecken, sieben Innenringe, unveränderten Fotodateien und das Entfernen der zusätzlichen Foto-Lichtüberlagerungen aus der vorigen Fassung bleiben erhalten.
+Beim Abbruch einer laufenden Startrotation am Seitenanfang dreht der Scrollweg zuerst das Startlogo, alle acht Hauptlogos und die Ringe in ihre jeweilige Ausgangsposition. Erst nach dem vollständig aufrechten Bild bewegt sich die Seite normal weiter. Mausrad, Touch und Tastatur sowie explizite Menü-Navigation bleiben berücksichtigt. Die Schlussbeschleunigung dauert 1,8 Sekunden von 45 auf 888 rpm und endet direkt aufrecht; die späteren Stopps bleiben ebenfalls aufrecht.
 
 ## Prüfung
 
-Geprüft: aufrechte Stopps der Startsequenz und aller sieben Folgeumdrehungen einschließlich gestaffelter Ebenen, kontinuierliche Winkelkorrektur mit 1,8 Sekunden und 45/888-rpm-Grenzen, gemeinsame Drehpunkte vor/nach dem Tapetenübergang, alle vier Randlinien an beiden Bannern, lokale Dateiverweise, JavaScript-Syntax und ZIP-Integrität. Die Fotos und Ringstaffelung bleiben unverändert.
-Ein Test auf einem echten iPhone mit Safari war nicht möglich. Die Vorschau enthält keine nativen Safari-Browserleisten.
+Lokale Dateiverweise, natürliche Bildproportionen, verlustfreie Logo-Zuschnitte und unveränderte Fotodateien werden geprüft. Die Vorschau prüft die responsiven Raster, die Bannerkante und die Lichtfelder und deren kontinuierliche Überblendung. Ein direkter Test auf einem echten iPhone mit Safari ist hier nicht verfügbar.
 
 ## Bildbearbeitung – historische Originalprompts
 
