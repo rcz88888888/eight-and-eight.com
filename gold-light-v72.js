@@ -79,15 +79,13 @@
     const head = header?.getBoundingClientRect();
     const menuOpen = header?.classList.contains('menu-expanded');
     const menuBox = menuOpen ? nav?.getBoundingClientRect() : null;
-    const height = (head?.height || 0) + (menuBox?.height || 0);
-    const ratio = Math.max(1, devicePixelRatio || 1);
     if (contentLayer) {
       paint(contentLayer, '--content-start', `${head?.height || 0}px`);
-      // The open portrait menu ends at its measured outer border. Round
-      // inward to device pixels so the mask cannot pass that border.
-      const cut = menuBox && matchMedia('(orientation: portrait)').matches
-        ? Math.floor(menuBox.bottom * ratio) / ratio
-        : Math.ceil(height * ratio) / ratio - 3;
+      // Share the banner's actual outer edge, including fractional CSS pixels.
+      // A shortened mask exposes text/logos inside its border; rounding outward
+      // instead paints a cream hairline below it. The same edge works for the
+      // expanded menu without adding its height to the header a second time.
+      const cut = Math.max(head?.bottom || 0, menuBox?.bottom || 0);
       paint(contentLayer, '--content-cut', `${Math.max(0, cut)}px`);
     }
   }

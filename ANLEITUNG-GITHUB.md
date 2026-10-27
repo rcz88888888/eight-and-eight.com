@@ -1,6 +1,12 @@
-# Eight&Eight – Flüssigere Logoanimation und vorbereitete Fotos
+# Eight&Eight – Exakte Bannerkante und flüssigere Logoanimation
 
 Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Exakte Abdeckung an der Bannerkante
+
+- Die Abdeckung für scrollenden Text und Referenzlogos endet genau am gemessenen unteren Außenrand des oberen Banners. Der bisherige Abzug von 3 CSS-Pixeln ist entfernt; dadurch können Inhalte nicht mehr in den unteren Bannerstreifen hineinragen.
+- Die tatsächliche Kante wird einschließlich ihrer Bruchteile eines CSS-Pixels übernommen, ohne Rundung nach innen oder außen. Das vermeidet zugleich einen zusätzlichen cremeweißen Streifen unter der Linie. Bei geöffneter Navigation gilt deren tatsächlicher unterer Rand.
+- Der CSS-Rückfall verwendet ebenfalls die volle Bannerhöhe. Animation, Tapetenmuster, Bannerlinien und Logogrößen bleiben unverändert; es gibt keine zusätzliche Berechnung während des Scrollens.
 
 ## Ruhigere Animation beim Scrollen
 

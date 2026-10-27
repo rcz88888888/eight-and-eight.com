@@ -278,7 +278,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
   top: 0;
   left: 0;
   right: 0;
-  height: var(--content-cut, calc(var(--header-height) - 3px));
+  height: var(--content-cut, var(--header-height));
   z-index: 2;
   background: var(--page-cream, #fdfcfa);
   pointer-events: none;
