@@ -121,13 +121,14 @@
   let sceneKey = '';
   let sceneViewportHeight = 0;
   let surfaceHeight = 0;
-  let particles = [];
   let rain = [], rainWidth = 0, rainHeight = 0, rainMaxWidth = 0;
   let rainTime = 0, lastRainTime;
-  let lastMainPaint = '';
+  let lastMainPaint = '', lastLogoScene;
   let lastFeedPaint = '';
   let sprites = [];
   let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
+  let outlinePath, outlineWidth = 1.5, outlineColor = '#c2b594';
+  let outlineMatrix = {a:1,b:0,c:0,d:1,e:0,f:0};
   let ringSprites = [], mainRingWidth = 0;
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
@@ -168,6 +169,8 @@
   let lastLogoTime;
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
+  let logoCenter, logoCenterTime, centerAnimating = false;
+  let mainGeometryKey = '';
   // One frame clock for idle rotation, scroll handoff and the return wobble.
   const TAU = Math.PI * 2;
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
@@ -419,6 +422,9 @@
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     if (!(scale > 0)) return;
     const pixels = parseFloat(getComputedStyle(root).getPropertyValue('--wallpaper-tile-size')) || 220;
+    const key = `${scale}:${pixels}`;
+    if (key === mainGeometryKey) return;
+    mainGeometryKey = key;
     for (const layer of layers) {
       // Also keep the native SVG fallback correct before canvas is ready.
       layer.node.style.setProperty('--layer-scale', layer.scale * openingScaleFactor);
@@ -446,6 +452,7 @@
       ...layers.map(layer => layer.scale)].join(':');
     if (key === mainWallpaperKey) return;
     mainWallpaperKey = key;
+    cacheVectorOutline(border, borderWidth / openingScale);
     const copy = openingLogo.cloneNode(true);
     copy.querySelector('.hero-strobe-ring')?.remove();
     copy.removeAttribute('class'); copy.removeAttribute('style');
@@ -495,7 +502,8 @@
         const width = Math.max(8, Math.min(1536, Math.ceil(922 * scale * layers[index].scale * inkRatio)));
         return rasterise(image, width, Math.round(width * 1368 / 922));
       });
-      mainBorderSprites = cacheEdges(outline); mainSolidSprites = cacheEdges(solid);
+      mainBorderSprites = outlinePath ? [] : cacheEdges(outline);
+      mainSolidSprites = cacheEdges(solid);
       lastMainPaint = lastFeedPaint = ''; cacheSpriteChoices(); schedule();
     };
     for (const image of images) {
@@ -506,6 +514,30 @@
     }
     wallpapers.forEach((image, index) => { image.src = wallpaperSources[index]; });
     outline.src = serialise(borderCopy); solid.src = serialise(solidCopy);
+  }
+  function cacheVectorOutline(border, width) {
+    outlineWidth = width; outlineColor = border.getAttribute('stroke') || '#c2b594';
+    if (outlinePath || typeof Path2D !== 'function') return;
+    try {
+      const combined = new Path2D();
+      for (const node of border.children) {
+        const path = new Path2D();
+        if (node.localName === 'path') path.addPath(new Path2D(node.getAttribute('d')));
+        else if (node.localName === 'ellipse') path.ellipse(
+          Number(node.getAttribute('cx')),Number(node.getAttribute('cy')),
+          Number(node.getAttribute('rx')),Number(node.getAttribute('ry')),0,0,TAU);
+        else continue;
+        const transforms = node.transform?.baseVal;
+        if (transforms?.numberOfItems) combined.addPath(path, transforms.getItem(0).matrix);
+        else combined.addPath(path);
+      }
+      const transforms = openingLogo.querySelector('.logo-centered-artwork')?.transform?.baseVal;
+      if (transforms?.numberOfItems) {
+        const matrix = transforms.getItem(0).matrix;
+        outlineMatrix = {a:matrix.a,b:matrix.b,c:matrix.c,d:matrix.d,e:matrix.e,f:matrix.f};
+      }
+      outlinePath = combined;
+    } catch { outlinePath = null; }
   }
 
   function cacheSpriteChoices() {
@@ -530,7 +562,7 @@
       layer.ringSprite=ringSpriteFor(mainRingWidth*scale*layer.scale*layer.ringScale*inkRatio);
     }
     cacheInnerRingSprites(mainRingWidth * scale, inkRatio);
-    for (const mark of [...particles, ...rain]) mark.sprite = spriteFor(mark.width * bgRatio);
+    for (const mark of rain) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
     if (reset || logoProgress === undefined || reduced.matches) {
@@ -538,7 +570,7 @@
     } else {
       // Time-based damping fills the gaps between touch-scroll events. Only
       // the eight-logo drawing is eased; document scrolling and masks stay native.
-      const dt = logoAnimating && lastLogoTime !== undefined ? Math.max(0, Math.min(64, time - lastLogoTime)) : 1000 / 60;
+      const dt = lastLogoTime !== undefined ? Math.max(0, Math.min(64, time - lastLogoTime)) : 1000 / 60;
       logoProgress += (target - logoProgress) * (1 - Math.exp(-dt / 42));
     }
     lastLogoTime = time;
@@ -576,6 +608,7 @@
       scrollStackBlend=1;scrollRotationPending=false;
       layers.forEach(layer=>{
         layer.scrollAngle=layer.scrollTarget=layer.scrollDelayedAngle=angle;
+        layer.scrollSampleTime=time-layer.depth*scrollRotationDelay;
       });
       return;
     }
@@ -602,7 +635,10 @@
     const activeMaxDelay=Math.max(0,...layers.map(layer=>layer.depth))*fan.delay;
     let unsettled=time-scrollLastInputTime<activeMaxDelay || logoAnimating;
     for(const layer of scrollRotationOrder){
-      const delayed=time-layer.depth*fan.delay;
+      // Expanding the fan may increase its delay. Freeze a sample briefly
+      // rather than moving backwards through the history of a forward scroll.
+      const delayed=Math.max(layer.scrollSampleTime ?? -Infinity,time-layer.depth*fan.delay);
+      layer.scrollSampleTime=delayed;
       while(cursor+1<scrollRotationHistory.length &&
         scrollRotationHistory[cursor+1].time<=delayed)cursor++;
       const from=scrollRotationHistory[cursor];
@@ -612,21 +648,17 @@
       const speed=layer.speed+(1-layer.speed)*fan.blend;
       layer.scrollTarget+=(delayedAngle-layer.scrollDelayedAngle)*speed;
       layer.scrollDelayedAngle=delayedAngle;
-      layer.scrollTarget+=shortestAngle(delayedAngle-layer.scrollTarget)*catchUp;
+      // Keep scroll phases unwrapped. Choosing a shortest-angle branch here
+      // reverses a follower abruptly whenever its lag crosses half a turn.
+      layer.scrollTarget+=(delayedAngle-layer.scrollTarget)*catchUp;
       layer.scrollAngle=layer.depth===0?angle:
-        layer.scrollAngle+shortestAngle(layer.scrollTarget-layer.scrollAngle)*response;
-      if(Math.abs(shortestAngle(angle-layer.scrollAngle))>.00001 ||
-        Math.abs(shortestAngle(angle-layer.scrollTarget))>.00001)unsettled=true;
+        layer.scrollAngle+(layer.scrollTarget-layer.scrollAngle)*response;
+      if(Math.abs(angle-layer.scrollAngle)>.00001 ||
+        Math.abs(angle-layer.scrollTarget)>.00001)unsettled=true;
     }
     if(!unsettled)layers.forEach(layer=>layer.scrollAngle=layer.scrollTarget=angle);
     scrollRotationPending=unsettled;
   }
-  const randomFrom = seed => () => {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
   const schedule = () => {
     if (!raf && !document.hidden) raf = requestAnimationFrame(render);
   };
@@ -687,6 +719,9 @@
   function measure(width, height) {
     // Pin the CSS and canvas geometry to the same viewport before measuring.
     if (syncOpeningViewport(width, height)) layoutDirty = true;
+    const nextBgRatio = Math.min(devicePixelRatio || 1, 1.25);
+    const nextInkRatio = Math.min(devicePixelRatio || 1, 1.5);
+    if (bgRatio !== nextBgRatio || inkRatio !== nextInkRatio) layoutDirty = true;
     // All layout reads happen before the scroll frame's paints.
     pageHeight = Math.max(scrollHeight(), height);
     if (documentSurfaceLayer) documentSurfaceLayer.style.height = `${pageHeight}px`;
@@ -744,11 +779,15 @@
       openingCenter = {x: box.left + box.width / 2,
         y: box.top + scrollPosition() + box.height / 2};
     }
-    bgRatio = Math.min(devicePixelRatio || 1, 1.25);
-    inkRatio = Math.min(devicePixelRatio || 1, 1.5);
-    syncMainWallpaperGeometry();
-    cacheMainWallpaperSprites();
-    cacheSpriteChoices();
+    bgRatio = nextBgRatio;
+    inkRatio = nextInkRatio;
+    // Toolbar/visual-viewport motion only changes the canvas centre and crop.
+    // Reuse logo/ring textures and leave hidden SVG geometry untouched.
+    if (layoutDirty) {
+      syncMainWallpaperGeometry();
+      cacheMainWallpaperSprites();
+      cacheSpriteChoices();
+    }
     if (feed && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
       resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
@@ -762,25 +801,15 @@
     const rainSizeWidth = rainReferenceWidth(openingViewport.viewportWidth, openingViewport.height);
     const portrait = matchMedia('(orientation: portrait)').matches;
     const key = `${width}:${Math.round(pageHeight)}:${portrait}:${rainSizeWidth.toFixed(1)}`;
-    if (key === sceneKey) { rainWidth=width;rainHeight=height;cacheSpriteChoices(); return; }
+    if (key === sceneKey) { rainWidth=width;rainHeight=height; return; }
     sceneKey = key;
-    const rand = randomFrom(88888888);
     const count = portrait ? 2222 : 8888;
     // Keep tiny marks and opacity; halve the maximum rain-logo dimensions.
     // Browser toolbar height changes do not rebuild this scene.
     if (!sceneViewportHeight || width !== lastWidth) sceneViewportHeight = height;
     const stableHeight = sceneViewportHeight;
-    particles = Array.from({length: count}, (_, i) => {
-      const fraction = i === 0 ? 0 : i === count - 1 ? 1 : rand() ** 2.6;
-      const w = rainSizeWidth * (.004 + .216 * fraction);
-      return {
-        x: rand() * (width + rainSizeWidth) - rainSizeWidth / 2 - w / 2,
-        y: rand() * (pageHeight + stableHeight) - stableHeight / 2,
-        width: w, height: w * 1368 / 922,
-        opacity: (.08 + rand() * .24) * .2206456,
-        speed: .16 + rand() * .56
-      };
-    });
+    // The active rain pool below is the only rain geometry needed. The old
+    // 2,222/8,888-object preparation array was never drawn on either canvas.
     rainWidth=width;rainHeight=height;rainMaxWidth=rainSizeWidth;
     const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
     const baselinePoolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
@@ -800,7 +829,6 @@
       progress:initial?Math.random():0,sprite:spriteFor(width*bgRatio)};
   }
   function advanceRain(time,width,height) {
-    if(lastRainTime!==undefined && time-lastRainTime<1000/60-.5)return;
     const dt=lastRainTime===undefined?0:Math.min(.1,Math.max(0,(time-lastRainTime)/1000));
     lastRainTime=time;
     if(reduced.matches)return;
@@ -811,35 +839,30 @@
     }
   }
   function field(width, height, scroll) {
-    const progress = Math.min(1, scroll / Math.max(1, pageHeight - height));
+    // Browser-toolbar height changes must not rotate otherwise stationary logos.
+    const referenceHeight = openingViewport?.height || height;
+    const progress = scroll >= pageHeight-height-1 ? 1 :
+      Math.min(1, scroll / Math.max(1, pageHeight-referenceHeight));
     const motion = reduced.matches ? 0 : progress;
     const travel = reduced.matches ? 0 : scroll / Math.max(1, height);
     return {width, height, scroll, progress, travel,
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
-  function paintCanvas(state, easedProgress) {
-    if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length || !mainBorderSprites.length || !mainSolidSprites.length) return;
+  function paintCanvas(state, easedProgress, time, resetMotion) {
+    if (!bg || !ink || !mainBox || !sprites.length || !mainSprites.length ||
+        (!outlinePath && !mainBorderSprites.length) || !mainSolidSprites.length) return;
     const {width, height} = state;
     const backgroundKey = `${sceneKey}:${width}:${height}:${surfaceHeight}:${rainTime}`;
     if (backgroundKey !== lastBackgroundPaint) {
       bg.clearRect(0, 0, width, surfaceHeight);
-      let visible = 0;
-      for (const mark of rain) {
-        const top = -mark.height + mark.progress * (surfaceHeight + mark.height);
-        if (top + mark.height < 0 || top > surfaceHeight || mark.x + mark.width < 0 || mark.x > width) continue;
-        const sprite = mark.sprite;
-        bg.globalAlpha = mark.opacity;
-        bg.drawImage(sprite, mark.x, top, mark.width, mark.height);
-        visible++;
-      }
-      bg.globalAlpha = 1;
-      const count = String(visible);
+      const count=String(drawRain(bg,width,surfaceHeight));
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const center = commonLogoCenter(patternVisibility);
+    const center = easeLogoCenter(commonLogoCenter(patternVisibility), time,
+      resetMotion || state.scroll <= .5);
     const {x:centerX, y:centerY} = center;
     const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
@@ -854,43 +877,75 @@
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: centerX, y: centerY
     };
-    for (const layer of layers) {
-      ink.save();
-      ink.translate(centerX, centerY);
-      ink.rotate(layer.scrollAngle + layer.idleAngle);
-      ink.scale(layer.scale, layer.scale);
-      const opacity=mainLayerOpacity(layer,patternVisibility,fillVisibility);
-      if(patternVisibility>0){
-        ink.globalAlpha=opacity*patternVisibility;
-        ink.drawImage(layer.sprite,-w/2,-h/2,w,h);
-      }
-      if(fillVisibility>0){
-        ink.globalAlpha=opacity*fillVisibility;
-        ink.drawImage(layer.solidSprite,-w/2,-h/2,w,h);
-      }
-      ink.globalAlpha=opacity;
-      ink.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
-      if(layer.ringSprite && ringDiameter>0) {
-        // Local ring size is independent of the logo silhouette. The enclosing
-        // group still supplies their shared centre, rotation, motion and opacity.
-        const diameter = ringDiameter * layer.ringScale;
-        ink.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
-      }
-      ink.restore();
-    }
-    for (const ring of innerRings) {
-      if (!ring.sprite || !(ringDiameter > 0)) continue;
-      const diameter = ringDiameter * ring.diameterFactor;
-      ink.save();
-      ink.translate(centerX, centerY);
-      ink.rotate(ring.source.scrollAngle + ring.source.idleAngle);
-      ink.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
-      ink.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
-      ink.restore();
-    }
+    lastLogoScene={centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility};
+    drawLogoLayers(ink,lastLogoScene,width,surfaceHeight);
     if (!root.classList.contains('canvas-logos-ready')) {
       root.classList.add('logo-rain-ready', 'canvas-logos-ready');
     }
+  }
+  function drawLogoLayers(context,scene,width,surfaceHeight) {
+    const {centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility}=scene;
+    for (const layer of layers) {
+      context.save();
+      context.translate(centerX, centerY);
+      context.rotate(layer.scrollAngle + layer.idleAngle);
+      context.scale(layer.scale, layer.scale);
+      const opacity=mainLayerOpacity(layer,patternVisibility,fillVisibility);
+      if(patternVisibility>0){
+        context.globalAlpha=opacity*patternVisibility;
+        context.drawImage(layer.sprite,-w/2,-h/2,w,h);
+      }
+      if(fillVisibility>0){
+        context.globalAlpha=opacity*fillVisibility;
+        context.drawImage(layer.solidSprite,-w/2,-h/2,w,h);
+      }
+      context.globalAlpha=opacity;
+      if (outlinePath) {
+        // Stroke the cached vector directly instead of compositing a huge,
+        // mostly transparent outline bitmap at eight rotations every frame.
+        context.save();
+        context.scale(scale,scale);
+        context.translate(-461,-684);
+        const matrix=outlineMatrix;
+        context.transform(matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f);
+        context.lineWidth=outlineWidth;context.strokeStyle=outlineColor;
+        context.lineCap=context.lineJoin='round';
+        context.stroke(outlinePath);
+        context.restore();
+      } else context.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
+      const ringExtent = ringDiameter * layer.ringScale * layer.scale / 1280;
+      if(layer.ringSprite && ringDiameter>0 && ringIntersectsViewport(centerX,centerY,
+        ringInnerRadius*ringExtent,ringOuterRadius*ringExtent,width,surfaceHeight)) {
+        // Local ring size is independent of the logo silhouette. The enclosing
+        // group still supplies their shared centre, rotation, motion and opacity.
+        const diameter = ringDiameter * layer.ringScale;
+        context.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
+      }
+      context.restore();
+    }
+    for (const ring of innerRings) {
+      if (!ring.sprite || !(ringDiameter > 0) || !ringIntersectsViewport(centerX,centerY,
+        ring.innerRatio*ringDiameter,ring.outerRatio*ringDiameter,width,surfaceHeight)) continue;
+      const diameter = ringDiameter * ring.diameterFactor;
+      context.save();
+      context.translate(centerX, centerY);
+      context.rotate(ring.source.scrollAngle + ring.source.idleAngle);
+      context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
+      context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
+      context.restore();
+    }
+  }
+  function drawRain(context,width,clipHeight) {
+    let visible=0;
+    for (const mark of rain) {
+      const top=-mark.height+mark.progress*(surfaceHeight+mark.height);
+      if(top+mark.height<0 || top>clipHeight || mark.x+mark.width<0 || mark.x>width || !mark.sprite)continue;
+      context.globalAlpha=mark.opacity;
+      context.drawImage(mark.sprite,mark.x,top,mark.width,mark.height);
+      visible++;
+    }
+    context.globalAlpha=1;
+    return visible;
   }
   function commonLogoCenter(patternVisibility) {
     const x = mainBox.left + mainBox.width / 2;
@@ -900,19 +955,40 @@
     return {x: x+((openingCenter?.x ?? x)-x)*patternVisibility,
       y: y+((openingCenter?.y ?? y)-y)*patternVisibility};
   }
-  // Copy the same rendered frame, cropped to the banner. Do not create or
-  // animate another set of logos: position, rotation and opacity match.
-  function paintBannerFeed(width, height) {
-    if (!feed || !bg || !ink || !feedHeight || !width || !height) return;
+  function ringIntersectsViewport(x,y,innerRadius,outerRadius,width,height) {
+    // A large ring may surround the entire viewport without a single visible
+    // dot. Avoid compositing its transparent square, while keeping edge AA.
+    const nearX=Math.max(0,-x,x-width),nearY=Math.max(0,-y,y-height);
+    const farX=Math.max(Math.abs(x),Math.abs(width-x));
+    const farY=Math.max(Math.abs(y),Math.abs(height-y));
+    return nearX*nearX+nearY*nearY<=(outerRadius+1)**2 &&
+      farX*farX+farY*farY>=Math.max(0,innerRadius-1)**2;
+  }
+  function easeLogoCenter(target, time, reset) {
+    if (!logoCenter || reset || reduced.matches) {
+      logoCenter = {x: target.x, y: target.y};
+    } else {
+      const dt = logoCenterTime === undefined ? 1000/60 : Math.max(0,Math.min(64,time-logoCenterTime));
+      const blend = 1-Math.exp(-dt/48);
+      logoCenter.x += (target.x-logoCenter.x)*blend;
+      logoCenter.y += (target.y-logoCenter.y)*blend;
+    }
+    logoCenterTime = time;
+    centerAnimating = Math.abs(target.x-logoCenter.x)>.01 || Math.abs(target.y-logoCenter.y)>.01;
+    if (!centerAnimating) { logoCenter.x=target.x;logoCenter.y=target.y; }
+    return logoCenter;
+  }
+  // Render the same scene into the shallow banner crop. Copying a changing
+  // full-size canvas into a second canvas forces expensive rendering flushes.
+  // Both crops share every position, angle, texture and the same frame clock.
+  function paintBannerFeed(width,height) {
+    if(!feed || !lastLogoScene || !feedHeight || !width || !height)return;
     const feedKey=`${lastBackgroundPaint}:${lastMainPaint}:${width}:${height}:${feedHeight}`;
     if(feedKey===lastFeedPaint)return;
     lastFeedPaint=feedKey;
-    feed.clearRect(0, 0, width, feedHeight);
-    for (const source of [background, logos]) {
-      if (!source.width || !source.height) continue;
-      feed.drawImage(source, 0, 0, source.width, source.height * feedHeight / surfaceHeight,
-        0, 0, width, feedHeight);
-    }
+    feed.clearRect(0,0,width,feedHeight);
+    drawRain(feed,width,feedHeight);
+    drawLogoLayers(feed,lastLogoScene,width,feedHeight);
   }
   function render(time = performance.now()) {
     raf = 0;
@@ -937,7 +1013,7 @@
     updateScrollRotations(easedProgress,time,resetMotion,state.scroll);
     updateIdleRotation(time,state.scroll);
     advanceRain(time,width,height);
-    paintCanvas(state, easedProgress);
+    paintCanvas(state, easedProgress, time, resetMotion);
     paintBannerFeed(width, height);
     if (startScrollReturn?.progress === 1) finishStartScrollReturn(time);
     const subscriberState = `${width}:${height}:${state.scroll}:${state.progress}:${state.motionProgress}`;
@@ -945,7 +1021,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (startScrollReturn || centerAnimating || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {

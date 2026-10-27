@@ -1,6 +1,20 @@
-# Eight&Eight – Scroll-Rückdrehung vor der Seitennavigation
+# Eight&Eight – Flüssigere Logoanimation und vorbereitete Fotos
 
 Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Ruhigere Animation beim Scrollen
+
+- Die Winkel beim Scrollen bleiben über ganze Umdrehungen hinweg kontinuierlich. Die Kurzweg-Normalisierung wurde aus der laufenden Scrollrotation entfernt; sie bleibt bei der ausdrücklich gewünschten Rückdrehung zum Start aktiv. Beim Öffnen des Fächers springt die zeitliche Abtastung nicht mehr in die Vergangenheit zurück.
+- Der Logoregen folgt jedem verfügbaren Animationsbild mit dessen tatsächlichem Zeitabstand. Der bisherige starre 60-Hz-Zeitfilter konnte bei leicht schwankenden Bildabständen zusätzliche Bilder überspringen. Anzahl, Sichtbarkeiten, halbierte Maximalgröße und halbierte maximale Fallgeschwindigkeit bleiben erhalten.
+- Texturen und unsichtbare SVG-Geometrien werden bei Bewegungen mobiler Browserleisten wiederverwendet. Die Drehphase bezieht sich auf eine stabile Fensterhöhe; Änderungen der sichtbaren Fläche verschieben die gemeinsame Drehmitte weich.
+- Eine ungenutzte Vorbereitung von 2.222 beziehungsweise 8.888 unsichtbaren Objekten ist entfernt. Gezeichnet und aktualisiert wird weiterhin der vorhandene sichtbare Regen-Pool mit der zuletzt gewünschten Erhöhung um 10 Prozent.
+- Die Hauptlogo-Konturen verwenden nach Möglichkeit einen einmal vorbereiteten Vektorpfad. Dadurch müssen nicht in jedem Bild acht große, überwiegend transparente Konturbilder überlagert werden. Für Browser ohne passende Pfadunterstützung bleibt die bisherige Textur als Rückfall erhalten.
+- Ringbänder, deren gesamte Punktfläche außerhalb der Zeichenfläche liegt, werden vor dem Zeichnen übersprungen. Zahl, Positionen, Größen und Sichtbarkeiten aller tatsächlich sichtbaren Ringe bleiben unverändert.
+- Der Banner zeichnet denselben Szenenzustand direkt in seinen Ausschnitt. Das bisherige Kopieren der zwei gerade veränderten, großen Canvasflächen entfällt. Es gibt weiterhin nur einen Animationszustand und einen gemeinsamen Takt.
+- Alle 16 Referenzlogos haben bereits vor dem Laden fest reservierte Bildproportionen. Ihr Laden löst keine pauschale Neuberechnung aller Logo-Texturen und Textmasken mehr aus. Die drei Fotos werden nacheinander in freien Browserzeiten geladen und dekodiert. Ihre runden Schnittkanten erhalten eine eigene begrenzte Zeichenfläche.
+- Die PNG- und SVG-Dateien selbst sind unverändert. Fotoauflösung, Bilddetails, 16 Referenzen, Randlinien, Startsequenz, Stopppositionen und scrollgesteuerte Rückdrehung bleiben erhalten.
+
+Prüfung: kontinuierliche Vorwärtsrotation bei schnellem Scrollen, kein zusätzlicher Rotationsimpuls durch Browserleisten, gleichmäßige Regen-Zeitschritte, Texturwiederverwendung bei zehn aufeinanderfolgenden Viewportänderungen, konservatives Überspringen vollständig unsichtbarer Ringe, Rückdrehung für Mausrad/Touch/Tastatur, alle aufrechten Stopps und gemeinsame Drehpunkte. Die Browser-Vorschau wurde in wiederholten Scroll-Durchläufen verglichen. Messwerte aus dieser Vorschau sind keine Zusage einer bestimmten Bildrate auf dem iPhone; ein direkter iPhone-Safari-Test ist hier nicht verfügbar.
 
 ## Abbruch der Startanimation durch Scrollen
 

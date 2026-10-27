@@ -134,10 +134,25 @@
       syncBrowserColor(); measureEdges(); cacheGeometry();
     }
   });
-  // Lazy-loaded portfolio images can change their height after initial layout.
-  portfolioLogos.forEach(element => {
-    if (!element.complete) element.addEventListener('load', engine.invalidate, {once: true});
-  });
+  // Portfolio dimensions are reserved in HTML. Loading their pixels does not
+  // invalidate every logo texture, text mask and frame across the whole page.
+  // Actual layout changes are already covered by the engine's ResizeObserver.
+  const photos = [...document.querySelectorAll('.concept-photo img')];
+  const preparePhoto = () => {
+    const photo = photos.shift();
+    if (!photo) return;
+    photo.fetchPriority = 'low';
+    photo.loading = 'eager';
+    const decoded = photo.decode ? photo.decode() : Promise.resolve();
+    decoded.catch(() => {}).then(() => {
+      if (photos.length) queuePhoto();
+    });
+  };
+  const queuePhoto = () => {
+    if ('requestIdleCallback' in window) requestIdleCallback(preparePhoto, {timeout: 1500});
+    else setTimeout(preparePhoto, 32);
+  };
+  queuePhoto();
   if (nav) {
     let wasOpen = nav.classList.contains('open');
     new MutationObserver(() => {

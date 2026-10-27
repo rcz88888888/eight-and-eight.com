@@ -457,6 +457,7 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
   border-radius: var(--photo-radius);
   overflow: hidden;
   isolation: isolate;
+  contain: paint;
   -webkit-clip-path: inset(0 round var(--photo-radius));
   clip-path: inset(0 round var(--photo-radius));
 }
@@ -469,6 +470,8 @@ html, body { background:var(--page-cream, #fdfcfa) !important; color-scheme:only
   aspect-ratio: 3 / 2;
   object-fit: cover;
   border-radius: var(--photo-radius);
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Keep animation pixels behind Safari's translucent bottom browser controls. */
