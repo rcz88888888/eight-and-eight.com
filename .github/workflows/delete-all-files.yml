@@ -19,4 +19,3 @@ jobs:
           git add --all
           git commit -m "Delete all files in repository"
           git push origin main
-``` Füge diesen Text in deine Workflow-Datei ein.
