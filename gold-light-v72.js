@@ -55,12 +55,6 @@
   const header = document.querySelector('.topbar');
   const hollowMaskSupported = CSS.supports('mask-composite', 'exclude') ||
     CSS.supports('-webkit-mask-composite', 'xor');
-  if (header && hollowMaskSupported) {
-    const edge = document.createElement('span');
-    edge.className = 'gold-header-edge';
-    edge.setAttribute('aria-hidden', 'true');
-    header.appendChild(edge);
-  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -119,7 +113,10 @@
     });
     for (const {element, widths, position} of metrics) {
       const active = widths.some(width => width > 0);
-      const useMask = active && hollowMaskSupported;
+      // Banner borders must paint at their actual outer edge. A hollow mask
+      // inside a transparent native border leaves a cream hairline outside it.
+      const banner = element === header || element.classList.contains('wallpaper-end');
+      const useMask = active && hollowMaskSupported && !banner;
       element.classList.toggle('gold-frame-light', useMask);
       if (useMask && position === 'static') element.classList.add('gold-frame-relative');
       edges.forEach((edge, index) => {

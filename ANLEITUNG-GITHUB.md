@@ -1,6 +1,13 @@
-# Eight&Eight – Aufrechte Stopps und gemeinsame Drehmitte
+# Eight&Eight – Kleinerer, langsamerer Logoregen mit mehr Logos
 
 Diese ZIP enthält 41 Dateien einschließlich dieser Anleitung und CNAME.
+
+## Zufälliger Logoregen
+
+- Die maximale Breite und Höhe der Regenlogos ist halbiert: maximal 22 % statt 44 % der bestehenden Regen-Größenreferenz. Die kleinsten Logos behalten ihre bisherige Größe.
+- Der schnellste vollständige Fall dauert mindestens zwei statt einer Sekunde. Die maximale normierte Fallgeschwindigkeit ist damit halbiert. Die langsame Grenze von acht Sekunden bleibt erhalten.
+- In allen Modi wird die bisherige maximale Anzahl gleichzeitig fallender Logos um 10 % erhöht und auf volle Logos aufgerundet. Die bisherige Hochformat-Reduzierung wird vor dieser Erhöhung angewendet.
+- Zufällige Positionen, Größenverteilung, Sichtbarkeiten und fortlaufendes Nachfallen bleiben erhalten. Startlogo, Hauptlogos und Timecoderinge verwenden ihre bisherigen Größen und Geschwindigkeiten.
 
 ## Weitere Referenzen
 
@@ -37,8 +44,9 @@ Die ZIP selbst wird von GitHub Pages nicht automatisch entpackt.
 
 - Der Tapetenbanner ist das letzte Element des Seiteninhalts, ohne nachfolgenden Abstand und mit zusätzlicher Berücksichtigung des unteren Safe-Area-Inset.
 - Beide Tapetenbanner sind an allen vier Kanten eingerahmt: oben, unten und beidseitig links und rechts. Alle gegenüberliegenden Randlinien verwenden dieselbe Farbe und Stärke: 1,5 CSS-Pixel im Hochformat, 0,8 CSS-Pixel im Querformat.
+- Die Randlinien der Banner werden direkt als native Außenrahmen gezeichnet. Die bisherige doppelte Konstruktion aus transparentem Außenrahmen und nach innen versetzter Rahmenmaske ist für beide Banner entfernt. Dadurch gibt es außen neben den Randlinien keine schmalen cremeweißen Zwischenstreifen. Andere Inhaltsrahmen behalten ihre vorhandene Darstellung.
 - Die iOS-Animationsebene erhält ihre Höhe aus dem tatsächlichen Website-Inhalt. Ihre Canvasflächen können keinen zusätzlichen Scrollbereich hinter dem Banner erzeugen.
-- Die Browser-Farbvorgabe bleibt Cremeweiß. Native Browserleisten werden weiterhin vom Browser selbst gezeichnet.
+- Der obere Browserbereich erhält dieselbe Cremeweiß-Vorgabe #fdfcfa wie der Website-Hintergrund. Zusätzlich zu theme-color sowie html/body-Hintergrund enthält die Seite am oberen Rand eine leere, textbeschnittene Farbfläche für Safaris Farbübernahme. Sie liefert die Cremefarbe, ohne einen sichtbaren Streifen, zusätzliche Abstände oder eine Abdeckung des Tapetenmusters zu zeichnen. Native Browserleisten bleiben vom Browser gesteuert; ein direkter iPhone-Safari-Test ist hier nicht verfügbar.
 
 ## Runde Fotoecken und sieben Innenringe
 

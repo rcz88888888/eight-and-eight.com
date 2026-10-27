@@ -695,13 +695,13 @@
     sceneKey = key;
     const rand = randomFrom(88888888);
     const count = portrait ? 2222 : 8888;
-    // Preserve the seeded density, sizes, opacity and individual speeds.
+    // Keep tiny marks and opacity; halve the maximum rain-logo dimensions.
     // Browser toolbar height changes do not rebuild this scene.
     if (!sceneViewportHeight || width !== lastWidth) sceneViewportHeight = height;
     const stableHeight = sceneViewportHeight;
     particles = Array.from({length: count}, (_, i) => {
       const fraction = i === 0 ? 0 : i === count - 1 ? 1 : rand() ** 2.6;
-      const w = rainSizeWidth * (.004 + .436 * fraction);
+      const w = rainSizeWidth * (.004 + .216 * fraction);
       return {
         x: rand() * (width + rainSizeWidth) - rainSizeWidth / 2 - w / 2,
         y: rand() * (pageHeight + stableHeight) - stableHeight / 2,
@@ -712,15 +712,18 @@
     });
     rainWidth=width;rainHeight=height;rainMaxWidth=rainSizeWidth;
     const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
-    const poolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
+    const baselinePoolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
+    const poolSize=Math.ceil(baselinePoolSize*1.1);
     rain=Array.from({length:poolSize},()=>spawnRain(true));
     lastRainTime=undefined;
     background.dataset.logoCount = String(poolSize);
     cacheSpriteChoices();
   }
   function spawnRain(initial=false) {
-    const width=rainMaxWidth*(.004+.436*Math.random()**2.6);
-    const duration=1+7*Math.random();
+    const width=rainMaxWidth*(.004+.216*Math.random()**2.6);
+    // Two seconds is the fastest traversal (previously one). Retain the
+    // existing slowest traversal of eight seconds and randomise in between.
+    const duration=2+6*Math.random();
     return {x:Math.random()*rainWidth-width/2,width,height:width*1368/922,
       opacity:(.08+Math.random()*.24)*.2206456,duration,
       progress:initial?Math.random():0,sprite:spriteFor(width*bgRatio)};

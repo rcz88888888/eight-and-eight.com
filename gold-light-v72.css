@@ -13,8 +13,7 @@
 /* Rounded frames use a hollow mask, so neither text nor the transparent
    field interior receives a coloured fill. No extra DOM children are added. */
 .gold-frame-relative { position: relative; }
-.gold-frame-light:not(.topbar)::after,
-.gold-header-edge {
+.gold-frame-light:not(.topbar)::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -565,4 +564,27 @@ body .gold-text-light {
 }
 .topbar, .content-scroll > .wallpaper-end {
   border: var(--banner-edge-width) solid var(--metallic-gold) !important;
+}
+
+/* An empty text-clipped surface supplies a plain cream edge colour to Safari
+   without painting a strip, covering the wallpaper or taking up layout space. */
+.browser-top-color { display: none; }
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .browser-top-color {
+    display: block;
+    position: fixed;
+    z-index: 2147483647;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 11px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    pointer-events: none;
+    font-size: 0;
+    background-color: var(--page-cream, #fdfcfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
 }
