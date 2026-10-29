@@ -30,15 +30,23 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 - Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
 - Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
 
+## Aktuelle Startsequenz: acht Durchgänge
+
+Der erste Durchgang verwendet 8,8888888 und 33,333333 rpm; 45 rpm bleibt erhalten. Die Schlussbeschleunigung bleibt 1,8 Sekunden von 45 auf 888 rpm mit aufrechtem Stopp. Die bisherige erste Staffelung von 0,18 Sekunden bleibt im ersten Durchgang bestehen.
+
+Die folgenden sieben Durchgänge drehen jeweils eine volle Umdrehung mit genau 8,8888888 rpm (ca. 6,7500000675 Sekunden pro Logo). Der Zeitversatz je Ebene beträgt im zweiten Durchgang 0 Sekunden, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Im zweiten Durchgang drehen Startlogo, Hauptlogos und alle Ringe exakt gemeinsam. Jeder Ring übernimmt weiterhin die Phase seiner zugeordneten Logoebene.
+
+Nach jedem Durchgang beginnt die gemeinsame achtsekündige Pause erst, wenn auch die letzte verzögerte Ebene wieder aufrecht steht. Die Durchgänge überlappen nicht. Danach wiederholt sich die gesamte Sequenz. Die Scrollstaffelung bleibt unverändert.
+
 ## Wiederherstellung der ursprünglichen Ringstaffelung
 
-Die Radien und Ebenenzuordnungen aller 15 Ringbänder werden wieder aus der Fassung vor der Änderung vom 29. Oktober abgeleitet. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Startversatz und Scrollfächer folgen den ursprünglichen Zeitkurven.
+Die Radien und Ebenenzuordnungen aller 15 Ringbänder werden wieder aus der Fassung vor der Änderung vom 29. Oktober abgeleitet. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Der Scrollfächer folgt den ursprünglichen Zeitkurven; die Startstaffelung ist durchgangsweise wie oben beschrieben angepasst.
 
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
 Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
 
-Die zeitliche Fächerstaffelung ist wiederhergestellt: Das Startlogo führt; die acht Hauptlogoebenen folgen mit 0,18 Sekunden Abstand je Ebene. Jede Ebene durchläuft dieselbe analytisch berechnete Tempokurve zu ihrem versetzten Zeitpunkt. Jeder äußere und innere Timecodering dreht exakt mit seiner zugehörigen Logoebene, sodass der Fächer auch beim Scrollen wieder sichtbar bleibt. Die bestehende Scrollstaffelung mit 80 Millisekunden Abstand je Ebene und ihrer späteren Rückführung bleibt erhalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
+Die zeitliche Fächerstaffelung ist wiederhergestellt: Im ersten Durchgang führt das Startlogo; die acht Hauptlogoebenen folgen mit 0,18 Sekunden Abstand je Ebene. Die sieben späteren Durchgänge verwenden die oben aufgeführten Versätze. Jede Ebene durchläuft dieselbe analytisch berechnete Tempokurve zu ihrem versetzten Zeitpunkt. Jeder äußere und innere Timecodering dreht exakt mit seiner zugehörigen Logoebene, sodass der Fächer auch beim Scrollen wieder sichtbar bleibt. Die bestehende Scrollstaffelung mit 80 Millisekunden Abstand je Ebene und ihrer späteren Rückführung bleibt erhalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
 
 ## Banner und Animation
 

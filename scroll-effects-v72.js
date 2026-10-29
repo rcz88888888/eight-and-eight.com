@@ -211,7 +211,8 @@
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
-  const startRotationStagger = .18; // Same tempo curve, delayed 180 ms per start layer.
+  const startPassStaggers = [.18, 0, .08, .16, .24, .32, .40, .48];
+  const lastStartLayer = Math.max(0, ...layers.map(layer => layer.depth + 1));
   let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[], spinMotionWindows=[];
   function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
@@ -222,29 +223,42 @@
     spinSegments.push(segment);
     return segment;
   }
-  // Eight-second tempo stages retain the existing 2.8-second transitions.
-  appendSpin(spinTransitionDuration,0,8);
-  appendSpin(spinStageDuration-spinTransitionDuration,8);
-  appendSpin(spinTransitionDuration,8,33);
-  appendSpin(spinStageDuration-spinTransitionDuration,33);
-  appendSpin(spinTransitionDuration,33,45);
+  // Only the first pass uses the revised exact tempo plateaus.
+  const firstSlowRpm = 8.8888888, firstMiddleRpm = 33.333333;
+  appendSpin(spinTransitionDuration,0,firstSlowRpm);
+  appendSpin(spinStageDuration-spinTransitionDuration,firstSlowRpm);
+  appendSpin(spinTransitionDuration,firstSlowRpm,firstMiddleRpm);
+  appendSpin(spinStageDuration-spinTransitionDuration,firstMiddleRpm);
+  appendSpin(spinTransitionDuration,firstMiddleRpm,45);
   appendSpin(spinStageDuration-spinTransitionDuration-1.8,45);
   // Align the final acceleration with a whole revolution before the stop.
   // The small phase correction has zero slope at both ends, retaining the
   // 1.8-second duration and the exact 45/888-rpm endpoint speeds, without a snap.
   const finalTurns = spinTotalTurns + 1.8*(45+888)/120;
   appendSpin(1.8,45,888,'linear',Math.round(finalTurns)-finalTurns);
-  // Stop immediately in the home orientation, without an extra braking stage.
-  spinMotionWindows.push({start:0,end:spinCursor});
-  appendSpin(8,0);
-  // One revolution at 8 rpm is exactly 7.5 seconds. Each is followed by
-  // eight seconds at rest, including the seventh before the sequence repeats.
-  for(let round=0;round<7;round++) {
-    const turn=appendSpin(60/8,8);
-    spinMotionWindows.push({start:turn.start,end:turn.end});
-    appendSpin(8,0);
+  // Each of the eight passes has its own stagger. A full eight-second
+  // common rest begins only after the last delayed layer has stopped.
+  function finishSpinPass(start, pass) {
+    const end = spinCursor, stagger = startPassStaggers[pass];
+    spinMotionWindows.push({start, end, stagger});
+    appendSpin(lastStartLayer * stagger + 8, 0);
   }
-  const spinDuration=spinCursor;
+  finishSpinPass(0, 0);
+  for (let pass = 1; pass < startPassStaggers.length; pass++) {
+    const turn = appendSpin(60 / firstSlowRpm, firstSlowRpm);
+    finishSpinPass(turn.start, pass);
+  }
+  const spinDuration = spinCursor;
+  function spinTimeForLayer(seconds, depth) {
+    for (const pass of spinMotionWindows) {
+      if (seconds < pass.start) break;
+      if (seconds < pass.end + lastStartLayer * pass.stagger) {
+        return Math.max(pass.start, Math.min(pass.end,
+          seconds - (depth + 1) * pass.stagger));
+      }
+    }
+    return seconds;
+  }
   function spinPhase(seconds) {
     if(seconds<=0)return 0;
     if(seconds>=spinDuration)return TAU*spinTotalTurns;
@@ -395,11 +409,9 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // Sample the same analytic tempo curve at each layer's original
-        // delayed time; its timecode bands share that exact delayed angle.
-        layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
-        const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
-        if(elapsed>=lastFinish){
+        // The assigned ring bands inherit this exact per-pass layer phase.
+        layers.forEach(layer => layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth)));
+        if(elapsed >= spinDuration){
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
           layers.forEach(layer=>layer.idleAngle=0);
@@ -408,7 +420,7 @@
       }
     }
     for(const layer of layers){
-      const elapsed=idleMode==='running'?(time-spinSince)/1000-(layer.depth+1)*startRotationStagger:-1;
+      const elapsed=idleMode==='running'?spinTimeForLayer((time-spinSince)/1000,layer.depth):-1;
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
         : idleRotationVisibility(elapsed);
