@@ -53,9 +53,7 @@
     idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
-  // Screenshot reference: the SMALL radial edge-to-edge gaps between
-  // neighboring point rows, not the tangential gap along a row. Use their
-  // mean as one common gap between all fifteen timecode bands.
+  // Restore the original radial progression and original layer assignment.
   const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
   const ringRows = [
     {count: 171, radius: 563, dot: 3.35, phase: 0},
@@ -67,31 +65,56 @@
     const previous = ringRows[index];
     return sum + row.radius - row.dot - previous.radius - previous.dot;
   }, 0) / (ringRows.length - 1);
+  const ringEdgeOverlap = .75;
   const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
+  for (const layer of layers) layer.ringScale = 1;
+  for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
+    const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
+    const nextScale = next.scale * next.ringScale;
+    const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
+    layer.ringScale = Math.max(1, ringScale / layer.scale);
+  }
   const frontRingLayer = innerRingOrder[0];
-  const ringGap = pointClearance * frontRingLayer.scale;
-  // Independent ring scales leave all logo sizes, angles and opacities intact.
-  let previousRingScale = frontRingLayer.scale;
-  innerRingOrder.forEach((layer, index) => {
-    const scale = index === 0 ? previousRingScale :
-      (previousRingScale * ringOuterRadius + ringGap) / ringInnerRadius;
-    layer.ringScale = scale / layer.scale;
-    previousRingScale = scale;
-  });
-  const inwardStart = frontRingLayer.scale * ringInnerRadius / 1280;
+  const inwardStart = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
   let inwardBoundary = inwardStart;
   const innerRings = innerRingOrder.slice(1, 8).map(source => {
-    // Retain the inverse progression of the existing inner boundaries; open
-    // the same positive clearance before each band instead of overlapping it.
     const innerRatio = inwardStart * frontRingLayer.scale / source.scale;
-    const outerRatio = inwardBoundary - ringGap / 1280;
+    const outerRatio = inwardBoundary + frontRingLayer.scale * ringEdgeOverlap / 1280;
     inwardBoundary = innerRatio;
-    return {source, innerRatio, outerRatio,
-      diameterFactor: 2 * outerRatio * 640 / ringOuterRadius,
-      sprite: null, size: 0};
+    return {source, innerRatio, outerRatio};
   });
+  const outerRings = innerRingOrder.map(source => ({source,
+    innerRatio: source.scale * source.ringScale * ringInnerRadius / 1280,
+    outerRatio: source.scale * source.ringScale * ringOuterRadius / 1280}));
+  const ringBands = [...innerRings].reverse().concat(outerRings);
+  const ringGap = pointClearance * frontRingLayer.scale / 1280;
+  // Keep every ORIGINAL band's centre radius fixed. Solve only the band
+  // half-widths, so the requested tiny gaps cannot move or reorder the fan.
+  let sign = 1, intercept = 0, lower = 0, upper = Infinity;
+  ringBands.forEach((ring, index) => {
+    ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
+    ring.originalHalfWidth = (ring.outerRatio - ring.innerRatio) / 2;
+    if (index) {
+      sign = -sign;
+      intercept = ring.centerRatio - ringBands[index - 1].centerRatio - ringGap - intercept;
+    }
+    ring.widthSign = sign; ring.widthIntercept = intercept;
+    if (sign > 0) lower = Math.max(lower, -intercept);
+    else upper = Math.min(upper, intercept);
+  });
+  const preferredWidth = ringBands.reduce((sum, ring) => sum +
+    ring.widthSign * (ring.originalHalfWidth - ring.widthIntercept), 0) / ringBands.length;
+  const firstWidth = Math.max(lower + 1e-9, Math.min(upper - 1e-9, preferredWidth));
+  for (const ring of ringBands) {
+    const halfWidth = ring.widthSign * firstWidth + ring.widthIntercept;
+    ring.innerRatio = ring.centerRatio - halfWidth;
+    ring.outerRatio = ring.centerRatio + halfWidth;
+    ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
+    ring.sprite = null; ring.size = 0;
+  }
+  const ringPaintOrder = [...outerRings].reverse().concat(innerRings);
   function cacheInnerRingSprites(diameter, ratio) {
-    for (const ring of innerRings) {
+    for (const ring of ringBands) {
       const size = Math.max(32, Math.min(2048, Math.ceil(diameter * ring.diameterFactor * ratio)));
       if (ring.sprite && ring.size === size) continue;
       const canvas = document.createElement('canvas');
@@ -917,17 +940,9 @@
         context.stroke(outlinePath);
         context.restore();
       } else context.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
-      const ringExtent = ringDiameter * layer.ringScale * layer.scale / 1280;
-      if(layer.ringSprite && ringDiameter>0 && ringIntersectsViewport(centerX,centerY,
-        ringInnerRadius*ringExtent,ringOuterRadius*ringExtent,width,surfaceHeight)) {
-        // Local ring size is independent of the logo silhouette. The enclosing
-        // group still supplies their shared centre, rotation, motion and opacity.
-        const diameter = ringDiameter * layer.ringScale;
-        context.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
-      }
       context.restore();
     }
-    for (const ring of innerRings) {
+    for (const ring of ringPaintOrder) {
       if (!ring.sprite || !(ringDiameter > 0) || !ringIntersectsViewport(centerX,centerY,
         ring.innerRatio*ringDiameter,ring.outerRatio*ringDiameter,width,surfaceHeight)) continue;
       const diameter = ringDiameter * ring.diameterFactor;

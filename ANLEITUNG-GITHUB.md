@@ -30,6 +30,10 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 - Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
 - Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
 
+## Wiederherstellung der ursprünglichen Ringstaffelung
+
+Die Radien und Ebenenzuordnungen aller 15 Ringbänder werden wieder aus der Fassung vor der Änderung vom 29. Oktober abgeleitet. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Startversatz und Scrollfächer folgen den ursprünglichen Zeitkurven.
+
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
 Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
