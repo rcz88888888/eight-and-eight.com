@@ -53,34 +53,36 @@
     idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
-  // Adjust only the three innermost ring bands before the logo group scale.
-  // SVG radii, including point edges: 563 - 3.35 and 590 + 3.15.
-  // Work inward from the unchanged fourth ring; slight overlap prevents seams.
+  // Use the mean clear (edge-to-edge) spacing of adjacent points, measured
+  // as a chord in the unchanged source pattern. One common radial gap joins
+  // every band, including the seven inverse-scaled inner bands.
   const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
-  const ringEdgeOverlap = .75;
-  const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
-  for (const layer of layers) layer.ringScale = 1;
-  for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
-    const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
-    const nextScale = next.scale * next.ringScale;
-    const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
-    layer.ringScale = Math.max(1, ringScale / layer.scale);
-  }
-  // Mirror the seven size/opacity steps inward from the existing nearest ring.
-  // The inverse logo scales define shared radial boundaries. Each new dotted
-  // band fills the interval to the preceding boundary, avoiding empty seams.
   const ringRows = [
     {count: 171, radius: 563, dot: 3.35, phase: 0},
     {count: 177, radius: 572, dot: 3.35, phase: .5},
     {count: 182, radius: 581, dot: 3.85, phase: 0},
     {count: 188, radius: 590, dot: 3.15, phase: .5}
   ];
+  const pointClearance = ringRows.reduce((sum, row) =>
+    sum + 2 * row.radius * Math.sin(Math.PI / row.count) - 2 * row.dot, 0) / ringRows.length;
+  const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
   const frontRingLayer = innerRingOrder[0];
-  const inwardStart = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
+  const ringGap = pointClearance * frontRingLayer.scale;
+  // Independent ring scales leave all logo sizes, angles and opacities intact.
+  let previousRingScale = frontRingLayer.scale;
+  innerRingOrder.forEach((layer, index) => {
+    const scale = index === 0 ? previousRingScale :
+      (previousRingScale * ringOuterRadius + ringGap) / ringInnerRadius;
+    layer.ringScale = scale / layer.scale;
+    previousRingScale = scale;
+  });
+  const inwardStart = frontRingLayer.scale * ringInnerRadius / 1280;
   let inwardBoundary = inwardStart;
   const innerRings = innerRingOrder.slice(1, 8).map(source => {
+    // Retain the inverse progression of the existing inner boundaries; open
+    // the same positive clearance before each band instead of overlapping it.
     const innerRatio = inwardStart * frontRingLayer.scale / source.scale;
-    const outerRatio = inwardBoundary + frontRingLayer.scale * ringEdgeOverlap / 1280;
+    const outerRatio = inwardBoundary - ringGap / 1280;
     inwardBoundary = innerRatio;
     return {source, innerRatio, outerRatio,
       diameterFactor: 2 * outerRatio * 640 / ringOuterRadius,
@@ -169,7 +171,6 @@
   let lastLogoTime;
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
-  let logoCenter, logoCenterTime, centerAnimating = false;
   let mainGeometryKey = '';
   // One frame clock for idle rotation, scroll handoff and the return wobble.
   const TAU = Math.PI * 2;
@@ -185,7 +186,7 @@
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
-  const startRotationStagger = .18;
+  const startRotationStagger = 0; // One exact tempo/phase for every start logo and ring.
   let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[], spinMotionWindows=[];
   function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
@@ -369,7 +370,8 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // Start-only 0.18s stagger; scroll fanning follows its separate scroll interval.
+        // All start layers sample the identical analytic phase at this frame time.
+        // The scroll fan remains independent of the shared timecode phase.
         layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
         const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
         if(elapsed>=lastFinish){
@@ -861,8 +863,7 @@
     }
     const patternVisibility=mainPatternVisibility(state.scroll);
     const fillVisibility=mainFillVisibility(state.scroll);
-    const center = easeLogoCenter(commonLogoCenter(patternVisibility), time,
-      resetMotion || state.scroll <= .5);
+    const center = commonLogoCenter(patternVisibility);
     const {x:centerX, y:centerY} = center;
     const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
@@ -875,7 +876,8 @@
     const ringDiameter = mainRingWidth * scale;
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
-      x: centerX, y: centerY
+      x: centerX, y: centerY,
+      ringRotation: frontRingLayer.scrollAngle + frontRingLayer.idleAngle
     };
     lastLogoScene={centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility};
     drawLogoLayers(ink,lastLogoScene,width,surfaceHeight);
@@ -885,6 +887,9 @@
   }
   function drawLogoLayers(context,scene,width,surfaceHeight) {
     const {centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility}=scene;
+    // A single unwrapped phase drives every timecode band. No depth-based
+    // delay, speed multiplier, extra integration or separate frame clock.
+    const ringAngle = frontRingLayer.scrollAngle + frontRingLayer.idleAngle;
     for (const layer of layers) {
       context.save();
       context.translate(centerX, centerY);
@@ -919,6 +924,7 @@
         // Local ring size is independent of the logo silhouette. The enclosing
         // group still supplies their shared centre, rotation, motion and opacity.
         const diameter = ringDiameter * layer.ringScale;
+        context.rotate(ringAngle - layer.scrollAngle - layer.idleAngle);
         context.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
       }
       context.restore();
@@ -929,7 +935,7 @@
       const diameter = ringDiameter * ring.diameterFactor;
       context.save();
       context.translate(centerX, centerY);
-      context.rotate(ring.source.scrollAngle + ring.source.idleAngle);
+      context.rotate(ringAngle);
       context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
       context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
       context.restore();
@@ -963,20 +969,6 @@
     const farY=Math.max(Math.abs(y),Math.abs(height-y));
     return nearX*nearX+nearY*nearY<=(outerRadius+1)**2 &&
       farX*farX+farY*farY>=Math.max(0,innerRadius-1)**2;
-  }
-  function easeLogoCenter(target, time, reset) {
-    if (!logoCenter || reset || reduced.matches) {
-      logoCenter = {x: target.x, y: target.y};
-    } else {
-      const dt = logoCenterTime === undefined ? 1000/60 : Math.max(0,Math.min(64,time-logoCenterTime));
-      const blend = 1-Math.exp(-dt/48);
-      logoCenter.x += (target.x-logoCenter.x)*blend;
-      logoCenter.y += (target.y-logoCenter.y)*blend;
-    }
-    logoCenterTime = time;
-    centerAnimating = Math.abs(target.x-logoCenter.x)>.01 || Math.abs(target.y-logoCenter.y)>.01;
-    if (!centerAnimating) { logoCenter.x=target.x;logoCenter.y=target.y; }
-    return logoCenter;
   }
   // Render the same scene into the shallow banner crop. Copying a changing
   // full-size canvas into a second canvas forces expensive rendering flushes.
@@ -1021,7 +1013,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (startScrollReturn || centerAnimating || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {

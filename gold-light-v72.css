@@ -638,3 +638,20 @@ body .gold-text-light {
     background-clip: text;
   }
 }
+
+/* Move glyph owners only: frames, photos and the final text layout stay fixed.
+   Independent translation composes with the existing scaleY typography. */
+.content-scroll [data-text-reveal] {
+  translate: 0 var(--text-reveal-y, 0px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .content-scroll [data-text-reveal] { translate: none; }
+}
+
+/* Requested optical emphasis: twenty percent above the 200 x 140 logo box. */
+.partner-grid .partner-slot img[src="portfolio-vodafone.svg"] {
+  width: min(120%, 240px);
+  max-width: 120%;
+  flex-shrink: 0;
+  height: 168px;
+}

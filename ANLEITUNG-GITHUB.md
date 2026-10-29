@@ -1,10 +1,16 @@
 # Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
-Diese ZIP enthält 55 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+Diese ZIP enthält 56 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+
+## Einmaliges Einrücken und Ringabstände
+
+Inhaltstexte rücken beim ersten Herunterscrollen um bis zu 32 CSS-Pixel von unten an ihre unveränderte Endposition. Der Weg folgt dem Scrollfortschritt. Beim Zurückscrollen wird er nicht zurückgespult; erreichte Endpositionen bleiben dauerhaft erhalten, auch bei Größenwechseln. Rahmen und Bilder werden dabei nicht verschoben. Reduzierte Bewegung zeigt sofort die Endposition.
+
+Alle 15 Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der mittlere sichtbare Abstand benachbarter Punkte im unveränderten Timecode-Muster, am vordersten Ring skaliert. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
 
 ## Work / Customers & Cooperators
 
-Alle 26 Felder richten ihr Logo ausdrücklich waagerecht und senkrecht mittig aus. Netflix ist um den überflüssigen unteren Bildbereich beschnitten, ohne den Schriftzug zu skalieren oder verlustbehaftet neu zu komprimieren. Bei Vodafone wurde nur der SVG-Sichtbereich enger gefasst; sämtliche Vektorpfade und Farben bleiben unverändert. Dadurch nimmt die sichtbare Wortmarke etwa 30 Prozent mehr Breite ein und entspricht in der Darstellung der Breite von Siemens. Die übrigen Logogrößen und die Branchenfolge bleiben erhalten.
+Alle 26 Felder richten ihr Logo ausdrücklich waagerecht und senkrecht mittig aus. Netflix ist um den überflüssigen unteren Bildbereich beschnitten, ohne den Schriftzug zu skalieren oder verlustbehaftet neu zu komprimieren. Bei Vodafone wurde nur der SVG-Sichtbereich enger gefasst; sämtliche Vektorpfade und Farben bleiben unverändert. Dadurch nimmt die sichtbare Wortmarke etwa 30 Prozent mehr Breite ein und entspricht in der Darstellung der Breite von Siemens. Zusätzlich ist Vodafone auf Wunsch um weitere 20 Prozent vergrößert: maximal 240 × 168 statt 200 × 140 CSS-Pixel, weiterhin mittig und proportional. Die übrigen Logogrößen und die Branchenfolge bleiben erhalten.
 
 26 Referenzen stehen nach Unternehmensarten zusammen: Fahrzeuge, Technik und Telekommunikation, Veranstaltungen und Arbeitsräume, Hotels, Film und Fernsehen, Musik und Audio sowie Lifestyle.
 
@@ -19,6 +25,12 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 - Die drei Originalfotos bleiben unverändert als native Bilder sichtbar: jeweils 1536 × 1024 Pixel, identische PNG-Dateien und vollständige Details. Das Licht liegt als transparente Soft-Light-Ebene darüber. Es ersetzt, verkleinert, komprimiert oder verwischt die Fotos nicht.
 - Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
 - Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
+
+## Exakte gemeinsame Mitte und Timecode-Phase
+
+Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
+
+Alle neun Startlogos durchlaufen die vorhandenen Tempi nun gleichzeitig ohne zeitliche Staffelung. Alle 15 Timecodebänder teilen darüber hinaus denselben kontinuierlichen Winkel des vordersten Logos, auch während des Scrollens. So verschieben verzögerte Ebenen oder getrennte Zeitgeber die Ringphase bei Tempowechseln nicht mehr. Die Scrollstaffelung der Logos selbst bleibt enthalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
 
 ## Banner und Animation
 
