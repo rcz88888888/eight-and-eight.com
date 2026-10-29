@@ -30,13 +30,13 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 - Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
 - Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
 
-## Aktuelle Startsequenz: acht Durchgänge
+## Aktuelle Startsequenz: acht abwechselnde Tempodurchgänge
 
-Der erste Durchgang verwendet 8,8888888 und 33,333333 rpm; 45 rpm bleibt erhalten. Die Schlussbeschleunigung bleibt 1,8 Sekunden von 45 auf 888 rpm mit aufrechtem Stopp. Die bisherige erste Staffelung von 0,18 Sekunden bleibt im ersten Durchgang bestehen.
+Die acht Durchgänge verwenden abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Dauer je Tempoabschnitt beträgt wie bei den bisherigen Tempophasen acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens. Es gibt keine 45-rpm-Stufe und keine Zwischenstopps zwischen diesen acht Tempoabschnitten.
 
-Die folgenden sieben Durchgänge drehen jeweils eine volle Umdrehung mit genau 8,8888888 rpm (ca. 6,7500000675 Sekunden pro Logo). Der Zeitversatz je Ebene beträgt im zweiten Durchgang 0 Sekunden, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Im zweiten Durchgang drehen Startlogo, Hauptlogos und alle Ringe exakt gemeinsam. Jeder Ring übernimmt weiterhin die Phase seiner zugeordneten Logoebene.
+Der Zeitversatz je Ebene beträgt im ersten Durchgang weiterhin 0,18 Sekunden, im zweiten 0, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Beim Wechsel werden die Fächerzeiten während des 0,8-Sekunden-Übergangs verbunden, sodass die Winkel nicht springen oder rückwärtslaufen. In der zweiten Tempophase drehen nach diesem Übergang alle Logos und Ringe exakt gemeinsam. Jeder Ring übernimmt weiterhin die Phase seiner zugeordneten Logoebene.
 
-Nach jedem Durchgang beginnt die gemeinsame achtsekündige Pause erst, wenn auch die letzte verzögerte Ebene wieder aufrecht steht. Die Durchgänge überlappen nicht. Danach wiederholt sich die gesamte Sequenz. Die Scrollstaffelung bleibt unverändert.
+Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in 1,8 Sekunden von 33,333333 auf 888 rpm, danach direkt aufrechter Stopp. Die gemeinsame achtsekündige Pause beginnt, wenn auch die letzte verzögerte Ebene aufrecht steht. Danach wiederholt sich die Sequenz. Die Scrollstaffelung und die Ringgeometrie bleiben unverändert.
 
 ## Wiederherstellung der ursprünglichen Ringstaffelung
 
@@ -56,7 +56,7 @@ Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wi
 
 Der Logoregen behält die halbierte Maximalgröße, die halbierte maximale Geschwindigkeit (mindestens zwei bis acht Sekunden pro Fall) sowie die Erhöhung der maximalen Anzahl um 10 Prozent in allen Modi.
 
-Beim Abbruch einer laufenden Startrotation am Seitenanfang dreht der Scrollweg zuerst das Startlogo, alle acht Hauptlogos und die Ringe in ihre jeweilige Ausgangsposition. Erst nach dem vollständig aufrechten Bild bewegt sich die Seite normal weiter. Mausrad, Touch und Tastatur sowie explizite Menü-Navigation bleiben berücksichtigt. Die Schlussbeschleunigung dauert 1,8 Sekunden von 45 auf 888 rpm und endet direkt aufrecht; die späteren Stopps bleiben ebenfalls aufrecht.
+Beim Abbruch einer laufenden Startrotation am Seitenanfang dreht der Scrollweg zuerst das Startlogo, alle acht Hauptlogos und die Ringe in ihre jeweilige Ausgangsposition. Erst nach dem vollständig aufrechten Bild bewegt sich die Seite normal weiter. Mausrad, Touch und Tastatur sowie explizite Menü-Navigation bleiben berücksichtigt. Die Schlussbeschleunigung am Ende des achten Durchgangs dauert 1,8 Sekunden von 33,333333 auf 888 rpm und endet direkt aufrecht.
 
 ## Prüfung
 
