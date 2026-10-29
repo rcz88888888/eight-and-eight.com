@@ -50,7 +50,7 @@
     scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
     opacity: parseFloat(node.style.opacity) || .08,
     depth: Number(node.dataset.depth),
-    idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
+    idleAngle: 0, idleVisibility: .7, ringIdleAngle: 0, ringIdleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
   // Restore the original radial progression and original layer assignment.
@@ -243,16 +243,20 @@
   const spinMotionEnd = spinCursor;
   appendSpin(lastStartLayer * startPassStaggers[7] + 8, 0);
   const spinDuration = spinCursor;
-  function spinTimeForLayer(seconds, depth) {
+  function spinTimeForLayer(seconds, depth, forRing = false) {
     let passIndex = 0;
     while (passIndex + 1 < spinMotionWindows.length &&
       seconds >= spinMotionWindows[passIndex + 1].start) passIndex++;
     const pass = spinMotionWindows[passIndex];
-    const previousStagger = passIndex ? spinMotionWindows[passIndex - 1].stagger : pass.stagger;
+    // Only first-pass logos lose their fan; rings retain the old timeline.
+    const ownStagger = !forRing && passIndex === 0 ? 0 : pass.stagger;
+    const previousStagger = passIndex
+      ? (!forRing && passIndex === 1 ? 0 : spinMotionWindows[passIndex - 1].stagger)
+      : ownStagger;
     // Join changed fan intervals without snapping phases. A linear delay
     // ramp keeps sample time monotonic even for the deepest 0.64s change.
     const blend = Math.max(0, Math.min(1, (seconds - pass.start) / spinTransitionDuration));
-    const stagger = previousStagger + (pass.stagger - previousStagger) * blend;
+    const stagger = previousStagger + (ownStagger - previousStagger) * blend;
     return Math.max(0, Math.min(spinMotionEnd, seconds - (depth + 1) * stagger));
   }
   function spinPhase(seconds) {
@@ -285,13 +289,19 @@
     const hero = shortestAngle(heroIdleAngle);
     const mainAngle = shortestAngle(mainIdleAngle);
     const angles = layers.map(layer => shortestAngle(layer.idleAngle + layer.scrollAngle));
-    const maximum = Math.max(Math.abs(hero), Math.abs(mainAngle), ...angles.map(Math.abs));
+    const ringAngles = layers.map(layer => shortestAngle(
+      (layer.ringIdleAngle ?? layer.idleAngle) + layer.scrollAngle));
+    const maximum = Math.max(Math.abs(hero), Math.abs(mainAngle),
+      ...angles.map(Math.abs), ...ringAngles.map(Math.abs));
     if (maximum < .0001) return false;
     startScrollReturn = {hero, mainAngle, progress: 0, distance: 0,
       span: Math.max(48, maximum / Math.PI * 180)};
     layers.forEach((layer, index) => {
       layer.returnAngle = angles[index];
       layer.returnVisibility = layer.idleVisibility;
+      layer.ringReturnAngle = ringAngles[index];
+      layer.ringReturnVisibility = layer.ringIdleVisibility ?? layer.idleVisibility;
+      layer.ringIdleAngle = ringAngles[index];
       layer.idleAngle = angles[index];
       layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
     });
@@ -332,7 +342,7 @@
     startScrollReturn = null; startScrollReleased = true;
     heroIdleAngle = mainIdleAngle = heroSpeed = 0;
     layers.forEach(layer => {
-      layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
+      layer.ringIdleAngle = layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
     });
     scrollRotationHistory.length = 0;
     scrollRotationPending = false; scrollRotationFrameTime = undefined;
@@ -353,25 +363,25 @@
       idleMode='waiting';idleSince=time;
       handoffSince=undefined;handoffActive=false;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
-      layers.forEach(layer=>layer.idleAngle=0);
+      layers.forEach(layer=>layer.ringIdleAngle=layer.idleAngle=0);
     } else if (startScrollReturn) {
       const remaining = 1 - smoothEnd(startScrollReturn.progress);
       heroIdleAngle = startScrollReturn.hero * remaining;
       mainIdleAngle = startScrollReturn.mainAngle * remaining;
-      layers.forEach(layer => { layer.idleAngle = layer.returnAngle * remaining; });
+      layers.forEach(layer => { layer.idleAngle = layer.returnAngle * remaining; layer.ringIdleAngle = layer.ringReturnAngle * remaining; });
     } else if (!atTop || moved) {
       // Remove the idle offsets along each logo's shortest path. The
       // original scroll angle keeps updating underneath this 600ms handoff.
       if(idleMode!=='scrolling' || handoffSince===undefined){
         handoffSince=time;handoffMain=shortestAngle(mainIdleAngle);
-        layers.forEach(layer=>layer.handoffAngle=shortestAngle(layer.idleAngle));
+        layers.forEach(layer=>{ layer.handoffAngle=shortestAngle(layer.idleAngle); layer.ringHandoffAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle); });
       }
       idleMode='scrolling';idleSince=undefined;
       const handoffProgress=Math.min(1,Math.max(0,(time-handoffSince)/600));
       const remaining=1-smoothEnd(handoffProgress);
       mainIdleAngle=handoffMain*remaining;
-      layers.forEach(layer=>layer.idleAngle=layer.handoffAngle*remaining);
-      handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001);
+      layers.forEach(layer=>{ layer.idleAngle=layer.handoffAngle*remaining; layer.ringIdleAngle=layer.ringHandoffAngle*remaining; });
+      handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001 || Math.abs(layer.ringIdleAngle)>.000001);
       heroIdleAngle += heroSpeed * .22 * (1-Math.exp(-dt/.22));
       heroSpeed *= Math.exp(-dt/.22);
       if (heroSpeed < .001) heroSpeed=0;
@@ -381,7 +391,7 @@
         idleMode='settling';settleSince=time;
         settleHero=shortestAngle(heroIdleAngle);
         settleMain=shortestAngle(mainIdleAngle);
-        layers.forEach(layer=>layer.settleAngle=shortestAngle(layer.idleAngle));
+        layers.forEach(layer=>{ layer.settleAngle=shortestAngle(layer.idleAngle); layer.ringSettleAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle); });
         heroSpeed=0;
       }
       if (idleMode==='settling') {
@@ -391,7 +401,7 @@
         const wobble=Math.sin(t*Math.PI*6)*.035*Math.sin(Math.PI*t)*envelope;
         heroIdleAngle=settleHero*envelope+wobble;
         mainIdleAngle=settleMain*envelope;
-        layers.forEach(layer=>layer.idleAngle=layer.settleAngle*envelope);
+        layers.forEach(layer=>{ layer.idleAngle=layer.settleAngle*envelope; layer.ringIdleAngle=layer.ringSettleAngle*envelope; });
         if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
       if(idleMode==='waiting') {
@@ -405,12 +415,14 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // The assigned ring bands inherit this exact per-pass layer phase.
-        layers.forEach(layer => layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth)));
+        layers.forEach(layer => {
+          layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth));
+          layer.ringIdleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth, true));
+        });
         if(elapsed >= spinDuration){
           // Begin the shared pause only once all nine logos have arrived.
           mainIdleAngle=heroIdleAngle=heroSpeed=0;
-          layers.forEach(layer=>layer.idleAngle=0);
+          layers.forEach(layer=>layer.ringIdleAngle=layer.idleAngle=0);
           idleMode='waiting';idleSince=time-8000;
         }
       }
@@ -420,6 +432,11 @@
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
         : idleRotationVisibility(elapsed);
+      const ringElapsed = idleMode === 'running'
+        ? spinTimeForLayer((time - spinSince) / 1000, layer.depth, true) : -1;
+      layer.ringIdleVisibility = startScrollReturn
+        ? layer.ringReturnVisibility + (.7 - layer.ringReturnVisibility) * smoothEnd(startScrollReturn.progress)
+        : idleRotationVisibility(ringElapsed);
     }
     const wrappedHeroAngle = shortestAngle(heroIdleAngle);
     const heroAngle = Math.abs(wrappedHeroAngle)<1e-10 ? 0 : wrappedHeroAngle;
@@ -440,8 +457,8 @@
     const fadeOut = smoothEnd(Math.max(0, Math.min(1, (spinMotionEnd - elapsed) / 1.8)));
     return .7 + .3 * fadeIn * fadeOut;
   };
-  const mainLayerOpacity = (layer,patternVisibility,fillVisibility) =>
-    layer.opacity*(1-.38*fillVisibility)*(1-(1-layer.idleVisibility)*patternVisibility);
+  const mainLayerOpacity = (layer,patternVisibility,fillVisibility,idleVisibility=layer.idleVisibility) =>
+    layer.opacity*(1-.38*fillVisibility)*(1-(1-idleVisibility)*patternVisibility);
   function openingMainScaleFactor() {
     if (!openingLogo || !mainBox || !matchMedia('(orientation: landscape)').matches) return 1;
     const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
@@ -897,7 +914,7 @@
     const fillVisibility=mainFillVisibility(state.scroll);
     const center = commonLogoCenter(patternVisibility);
     const {x:centerX, y:centerY} = center;
-    const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}`).join(',')}`;
+    const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}:${layer.ringIdleAngle}:${layer.ringIdleVisibility}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
     // Eight unlit logos share one canvas; native document scrolling is untouched.
@@ -909,7 +926,7 @@
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: centerX, y: centerY,
-      ringRotations: layers.map(layer => layer.scrollAngle + layer.idleAngle)
+      ringRotations: layers.map(layer => layer.scrollAngle + (layer.ringIdleAngle ?? layer.idleAngle))
     };
     lastLogoScene={centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility};
     drawLogoLayers(ink,lastLogoScene,width,surfaceHeight);
@@ -955,8 +972,8 @@
       const diameter = ringDiameter * ring.diameterFactor;
       context.save();
       context.translate(centerX, centerY);
-      context.rotate(ring.source.scrollAngle + ring.source.idleAngle);
-      context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
+      context.rotate(ring.source.scrollAngle + (ring.source.ringIdleAngle ?? ring.source.idleAngle));
+      context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility, ring.source.ringIdleVisibility ?? ring.source.idleVisibility);
       context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
       context.restore();
     }
