@@ -188,7 +188,7 @@
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
   const spinTransitionDuration = 2.8;
   const spinStageDuration = 8;
-  const startRotationStagger = 0; // One exact tempo/phase for every start logo and ring.
+  const startRotationStagger = .18; // Same tempo curve, delayed 180 ms per start layer.
   let spinCursor = 0, spinTotalTurns = 0;
   const spinSegments=[], spinMotionWindows=[];
   function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
@@ -372,8 +372,8 @@
         const elapsed=Math.max(0,(time-spinSince)/1000);
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
-        // All start layers sample the identical analytic phase at this frame time.
-        // The scroll fan remains independent of the shared timecode phase.
+        // Sample the same analytic tempo curve at each layer's original
+        // delayed time; its timecode bands share that exact delayed angle.
         layers.forEach(layer=>layer.idleAngle=spinPhase(elapsed-(layer.depth+1)*startRotationStagger));
         const lastFinish=spinDuration+Math.max(0,...layers.map(layer=>layer.depth+1))*startRotationStagger;
         if(elapsed>=lastFinish){
@@ -879,7 +879,7 @@
     window.EightEightEffects.logoFrame = {
       rotation: (layers[layers.length-1]?.scrollAngle || 0) + (layers[layers.length-1]?.idleAngle || 0),
       x: centerX, y: centerY,
-      ringRotation: frontRingLayer.scrollAngle + frontRingLayer.idleAngle
+      ringRotations: layers.map(layer => layer.scrollAngle + layer.idleAngle)
     };
     lastLogoScene={centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility};
     drawLogoLayers(ink,lastLogoScene,width,surfaceHeight);
@@ -889,9 +889,6 @@
   }
   function drawLogoLayers(context,scene,width,surfaceHeight) {
     const {centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility}=scene;
-    // A single unwrapped phase drives every timecode band. No depth-based
-    // delay, speed multiplier, extra integration or separate frame clock.
-    const ringAngle = frontRingLayer.scrollAngle + frontRingLayer.idleAngle;
     for (const layer of layers) {
       context.save();
       context.translate(centerX, centerY);
@@ -926,7 +923,6 @@
         // Local ring size is independent of the logo silhouette. The enclosing
         // group still supplies their shared centre, rotation, motion and opacity.
         const diameter = ringDiameter * layer.ringScale;
-        context.rotate(ringAngle - layer.scrollAngle - layer.idleAngle);
         context.drawImage(layer.ringSprite,-diameter/2,-diameter/2,diameter,diameter);
       }
       context.restore();
@@ -937,7 +933,7 @@
       const diameter = ringDiameter * ring.diameterFactor;
       context.save();
       context.translate(centerX, centerY);
-      context.rotate(ringAngle);
+      context.rotate(ring.source.scrollAngle + ring.source.idleAngle);
       context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility);
       context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
       context.restore();

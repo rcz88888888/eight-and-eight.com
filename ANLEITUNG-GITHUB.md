@@ -8,6 +8,10 @@ Inhaltstexte rücken beim ersten Herunterscrollen um bis zu 32 CSS-Pixel von unt
 
 Alle 15 Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
 
+## Aktuelle Größenkorrektur der Referenzen
+
+Ausgehend von der vorherigen Fassung sind Porsche, Microsoft und Vodafone proportional um 8 Prozent verkleinert; Holiday Inn, Best Western, Design Offices und Cupra sind proportional um 8 Prozent vergrößert. Die Anpassung erfolgt um die jeweilige Bildmitte, sodass Raster und Zentrierung erhalten bleiben. Vodafone hat damit gegenüber der früheren Standardgröße den Faktor 1,20 × 0,92 = 1,104.
+
 ## Work / Customers & Cooperators
 
 Alle 26 Felder richten ihr Logo ausdrücklich waagerecht und senkrecht mittig aus. Netflix ist um den überflüssigen unteren Bildbereich beschnitten, ohne den Schriftzug zu skalieren oder verlustbehaftet neu zu komprimieren. Bei Vodafone wurde nur der SVG-Sichtbereich enger gefasst; sämtliche Vektorpfade und Farben bleiben unverändert. Dadurch nimmt die sichtbare Wortmarke etwa 30 Prozent mehr Breite ein und entspricht in der Darstellung der Breite von Siemens. Zusätzlich ist Vodafone auf Wunsch um weitere 20 Prozent vergrößert: maximal 240 × 168 statt 200 × 140 CSS-Pixel, weiterhin mittig und proportional. Die übrigen Logogrößen und die Branchenfolge bleiben erhalten.
@@ -26,11 +30,11 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 - Die detaillierten Beleuchtungsfelder sind vorab in Originalauflösung berechnet und werden nacheinander in freien Browserzeiten dekodiert. Zwischen ihnen wird kontinuierlich interpoliert. Die bestehende Animationssteuerung verändert nur die Mischgewichte sichtbarer Fotos, wenn sich ihre Scrollposition ändert. Während des Scrollens gibt es keine Berechnung einzelner Bildpixel, keine Layoutmessung, keine neuen Texturen und keine zusätzliche Animationsschleife.
 - Die vorhandenen runden Fotokanten begrenzen auch die Lichtebene. Die Darstellung benötigt kein WebGL. Bei nicht geladenen Beleuchtungsfeldern oder reduzierter Bewegung bleibt das vollständige Originalbild sichtbar. Doppelte Randpixel verhindern, dass benachbarte Beleuchtungsfelder an den runden Fotoecken durchscheinen.
 
-## Exakte gemeinsame Mitte und Timecode-Phase
+## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
 Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
 
-Alle neun Startlogos durchlaufen die vorhandenen Tempi nun gleichzeitig ohne zeitliche Staffelung. Alle 15 Timecodebänder teilen darüber hinaus denselben kontinuierlichen Winkel des vordersten Logos, auch während des Scrollens. So verschieben verzögerte Ebenen oder getrennte Zeitgeber die Ringphase bei Tempowechseln nicht mehr. Die Scrollstaffelung der Logos selbst bleibt enthalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
+Die zeitliche Fächerstaffelung ist wiederhergestellt: Das Startlogo führt; die acht Hauptlogoebenen folgen mit 0,18 Sekunden Abstand je Ebene. Jede Ebene durchläuft dieselbe analytisch berechnete Tempokurve zu ihrem versetzten Zeitpunkt. Jeder äußere und innere Timecodering dreht exakt mit seiner zugehörigen Logoebene, sodass der Fächer auch beim Scrollen wieder sichtbar bleibt. Die bestehende Scrollstaffelung mit 80 Millisekunden Abstand je Ebene und ihrer späteren Rückführung bleibt erhalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
 
 ## Banner und Animation
 

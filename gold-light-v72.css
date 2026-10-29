@@ -655,3 +655,18 @@ body .gold-text-light {
   flex-shrink: 0;
   height: 168px;
 }
+
+/* Optical size adjustments relative to each logo's current rendered size. */
+.partner-grid .partner-slot img[src="portfolio-porsche.jpg"],
+.partner-grid .partner-slot img[src="portfolio-microsoft.png"],
+.partner-grid .partner-slot img[src="portfolio-vodafone.svg"] {
+  transform: scale(.92);
+  transform-origin: center;
+}
+.partner-grid .partner-slot img[src="portfolio-holiday-inn.png"],
+.partner-grid .partner-slot img[src="portfolio-best-western.png"],
+.partner-grid .partner-slot img[src="portfolio-design-offices.png"],
+.partner-grid .partner-slot img[src="portfolio-cupra.png"] {
+  transform: scale(1.08);
+  transform-origin: center;
+}
