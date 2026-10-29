@@ -6,7 +6,7 @@ Diese ZIP enthält 56 Dateien einschließlich dieser Anleitung und CNAME. Für G
 
 Inhaltstexte rücken beim ersten Herunterscrollen um bis zu 32 CSS-Pixel von unten an ihre unveränderte Endposition. Der Weg folgt dem Scrollfortschritt. Beim Zurückscrollen wird er nicht zurückgespult; erreichte Endpositionen bleiben dauerhaft erhalten, auch bei Größenwechseln. Rahmen und Bilder werden dabei nicht verschoben. Reduzierte Bewegung zeigt sofort die Endposition.
 
-Alle 15 Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der mittlere sichtbare Abstand benachbarter Punkte im unveränderten Timecode-Muster, am vordersten Ring skaliert. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
+Alle 15 Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
 
 ## Work / Customers & Cooperators
 

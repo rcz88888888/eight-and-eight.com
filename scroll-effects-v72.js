@@ -53,9 +53,9 @@
     idleAngle: 0, idleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
-  // Use the mean clear (edge-to-edge) spacing of adjacent points, measured
-  // as a chord in the unchanged source pattern. One common radial gap joins
-  // every band, including the seven inverse-scaled inner bands.
+  // Screenshot reference: the SMALL radial edge-to-edge gaps between
+  // neighboring point rows, not the tangential gap along a row. Use their
+  // mean as one common gap between all fifteen timecode bands.
   const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
   const ringRows = [
     {count: 171, radius: 563, dot: 3.35, phase: 0},
@@ -63,8 +63,10 @@
     {count: 182, radius: 581, dot: 3.85, phase: 0},
     {count: 188, radius: 590, dot: 3.15, phase: .5}
   ];
-  const pointClearance = ringRows.reduce((sum, row) =>
-    sum + 2 * row.radius * Math.sin(Math.PI / row.count) - 2 * row.dot, 0) / ringRows.length;
+  const pointClearance = ringRows.slice(1).reduce((sum, row, index) => {
+    const previous = ringRows[index];
+    return sum + row.radius - row.dot - previous.radius - previous.dot;
+  }, 0) / (ringRows.length - 1);
   const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
   const frontRingLayer = innerRingOrder[0];
   const ringGap = pointClearance * frontRingLayer.scale;
