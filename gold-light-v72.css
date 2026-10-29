@@ -328,6 +328,11 @@ body { height: auto; min-height: 100%; overflow: visible; }
 /* v94: no light layer is allowed above content glyphs or company artwork. */
 .content-scroll .gold-text-light,
 .content-scroll .partner-slot img { position: relative; z-index: 1; }
+.partner-grid > .partner-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .partner-grid .partner-slot img {
   /* One reserved display size for every company mark. Transparent file
      margins are trimmed losslessly, so padding cannot change the logo scale. */
@@ -335,6 +340,9 @@ body { height: auto; min-height: 100%; overflow: visible; }
   height: 140px;
   max-width: 100%;
   max-height: none;
+  margin: 0;
+  flex-shrink: 1;
+  align-self: center;
   object-fit: contain;
   object-position: center;
 }

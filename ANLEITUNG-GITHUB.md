@@ -4,6 +4,8 @@ Diese ZIP enthält 55 Dateien einschließlich dieser Anleitung und CNAME. Für G
 
 ## Work / Customers & Cooperators
 
+Alle 26 Felder richten ihr Logo ausdrücklich waagerecht und senkrecht mittig aus. Netflix ist um den überflüssigen unteren Bildbereich beschnitten, ohne den Schriftzug zu skalieren oder verlustbehaftet neu zu komprimieren. Bei Vodafone wurde nur der SVG-Sichtbereich enger gefasst; sämtliche Vektorpfade und Farben bleiben unverändert. Dadurch nimmt die sichtbare Wortmarke etwa 30 Prozent mehr Breite ein und entspricht in der Darstellung der Breite von Siemens. Die übrigen Logogrößen und die Branchenfolge bleiben erhalten.
+
 26 Referenzen stehen nach Unternehmensarten zusammen: Fahrzeuge, Technik und Telekommunikation, Veranstaltungen und Arbeitsräume, Hotels, Film und Fernsehen, Musik und Audio sowie Lifestyle.
 
 Alle Logos verwenden dieselbe zentrierte Darstellungsfläche von maximal 200 × 140 CSS-Pixeln. Schmale Bildschirme begrenzen deren Breite automatisch. Die Originalproportionen bleiben erhalten. Vollständig transparente Außenränder wurden verlustfrei entfernt, damit die tatsächlichen Motive statt unterschiedlich großer Dateiränder eingepasst werden. Farben, Zeichnung und alle sichtbaren Bildpixel bleiben erhalten. Das vorhandene Raster mit einer, zwei oder drei Spalten und seinen Trennlinien bleibt bestehen.
