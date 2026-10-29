@@ -112,9 +112,39 @@
     ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
     ring.sprite = null; ring.size = 0;
   }
+  // Continue the outward growth from the broad outer band shown by the
+  // arrow. Use the same 0.092 logo-scale unit, also for the dot diameters.
+  const outwardGrowthAnchor = 4;
+  const growthAnchor = outerRings[outwardGrowthAnchor];
+  const growthScaleStep = innerRingOrder[1].scale - innerRingOrder[0].scale;
+  const growthWidthUnit = (growthAnchor.outerRatio - growthAnchor.innerRatio) / growthAnchor.source.scale;
+  const originalOuterCount = outerRings.length;
+  const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
+  for (let index = outwardGrowthAnchor + 1; index < originalOuterCount + 7; index++) {
+    const extra = index >= originalOuterCount;
+    const source = extra ? lastOuterSource : outerRings[index].source;
+    const ring = extra ? {source, extra: true, opacityFactor: .82 ** (index - originalOuterCount + 1)} : outerRings[index];
+    const sourceScale = growthAnchor.source.scale + (index - outwardGrowthAnchor) * growthScaleStep;
+    ring.innerRatio = outerRings[index - 1].outerRatio + ringGap;
+    ring.outerRatio = ring.innerRatio + growthWidthUnit * sourceScale;
+    ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
+    ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
+    ring.sprite = null; ring.size = 0;
+    if (extra) { outerRings.push(ring); ringBands.push(ring); }
+  }
   const ringPaintOrder = [...outerRings].reverse().concat(innerRings);
   function cacheInnerRingSprites(diameter, ratio) {
+    const width = root.clientWidth;
+    const farthestRadius = Math.max(...[
+      {x: width / 2, y: mainBox.top + mainBox.height / 2},
+      openingCenter || {x: width / 2, y: surfaceHeight / 2}
+    ].map(center => Math.hypot(Math.max(Math.abs(center.x), Math.abs(width - center.x)),
+      Math.max(Math.abs(center.y), Math.abs(surfaceHeight - center.y))))) + 2;
     for (const ring of ringBands) {
+      // Extensions beyond every visible corner need no large canvas texture.
+      if (ring.extra && ring.innerRatio * diameter > farthestRadius) {
+        ring.sprite = null; ring.size = 0; continue;
+      }
       const size = Math.max(32, Math.min(2048, Math.ceil(diameter * ring.diameterFactor * ratio)));
       if (ring.sprite && ring.size === size) continue;
       const canvas = document.createElement('canvas');
@@ -138,7 +168,10 @@
       }
       ring.sprite = canvas; ring.size = size;
     }
-    if (logos) logos.dataset.innerRingCount = String(innerRings.length);
+    if (logos) {
+      logos.dataset.innerRingCount = String(innerRings.length);
+      logos.dataset.outerRingCount = String(outerRings.length);
+    }
   }
   let raf = 0;
   let layoutDirty = true;
@@ -973,7 +1006,7 @@
       context.save();
       context.translate(centerX, centerY);
       context.rotate(ring.source.scrollAngle + (ring.source.ringIdleAngle ?? ring.source.idleAngle));
-      context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility, ring.source.ringIdleVisibility ?? ring.source.idleVisibility);
+      context.globalAlpha = mainLayerOpacity(ring.source, patternVisibility, fillVisibility, ring.source.ringIdleVisibility ?? ring.source.idleVisibility) * (ring.opacityFactor ?? 1);
       context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
       context.restore();
     }

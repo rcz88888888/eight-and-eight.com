@@ -6,7 +6,7 @@ Diese ZIP enthält 56 Dateien einschließlich dieser Anleitung und CNAME. Für G
 
 Inhaltstexte rücken beim ersten Herunterscrollen um bis zu 32 CSS-Pixel von unten an ihre unveränderte Endposition. Der Weg folgt dem Scrollfortschritt. Beim Zurückscrollen wird er nicht zurückgespult; erreichte Endpositionen bleiben dauerhaft erhalten, auch bei Größenwechseln. Rahmen und Bilder werden dabei nicht verschoben. Reduzierte Bewegung zeigt sofort die Endposition.
 
-Alle 15 Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
+Alle Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
 
 ## Aktuelle Größenkorrektur der Referenzen
 
@@ -42,9 +42,15 @@ Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron ohne Fäch
 
 Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in 1,8 Sekunden von 33,333333 auf 888 rpm, danach direkt aufrechter Stopp. Die gemeinsame achtsekündige Pause beginnt, wenn auch die letzte verzögerte Ebene aufrecht steht. Danach wiederholt sich die Sequenz. Die Scrollstaffelung und die Ringgeometrie bleiben unverändert.
 
+## Weiterwachsende äußere Timecoderinge
+
+Ab dem breiten fünften Außenband wird die im Screenshot markierte Größenfolge nach außen fortgesetzt. Ringbreiten und Punktdurchmesser wachsen pro Band mit derselben Skaleneinheit von 0,092 weiter. Die schmalen Zwischenräume bleiben gleich; sieben zusätzliche Außenbänder setzen das Muster zum Rand und darüber hinaus fort. Die sieben Innenringe und die inneren Außenbänder bleiben unverändert. Die Ergänzungen übernehmen die Phase des bisher äußersten Rings und führen die bisherige Sichtbarkeitsabstufung fort.
+
+Für zusätzliche Ringe, die vollständig jenseits aller sichtbaren Ecken liegen, werden keine großen Leinwandtexturen angelegt. Zusätzliche Berechnungen oder Zeitgeber während des Scrollens entstehen nicht.
+
 ## Wiederherstellung der ursprünglichen Ringstaffelung
 
-Die Radien und Ebenenzuordnungen aller 15 Ringbänder werden wieder aus der Fassung vor der Änderung vom 29. Oktober abgeleitet. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Der Scrollfächer folgt den ursprünglichen Zeitkurven; die Startstaffelung ist durchgangsweise wie oben beschrieben angepasst.
+Die Ebenenzuordnungen der bisherigen 15 Ringbänder stammen aus der Fassung vor der Änderung vom 29. Oktober. Die äußere Wachstumsfolge ist nun wie oben beschrieben erweitert. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Der Scrollfächer folgt den ursprünglichen Zeitkurven; die Startstaffelung ist durchgangsweise wie oben beschrieben angepasst.
 
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
