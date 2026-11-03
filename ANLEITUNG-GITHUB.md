@@ -8,14 +8,6 @@ Alle 22 Timecodebänder folgen von der Mitte nach außen derselben additiven Ska
 
 Die Referenzfläche endet direkt mit der letzten Logoreihe an der abgerundeten Außenkante. Die zusätzliche Abschlusslinie, der untere Innenabstand und alle Füllzellen entfallen. Bei ungerader Logoanzahl nimmt das letzte Logo im Querformat die gesamte letzte Reihe ein.
 
-## Bannerrand und Absatzgrößen
-
-Die untere Linie des geöffneten Menübanners wird in allen Ausrichtungen als nativer Rahmen gezeichnet und bleibt beim Scrollen innerhalb der Navigation an deren Außenkante. Die Einleitungsabsätze unter „Eight&Eight“ und „From premise to implementation.“ verwenden dieselbe Schriftgröße wie die folgenden Absätze: 22 Referenzpixel, proportional zur gemeinsamen Layouteinheit.
-
-## Hauptlogo-Größe nach Bildmarkierungen
-
-Die sichtbare Kontur des vordersten Hauptlogos nutzt 91,8 Prozent des Abstands zwischen der Bannerunterkante und der Feldlinie unter „01 / ABOUT“. Oben und unten bleiben jeweils 4,1 Prozent frei. Startlogo und alle acht Hauptlogo-Ebenen teilen diese Grundgröße; die bestehenden relativen Größenstufen bleiben erhalten. Transparente SVG-Ränder fließen nicht in die sichtbare Höhe ein. Die Messung erfolgt nur bei Layoutänderungen und wird in Hoch- und Querformat proportional weitergeführt.
-
 ## Optimierte Animationen
 
 Hauptlogo-Konturen werden einmal in der benötigten Darstellungsauflösung vorbereitet und anschließend als Grafiken wiederverwendet. Die GPU zeichnet alle 18.668 Timecode-Punkte aus kleinen, dauerhaft wiederverwendeten Geometriepuffern und übernimmt auch die acht Hauptlogos. Bei fehlendem WebGL oder Kontextverlust greift automatisch die vorberechnete Canvas-Darstellung. Dort teilen sich gemeinsam rotierende Ringbänder eine Grafik und werden auf ihre Ringflächen begrenzt. Unbenutzte Ringtexturen entfallen. Die statischen goldenen Feldlinien verwenden native Rahmen statt zusätzlicher Maskenflächen. Textmasken entstehen nur in Bildschirmnähe und in freien Browserzeiten; entfernte Textfilter werden ausgeblendet. Foto-Beleuchtungskarten werden vor Erreichen des Fotos vorbereitet. Die Originalfotos, Beleuchtungskarten und ihre Scrolleffekte bleiben erhalten.

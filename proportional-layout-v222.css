@@ -69,16 +69,15 @@ body .site-nav {
   gap: calc(16 * var(--layout-unit)); opacity: .8;
   background: transparent !important; backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  /* The native edge stays at the menu's outer boundary while its links scroll. */
-  border-bottom: var(--layout-line) solid var(--metallic-gold) !important;
 }
 body .site-nav.open { display: grid; }
 body .site-nav a { font-size: calc(14 * var(--layout-unit)); padding: calc(5 * var(--layout-unit)) 0; }
 body .site-nav::before { display: none; content: none; }
 body .site-nav::after {
-  content: none; display: none;
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+  height: var(--layout-line) !important; background: var(--metallic-gold);
 }
-body .topbar.menu-expanded { overflow: visible; border-bottom-style: none !important; }
+body .topbar.menu-expanded { overflow: visible; }
 body .topbar.menu-expanded::before, body .topbar.menu-expanded .banner-blur {
   bottom: calc(-1 * var(--expanded-menu-height, 0px));
 }
@@ -95,7 +94,6 @@ body .topbar.menu-expanded::before, body .topbar.menu-expanded .banner-blur {
 .content-scroll h3 { font-size: calc(22 * var(--layout-unit)); margin-bottom: calc(8 * var(--layout-unit)); }
 body main p:not(.contact-tags) { font-size: calc(22 * var(--layout-unit)); max-width: calc(820 * var(--layout-unit)); }
 body main p.lead { font-size: var(--layout-lead); }
-body main :is(#about, #concept-development) p.lead { font-size: calc(22 * var(--layout-unit)); }
 body main .service-grid article p { font-size: calc(20 * var(--layout-unit)); }
 .content-scroll .principles, .content-scroll .service-grid { grid-template-columns: minmax(0, 1fr); }
 .content-scroll .principles { margin: calc(50 * var(--layout-unit)) 0; }
@@ -146,16 +144,6 @@ body .footer { padding-block: calc(25 * var(--layout-unit)) calc(45 * var(--layo
   }
 }
 .content-scroll .logo-stage { padding: calc(8 * var(--layout-unit)); }
-/* The fitted emblem uses its visible contour, including the space above the
-   first field divider, rather than the transparent SVG box as its boundary. */
-.content-scroll .logo-stage { position: relative; overflow: visible; }
-body .content-scroll .hero-static-logo.hero-wallpaper-logo[data-fit-scale] {
-  position: absolute;
-  left: 50%; top: var(--hero-fit-top);
-  width: var(--hero-fit-width); height: var(--hero-fit-height);
-  min-width: 0; min-height: 0; max-width: none; max-height: none;
-  transform: translate(-50%, -50%) rotate(var(--hero-idle-angle, 0rad));
-}
 body .topbar::before, body .topbar.menu-expanded::before {
   -webkit-mask-position: center calc(-58 * var(--layout-unit));
   mask-position: center calc(-58 * var(--layout-unit));

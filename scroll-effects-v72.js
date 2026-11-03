@@ -557,9 +557,8 @@
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility,idleVisibility=layer.idleVisibility) =>
     layer.opacity*(1-.38*fillVisibility)*(1-(1-idleVisibility)*patternVisibility);
   function openingMainScaleFactor() {
-    if (!openingLogo || !mainBox) return 1;
-    const openingScale = Number(openingLogo.dataset.fitScale) ||
-      Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    if (!openingLogo || !mainBox || !matchMedia('(orientation: landscape)').matches) return 1;
+    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
     const canvasScale = Math.min(mainBox.width / 922, mainBox.height / 1368);
     const frontScale = layers.find(layer => layer.depth === 0)?.scale || 1;
     // Match the nearest background logo to the foreground artwork itself.
@@ -589,8 +588,7 @@
   }
   function cacheMainWallpaperSprites() {
     if (!sprites.length || !wallpaperData || !openingLogo || !mainBox) return;
-    const openingScale = Number(openingLogo.dataset.fitScale) ||
-      Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     if (!(openingScale > 0) || !(scale > 0)) return;
     const pattern = openingLogo.querySelector('#hero-paper-pattern');
@@ -916,7 +914,7 @@
       const box = openingStage.getBoundingClientRect();
       openingScaleFactor = openingMainScaleFactor();
       openingCenter = {x: box.left + box.width / 2,
-        y: Number(openingLogo.dataset.fitCenterY) || box.top + scrollPosition() + box.height / 2};
+        y: box.top + scrollPosition() + box.height / 2};
     }
     bgRatio = nextBgRatio;
     inkRatio = nextInkRatio;
