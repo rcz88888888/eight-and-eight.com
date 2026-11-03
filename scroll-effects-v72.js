@@ -785,20 +785,27 @@
     const canResizeHeight = !touchViewport.matches || !openingViewportLocked;
     if (openingViewport && !widthChanged && !orientationChanged &&
         (!canResizeHeight || openingViewport.height === viewportHeight)) return false;
-    openingViewport = {width, viewportWidth, height: viewportHeight, landscape};
-    root.style.setProperty('--opening-viewport-height', `${viewportHeight}px`);
+    const referenceWidth = landscape ? 896 : 393;
+    const referenceHeight = landscape ? 414 : 852;
+    const layoutScale = Math.min(viewportWidth / referenceWidth, viewportHeight / referenceHeight);
+    openingViewport = {width, viewportWidth, height: viewportHeight, landscape, layoutScale};
+    root.dataset.layoutMode = landscape ? 'landscape' : 'portrait';
+    root.style.setProperty('--layout-scale', layoutScale);
+    root.style.setProperty('--layout-unit', `${layoutScale}px`);
+    root.style.setProperty('--wallpaper-tile-size', `${220 * layoutScale}px`);
+    root.style.setProperty('--opening-viewport-height', `${referenceHeight * layoutScale}px`);
     return true;
   }
   function rainReferenceWidth(width, height) {
     // Always use the existing landscape sizing, even on a portrait viewport.
     // This reference is independent of the foreground/main-logo enlargement.
-    const longSide = Math.max(width, height);
-    const shortSide = Math.min(width, height);
+    const longSide = openingViewport?.landscape ? 896 : 852;
+    const shortSide = openingViewport?.landscape ? 414 : 393;
     const header = longSide <= 560 ? 90.44 : longSide <= 900 ? 104 : 120;
     const boxWidth = longSide <= 560 ? Math.min(.72 * longSide, 460) : Math.min(.52 * longSide, 560);
     const inset = Math.max(56, Math.min(96, .08 * shortSide));
     const boxHeight = Math.max(0, Math.min(820, shortSide - header - inset));
-    return Math.min(boxWidth, boxHeight * 922 / 1368) * 1.15;
+    return Math.min(boxWidth, boxHeight * 922 / 1368) * 1.15 * (openingViewport?.layoutScale || 1);
   }
   function measure(width, height) {
     // Pin the CSS and canvas geometry to the same viewport before measuring.

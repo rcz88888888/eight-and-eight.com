@@ -4,7 +4,8 @@
   const nav = document.querySelector('.site-nav');
   const toggle = document.querySelector('.menu-toggle');
   if (!header || !nav || !toggle) return;
-  const mobile = matchMedia('(max-width: 900px)');
+  // Preserve the mobile overlay/menu arrangement at every resolution.
+  const mobile = matchMedia('(min-width: 0px)');
   let frame = 0;
   let previousGeometry = '';
   const set = (element, name, value) => {

@@ -1,6 +1,18 @@
 # Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
-Diese ZIP enthält 56 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+Diese ZIP enthält 57 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+
+## Einheitliche Proportionen auf allen Auflösungen
+
+Das mobile Querformat mit 896 × 414 CSS-Pixeln dient als Querformat-Referenz, einschließlich Desktop und Tablet. Im Hochformat wird die bestehende mobile Gestaltung mit 393 × 852 CSS-Pixeln proportional weitergeführt. Ein gemeinsamer Skalierungsfaktor passt jeweils die Referenz in die verfügbare Breite und Höhe ein. Unterschiedliche Seitenverhältnisse können zusätzliche freie Fläche zeigen, ohne Logos oder Fotos zu verzerren.
+
+Bannerhöhe und Wortmarke, Startlogo und Hauptlogos, Timecoderinge, Tapetenmaß, Schriftgrößen, Felder, Innenabstände, Fotokanten und unterer Banner folgen derselben Einheit. Die tatsächliche sichtbare Browserfläche bestimmt weiterhin die gemeinsame Scrollmitte unter dem oberen Banner. Die Toolbar-Sperre auf mobilen Geräten bleibt erhalten; Änderungen der Browserleisten lassen die Größen nicht springen.
+
+Auch oberhalb von 900 Pixeln bleibt die Menüanordnung des mobilen Querformats bestehen: mittige Bannerwortmarke und Hamburger mit ausklappbarer Navigation. Referenzen stehen im Querformat in zwei Spalten, im Hochformat in einer Spalte. Die unveränderten individuellen Logoanpassungen skalieren mit. Es gibt keine feste Desktop-Obergrenze für Logo oder Inhaltsbreite und keinen Dreispalten-Sprung mehr.
+
+Die Umsetzung verwendet native CSS-Abmessungen, keine vergrößerte Screenshotfläche, kein CSS-Zoom und keinen transformierten Scrollcontainer. Alle Bilddateien einschließlich der drei 1536 × 1024-Pixel-Fotos und ihrer Lichtkarten bleiben unverändert. Startsequenz, Ringstaffelung, Tempowechsel und Scrollrückkehr bleiben erhalten. Das einmalige Einrücken der Texte berücksichtigt Größenwechsel, ohne erneut abgespielt zu werden.
+
+Geprüft in Chrome bei 896 × 414, 1363 × 936, 1920 × 1080, 1024 × 768, 2560 × 1080, 393 × 852 und 768 × 1024; zusätzlich mathematische Layoutprüfungen für 720 Formate. Ein nativer iPhone/Safari-Test ist hier nicht verfügbar.
 
 ## Einmaliges Einrücken und Ringabstände
 
@@ -22,7 +34,7 @@ Alle 26 Felder richten ihr Logo ausdrücklich waagerecht und senkrecht mittig au
 
 Die Referenzliste beginnt mit AVE Audio Visual Equipment, Neumann&Müller und NEO eventservice. Danach folgt die bisherige Reihenfolge der übrigen 23 Referenzen.
 
-Alle Logos verwenden dieselbe zentrierte Darstellungsfläche von maximal 200 × 140 CSS-Pixeln. Schmale Bildschirme begrenzen deren Breite automatisch. Die Originalproportionen bleiben erhalten. Vollständig transparente Außenränder wurden verlustfrei entfernt, damit die tatsächlichen Motive statt unterschiedlich großer Dateiränder eingepasst werden. Farben, Zeichnung und alle sichtbaren Bildpixel bleiben erhalten. Das vorhandene Raster mit einer, zwei oder drei Spalten und seinen Trennlinien bleibt bestehen.
+Alle Logos verwenden dieselbe zentrierte Darstellungsfläche von maximal 200 × 140 Referenz-CSS-Pixeln, multipliziert mit dem gemeinsamen Layoutfaktor. Schmale Bildschirme begrenzen deren Breite automatisch. Die Originalproportionen bleiben erhalten. Vollständig transparente Außenränder wurden verlustfrei entfernt, damit die tatsächlichen Motive statt unterschiedlich großer Dateiränder eingepasst werden. Farben, Zeichnung und alle sichtbaren Bildpixel bleiben erhalten. Das vorhandene Raster mit einer, zwei oder drei Spalten und seinen Trennlinien bleibt bestehen.
 
 Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF, Vans, Zoo York, Sky und EastWest sind enthalten.
 
