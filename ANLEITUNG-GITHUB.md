@@ -6,7 +6,13 @@ Das Waldfoto steht direkt nach „Common Ground — We establish the strategic f
 
 Alle 22 Timecodebänder folgen von der Mitte nach außen derselben additiven Skalierung: 0,506; 0,598; 0,690; …; 1,150 am vordersten Hauptlogo; …; 2,438. Jeder Schritt beträgt 0,092, entsprechend dem Größenunterschied der beiden vordersten Hauptlogos. Ringbreiten und Punktdurchmesser wachsen über sämtliche Innenringe, den Übergang zur vordersten Logoebene und alle äußeren Fortsetzungen mit gleich bleibendem Zuwachs. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Winkel, Fächerzeiten und Sichtbarkeit folgen unverändert den bisherigen Logoebenen.
 
-Die feste leere Zusatzzeile nach Sky ist entfernt. Bei 26 Logos enden die Zweierspalten nach 13 vollständigen Reihen. Nur bei ungerader Logoanzahl wird im Querformat die letzte Reihe mit genau einer leeren Zelle vervollständigt. Im Hochformat entsteht kein zusätzliches Feld.
+Die Referenzfläche endet direkt mit der letzten Logoreihe an der abgerundeten Außenkante. Die zusätzliche Abschlusslinie, der untere Innenabstand und alle Füllzellen entfallen. Bei ungerader Logoanzahl nimmt das letzte Logo im Querformat die gesamte letzte Reihe ein.
+
+## Optimierte Animationen
+
+Hauptlogo-Konturen werden einmal in der benötigten Darstellungsauflösung vorbereitet und anschließend als Grafiken wiederverwendet. Die GPU zeichnet alle 18.668 Timecode-Punkte aus kleinen, dauerhaft wiederverwendeten Geometriepuffern und übernimmt auch die acht Hauptlogos. Bei fehlendem WebGL oder Kontextverlust greift automatisch die vorberechnete Canvas-Darstellung. Dort teilen sich gemeinsam rotierende Ringbänder eine Grafik und werden auf ihre Ringflächen begrenzt. Unbenutzte Ringtexturen entfallen. Die statischen goldenen Feldlinien verwenden native Rahmen statt zusätzlicher Maskenflächen. Textmasken entstehen nur in Bildschirmnähe und in freien Browserzeiten; entfernte Textfilter werden ausgeblendet. Foto-Beleuchtungskarten werden vor Erreichen des Fotos vorbereitet. Die Originalfotos, Beleuchtungskarten und ihre Scrolleffekte bleiben erhalten.
+
+Während des normalen Scrollens sind keine blockierenden Touch- oder Mausrad-Listener aktiv. Sie werden nur für die bestehende Startrückkehr vorübergehend eingeschaltet. Bewegungskurven, acht Logoebenen, 104 Timecode-Punktreihen, gleichmäßige Sichtbarkeitsschritte und scrollgebundener Regen bleiben erhalten.
 
 Trebuchet MS steht nun für sämtliche Ansichten an erster Stelle. Die bisherigen geräteabhängigen Rundschrift-Alternativen entfallen; die vorhandenen Schriftgrößen und Schriftschnitte bleiben erhalten.
 
@@ -18,7 +24,7 @@ Alle Ausrichtungen verwenden 282 Regenlogos wie die bisherige Ansicht bei 1600 �
 
 # Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
-Diese ZIP enthält 58 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+Diese ZIP enthält 59 Dateien einschließlich dieser Anleitung, CNAME und gpu-frames-v1.js. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
 
 ## Einheitliche Proportionen auf allen Auflösungen
 

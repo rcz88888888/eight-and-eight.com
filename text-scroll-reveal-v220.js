@@ -13,12 +13,12 @@
     });
   let previousScroll = window.scrollY;
   let initialized = false;
+  let layoutScale = 1;
   let lastState = {scroll: previousScroll, height: innerHeight};
   function update(item, progress) {
     item.progress = Math.max(item.progress, progress);
     const p = item.progress;
-    const scale = parseFloat(document.documentElement.style.getPropertyValue('--layout-scale')) || 1;
-    const offset = 32 * scale * (1 - p * p * (3 - 2 * p));
+    const offset = 32 * layoutScale * (1 - p * p * (3 - 2 * p));
     if (offset !== item.offset) {
       item.owner.style.setProperty('--text-reveal-y', `${offset.toFixed(4)}px`);
       item.offset = offset;
@@ -41,6 +41,7 @@
     initialized = true;
   }
   function measure() {
+    layoutScale = parseFloat(document.documentElement.style.getPropertyValue('--layout-scale')) || 1;
     // Remove the current visual offset mathematically, without a write/read
     // layout cycle. Resize/font changes never reset the one-way progress.
     const scroll = window.scrollY;

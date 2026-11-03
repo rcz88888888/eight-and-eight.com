@@ -109,9 +109,10 @@ body main .service-grid article p { font-size: calc(20 * var(--layout-unit)); }
 .content-scroll .partner-grid {
   grid-template-columns: minmax(0, 1fr);
   /* Join every divider to the section's side rails, without duplicate edges. */
-  margin: calc(45 * var(--layout-unit)) calc(-1 * var(--layout-padding)) calc(12 * var(--layout-unit));
+  margin: calc(45 * var(--layout-unit)) calc(-1 * var(--layout-padding)) 0;
   border-left-style: none;
   border-right-style: none;
+  border-bottom-style: none;
   border-radius: 0;
 }
 body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-child(n) { border: 0 !important; }
@@ -174,16 +175,13 @@ body .site-nav a { justify-self: center; text-align: center; }
 .content-scroll .partner-grid { overflow: hidden; }
 .content-scroll .partner-slot { display: flex; align-items: center; justify-content: center; border-radius: 0 !important; }
 .content-scroll .partner-slot img { display: block; margin: 0 auto; object-position: 50% 50%; }
-/* A single-column list needs no filler. In two columns, complete only an
-   unfinished last pair; an even logo count creates no extra row or cell. */
+/* The final logo meets the section's rounded bottom edge directly. */
+body :is(#work, [data-display-id="work"]) .section-content { padding-bottom: 0; }
+body :is(#work, [data-display-id="work"]) { overflow: hidden; }
 .content-scroll .partner-grid::before { content: none; }
 @media (orientation: landscape) {
-  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd))::before {
-    content: "";
-    order: 1;
-    border-left: var(--layout-line) solid var(--metallic-gold);
-  }
-  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd)):has(> .partner-slot:nth-child(3))::before {
-    border-top: var(--layout-line) solid var(--metallic-gold);
+  body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    border-left-style: none !important;
   }
 }

@@ -78,40 +78,69 @@
     outline.context.drawImage(core.canvas, 0, 0);
     return `url("${outline.canvas.toDataURL('image/png')}")`;
   }
-  function measure() {
-    const ratio = Math.min(3, Math.max(1, devicePixelRatio || 1));
-    const pending = [];
-    for (const owner of owners) {
-      const box = owner.getBoundingClientRect();
-      if (!(box.width > 0 && box.height > 0)) continue;
-      const style = getComputedStyle(owner);
-      if (style.visibility === 'hidden') continue;
-      const scale = scaleFor(owner);
-      const width = box.width / scale.x + padding * 2;
-      const height = box.height / scale.y + padding * 2;
-      const key = [width.toFixed(3), height.toFixed(3), ratio, style.font,
-        style.letterSpacing, style.lineHeight, style.textTransform, owner.textContent].join('|');
-      const previous = cache.get(owner);
-      if (previous?.key === key) continue;
-      pending.push({owner, width, height, position: style.position, previous, key,
-        mask: maskFor(owner, box, scale, width, height, ratio)});
-    }
-    // Rasterize only after layout/font changes. Animated backgrounds are blurred
-    // live by the browser compositor, without rebuilding masks during scrolling.
-    for (const {owner, width, height, position, previous, key, mask} of pending) {
-      const layer = previous?.layer || document.createElement('span');
-      if (!previous) {
-        layer.className = 'text-backdrop-outline';
-        layer.setAttribute('aria-hidden', 'true');
-        if (position === 'static') owner.style.position = 'relative';
-        owner.prepend(layer);
-      }
-      layer.style.width = `${width}px`;
-      layer.style.height = `${height}px`;
-      layer.style.maskImage = layer.style.webkitMaskImage = mask;
-      cache.set(owner, {key, layer});
-    }
+  const nearbyOwners = new Set();
+  const pendingOwners = new Set();
+  let pendingTask = false;
+  const idle = callback => 'requestIdleCallback' in window
+    ? requestIdleCallback(callback, {timeout: 1200}) : setTimeout(callback, 32);
+  function pump() {
+    if (pendingTask || !pendingOwners.size) return;
+    pendingTask = true;
+    idle(() => {
+      pendingTask = false;
+      const owner = pendingOwners.values().next().value;
+      pendingOwners.delete(owner);
+      if (nearbyOwners.has(owner)) prepare(owner);
+      pump();
+    });
   }
+  function queue(owner) { pendingOwners.add(owner); pump(); }
+  function prepare(owner) {
+    const ratio = Math.min(3, Math.max(1, devicePixelRatio || 1));
+    const box = owner.getBoundingClientRect();
+    if (!(box.width > 0 && box.height > 0)) return;
+    const style = getComputedStyle(owner);
+    if (style.visibility === 'hidden') return;
+    const scale = scaleFor(owner);
+    const width = box.width / scale.x + padding * 2;
+    const height = box.height / scale.y + padding * 2;
+    const key = [width.toFixed(3), height.toFixed(3), ratio, style.font,
+      style.letterSpacing, style.lineHeight, style.textTransform, owner.textContent].join('|');
+    const previous = cache.get(owner);
+    if (previous?.key === key) return;
+    const mask = maskFor(owner, box, scale, width, height, ratio);
+    const layer = previous?.layer || document.createElement('span');
+    if (!previous) {
+      layer.className = 'text-backdrop-outline';
+      layer.setAttribute('aria-hidden', 'true');
+      if (style.position === 'static') owner.style.position = 'relative';
+      owner.prepend(layer);
+    }
+    layer.style.width = `${width}px`;
+    layer.style.height = `${height}px`;
+    layer.style.maskImage = layer.style.webkitMaskImage = mask;
+    cache.set(owner, {key, layer});
+  }
+  // Build one nearby text mask in idle time; hide distant backdrop filters so
+  // long pages do not keep dozens of compositor surfaces active while moving.
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        const owner = entry.target;
+        const layer = cache.get(owner)?.layer;
+        if (entry.isIntersecting) {
+          nearbyOwners.add(owner);
+          if (layer) layer.style.display = '';
+          queue(owner);
+        } else {
+          nearbyOwners.delete(owner);
+          if (layer) layer.style.display = 'none';
+        }
+      }
+    }, {rootMargin: '50% 0px'});
+    for (const owner of owners) observer.observe(owner);
+  } else for (const owner of owners) { nearbyOwners.add(owner); queue(owner); }
+  function measure() { for (const owner of nearbyOwners) queue(owner); }
   engine.subscribe({measure});
   document.fonts?.ready.then(engine.invalidate);
 })();

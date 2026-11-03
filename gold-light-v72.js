@@ -1,7 +1,6 @@
 (() => {
   'use strict';
 
-  const edges = ['Top', 'Right', 'Bottom', 'Left'];
   const frameSelector = [
     '.hero-card', '.section', '.section-label', '.partner-grid', '.partner-slot',
     '.service-grid', '.service-grid article', '.principles', '.principles div',
@@ -53,8 +52,6 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  const hollowMaskSupported = CSS.supports('mask-composite', 'exclude') ||
-    CSS.supports('-webkit-mask-composite', 'xor');
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -99,58 +96,16 @@
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
 
-  function measureEdges() {
-    // Read first, then write, to avoid repeatedly forcing page layout.
-    const metrics = frames.map(element => {
-      const style = getComputedStyle(element);
-      return {
-        element,
-        widths: edges.map(edge => parseFloat(style[`border${edge}Width`]) || 0),
-        position: style.position
-      };
-    });
-    for (const {element, widths, position} of metrics) {
-      const active = widths.some(width => width > 0);
-      // Banner borders must paint at their actual outer edge. A hollow mask
-      // inside a transparent native border leaves a cream hairline outside it.
-      const banner = element === header || element.classList.contains('wallpaper-end');
-      const useMask = active && hollowMaskSupported && !banner;
-      element.classList.toggle('gold-frame-light', useMask);
-      if (useMask && position === 'static') element.classList.add('gold-frame-relative');
-      edges.forEach((edge, index) => {
-        element.style.setProperty(`--gold-edge-${edge.toLowerCase()}`, `${widths[index]}px`);
-        if (useMask) element.style.setProperty(`border-${edge.toLowerCase()}-color`, 'transparent', 'important');
-        else element.style.removeProperty(`border-${edge.toLowerCase()}-color`);
-      });
-    }
-  }
-
+  // Static gold edges use native CSS borders. A separate hollow composite mask
+  // per cell would duplicate those same edges and enlarge Safari's layer tree.
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
     measure() {
-      syncBrowserColor(); measureEdges(); cacheGeometry();
+      syncBrowserColor(); cacheGeometry();
     }
   });
-  // Portfolio dimensions are reserved in HTML. Loading their pixels does not
-  // invalidate every logo texture, text mask and frame across the whole page.
-  // Actual layout changes are already covered by the engine's ResizeObserver.
-  const photos = [...document.querySelectorAll('.concept-photo img')];
-  const preparePhoto = () => {
-    const photo = photos.shift();
-    if (!photo) return;
-    photo.fetchPriority = 'low';
-    photo.loading = 'eager';
-    const decoded = photo.decode ? photo.decode() : Promise.resolve();
-    decoded.catch(() => {}).then(() => {
-      if (photos.length) queuePhoto();
-    });
-  };
-  const queuePhoto = () => {
-    if ('requestIdleCallback' in window) requestIdleCallback(preparePhoto, {timeout: 1500});
-    else setTimeout(preparePhoto, 32);
-  };
-  queuePhoto();
+  // Native lazy image loading and the light renderer prepare nearby photos.
   if (nav) {
     let wasOpen = nav.classList.contains('open');
     new MutationObserver(() => {

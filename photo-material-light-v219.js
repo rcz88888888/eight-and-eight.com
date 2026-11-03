@@ -54,7 +54,7 @@
       item.surface.style.setProperty('--photo-light-atlas', `url("${item.figure.dataset.photoLightAtlas}")`);
       item.ready = true; item.progress = NaN;
       item.figure.dataset.lightRenderer = 'material-fields';
-      paint(lastState);
+      engine.requestPaint();
     } catch {
       item.figure.removeAttribute('data-light-ready');
       item.figure.dataset.lightRenderer = 'original';
@@ -98,7 +98,7 @@
       // the result with the photo avoids doubled exposure or mid-fade dimming.
       item.poses[1].style.opacity = (phase - segment).toFixed(6);
       item.progress = progress;
-      item.figure.setAttribute('data-light-ready', '');
+      if (!item.figure.hasAttribute('data-light-ready')) item.figure.setAttribute('data-light-ready', '');
     }
   }
   function measure() {
@@ -111,8 +111,19 @@
     paint({scroll, height: innerHeight});
   }
   engine.subscribe({measure, paint});
-  // Decode once, sequentially in idle time before the photos are reached.
-  for (const item of items) queuePreparation(item);
+  // Prepare full-resolution light fields near the viewport, rather than
+  // decoding every large atlas during the opening animation.
+  if ('IntersectionObserver' in window) {
+    const nearby = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const item = items.find(item => item.figure === entry.target);
+        queuePreparation(item);
+        nearby.unobserve(entry.target);
+      }
+    }, {rootMargin: '100% 0px'});
+    for (const item of items) nearby.observe(item.figure);
+  } else for (const item of items) queuePreparation(item);
   reduced.addEventListener('change', () => {
     for (const item of items) { item.progress = NaN; queuePreparation(item); }
     paint(lastState);
