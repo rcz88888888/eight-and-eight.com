@@ -76,6 +76,13 @@
   }
   const frontRingLayer = innerRingOrder[0];
   const innerRings = innerRingOrder.slice(1, 8).map(source => ({source}));
+  // Four more four-row bands add exactly sixteen individual point rows.
+  // Continue the same scale step and phase; fade each new row towards the centre.
+  const additionalInnerRowCount = 16;
+  const lastInnerSource = innerRings[innerRings.length - 1].source;
+  for (let index = 0; index < additionalInnerRowCount / ringRows.length; index++) {
+    innerRings.push({source: lastInnerSource, inwardExtension: true, opacityFactor: .82 ** index});
+  }
   const outerRings = innerRingOrder.map(source => ({source}));
   const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
   for (let index = 0; index < 7; index++) {
@@ -112,7 +119,8 @@
     ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
     ring.sprite = null; ring.size = 0;
   }
-  const ringPaintOrder = [...outerRings].reverse().concat(innerRings);
+  const backRingPaintOrder = innerRings.filter(ring => ring.inwardExtension);
+  const ringPaintOrder = [...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension));
   function cacheInnerRingSprites(diameter, ratio) {
     const width = root.clientWidth;
     const farthestRadius = Math.max(...[
@@ -134,7 +142,8 @@
       context.setTransform(unit, 0, 0, unit, size / 2, size / 2);
       context.fillStyle = '#c2b594';
       const radialScale = (ring.outerRatio - ring.innerRatio) / (ringOuterRadius - ringInnerRadius);
-      for (const row of ringRows) {
+      for (const [rowIndex, row] of ringRows.entries()) {
+        context.globalAlpha = ring.inwardExtension ? .82 ** ((ringRows.length - rowIndex) / ringRows.length) : 1;
         const radius = ring.innerRatio + (row.radius - ringInnerRadius) * radialScale;
         const dot = row.dot * radialScale;
         context.beginPath();
@@ -151,6 +160,8 @@
     if (logos) {
       logos.dataset.innerRingCount = String(innerRings.length);
       logos.dataset.outerRingCount = String(outerRings.length);
+      logos.dataset.innerRowCount = String(innerRings.length * ringRows.length);
+      logos.dataset.additionalInnerRowCount = String(additionalInnerRowCount);
     }
   }
   let raf = 0;
@@ -982,6 +993,7 @@
   }
   function drawLogoLayers(context,scene,width,surfaceHeight) {
     const {centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility}=scene;
+    drawTimecodeRings(context,scene,width,surfaceHeight,backRingPaintOrder);
     for (const layer of layers) {
       context.save();
       context.translate(centerX, centerY);
@@ -1012,7 +1024,11 @@
       } else context.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       context.restore();
     }
-    for (const ring of ringPaintOrder) {
+    drawTimecodeRings(context,scene,width,surfaceHeight,ringPaintOrder);
+  }
+  function drawTimecodeRings(context,scene,width,surfaceHeight,rings) {
+    const {centerX,centerY,ringDiameter,patternVisibility,fillVisibility}=scene;
+    for (const ring of rings) {
       if (!ring.sprite || !(ringDiameter > 0) || !ringIntersectsViewport(centerX,centerY,
         ring.innerRatio*ringDiameter,ring.outerRatio*ringDiameter,width,surfaceHeight)) continue;
       const diameter = ringDiameter * ring.diameterFactor;

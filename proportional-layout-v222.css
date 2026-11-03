@@ -106,7 +106,14 @@ body main .service-grid article p { font-size: calc(20 * var(--layout-unit)); }
 .content-scroll .principles span { font-size: calc(12 * var(--layout-unit)); }
 .content-scroll .service-grid article { min-height: calc(150 * var(--layout-unit)); padding: calc(28 * var(--layout-unit)); border-left-style: none; }
 .content-scroll .service-grid article + article { border-top-style: solid; }
-.content-scroll .partner-grid { grid-template-columns: minmax(0, 1fr); margin: calc(45 * var(--layout-unit)) 0 calc(12 * var(--layout-unit)); }
+.content-scroll .partner-grid {
+  grid-template-columns: minmax(0, 1fr);
+  /* Join every divider to the section's side rails, without duplicate edges. */
+  margin: calc(45 * var(--layout-unit)) calc(-1 * var(--layout-padding)) calc(12 * var(--layout-unit));
+  border-left-style: none;
+  border-right-style: none;
+  border-radius: 0;
+}
 body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-child(n) { border: 0 !important; }
 body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-child(n + 2) { border-top: var(--layout-line) solid var(--metallic-gold) !important; }
 .content-scroll .partner-slot { min-height: calc(150 * var(--layout-unit)); padding: var(--layout-slot-padding); }
@@ -155,7 +162,7 @@ body .footer { width: min(90vw, var(--layout-content)); margin-top: calc(59.64 *
   body .footer { margin-top: calc(28.98 * var(--layout-unit)); }
 }
 
-.content-scroll .partner-grid, .content-scroll .service-grid, .content-scroll .contact-box { border-radius: var(--layout-radius); }
+.content-scroll .service-grid, .content-scroll .contact-box { border-radius: var(--layout-radius); }
 @media (orientation: portrait) {
   .content-scroll .section-content { padding: calc(32 * var(--layout-unit)) calc(24 * var(--layout-unit)); }
   .content-scroll .section-label { padding: calc(22 * var(--layout-unit)) calc(24 * var(--layout-unit)); }
@@ -169,13 +176,14 @@ body .site-nav a { justify-self: center; text-align: center; }
 .content-scroll .partner-slot img { display: block; margin: 0 auto; object-position: 50% 50%; }
 /* A single-column list needs no filler. In two columns, complete only an
    unfinished last pair; an even logo count creates no extra row or cell. */
-.content-scroll .partner-grid::after { content: none; }
+.content-scroll .partner-grid::before { content: none; }
 @media (orientation: landscape) {
-  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd))::after {
+  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd))::before {
     content: "";
+    order: 1;
     border-left: var(--layout-line) solid var(--metallic-gold);
   }
-  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd)):has(> .partner-slot:nth-child(3))::after {
+  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd)):has(> .partner-slot:nth-child(3))::before {
     border-top: var(--layout-line) solid var(--metallic-gold);
   }
 }
