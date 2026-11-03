@@ -53,7 +53,7 @@
     idleAngle: 0, idleVisibility: .7, ringIdleAngle: 0, ringIdleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** Number(node.dataset.depth)
   }));
-  // Restore the original radial progression and original layer assignment.
+  // One continuous pattern-scale progression, with the original layer bindings.
   const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
   const ringRows = [
     {count: 171, radius: 563, dot: 3.35, phase: 0},
@@ -75,63 +75,42 @@
     layer.ringScale = Math.max(1, ringScale / layer.scale);
   }
   const frontRingLayer = innerRingOrder[0];
-  const inwardStart = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
-  let inwardBoundary = inwardStart;
-  const innerRings = innerRingOrder.slice(1, 8).map(source => {
-    const innerRatio = inwardStart * frontRingLayer.scale / source.scale;
-    const outerRatio = inwardBoundary + frontRingLayer.scale * ringEdgeOverlap / 1280;
-    inwardBoundary = innerRatio;
-    return {source, innerRatio, outerRatio};
-  });
-  const outerRings = innerRingOrder.map(source => ({source,
-    innerRatio: source.scale * source.ringScale * ringInnerRadius / 1280,
-    outerRatio: source.scale * source.ringScale * ringOuterRadius / 1280}));
+  const innerRings = innerRingOrder.slice(1, 8).map(source => ({source}));
+  const outerRings = innerRingOrder.map(source => ({source}));
+  const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
+  for (let index = 0; index < 7; index++) {
+    outerRings.push({source: lastOuterSource, extra: true, opacityFactor: .82 ** (index + 1)});
+  }
   const ringBands = [...innerRings].reverse().concat(outerRings);
   const ringGap = pointClearance * frontRingLayer.scale / 1280;
-  // Keep every ORIGINAL band's centre radius fixed. Solve only the band
-  // half-widths, so the requested tiny gaps cannot move or reorder the fan.
-  let sign = 1, intercept = 0, lower = 0, upper = Infinity;
+  // The same additive logo-scale step applies to ALL bands, including the
+  // inward continuation and the outer extensions. Never restart at a boundary.
+  const ringScaleStep = innerRingOrder[1].scale - frontRingLayer.scale;
+  const ringWidthUnit = frontRingLayer.ringScale * (ringOuterRadius - ringInnerRadius) / 1280;
+  const frontRingInnerRatio = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
   ringBands.forEach((ring, index) => {
-    ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
-    ring.originalHalfWidth = (ring.outerRatio - ring.innerRatio) / 2;
-    if (index) {
-      sign = -sign;
-      intercept = ring.centerRatio - ringBands[index - 1].centerRatio - ringGap - intercept;
-    }
-    ring.widthSign = sign; ring.widthIntercept = intercept;
-    if (sign > 0) lower = Math.max(lower, -intercept);
-    else upper = Math.min(upper, intercept);
+    ring.patternScale = frontRingLayer.scale + (index - innerRings.length) * ringScaleStep;
+    ring.widthRatio = ringWidthUnit * ring.patternScale;
   });
-  const preferredWidth = ringBands.reduce((sum, ring) => sum +
-    ring.widthSign * (ring.originalHalfWidth - ring.widthIntercept), 0) / ringBands.length;
-  const firstWidth = Math.max(lower + 1e-9, Math.min(upper - 1e-9, preferredWidth));
-  for (const ring of ringBands) {
-    const halfWidth = ring.widthSign * firstWidth + ring.widthIntercept;
-    ring.innerRatio = ring.centerRatio - halfWidth;
-    ring.outerRatio = ring.centerRatio + halfWidth;
-    ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
-    ring.sprite = null; ring.size = 0;
+  // Anchor the nearest outer band to the existing logo geometry, then place
+  // every neighbour edge-to-edge with the same gap. Fixed historical centres
+  // would force alternating thick/thin bands and a size reset at the front logo.
+  let outwardBoundary = frontRingInnerRatio;
+  for (const ring of outerRings) {
+    ring.innerRatio = outwardBoundary;
+    ring.outerRatio = ring.innerRatio + ring.widthRatio;
+    outwardBoundary = ring.outerRatio + ringGap;
   }
-  // At the arrow-marked outer band, continue with the front logo pair's
-  // proportional size step. Each wider band retains the same edge gap and
-  // its original source layer for rotation, fan timing and visibility.
-  const outwardGrowthAnchor = 4;
-  const growthAnchor = outerRings[outwardGrowthAnchor];
-  const growthScaleRatio = innerRingOrder[1].scale / frontRingLayer.scale;
-  const growthAnchorWidth = growthAnchor.outerRatio - growthAnchor.innerRatio;
-  const originalOuterCount = outerRings.length;
-  const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
-  for (let index = outwardGrowthAnchor + 1; index < originalOuterCount + 7; index++) {
-    const extra = index >= originalOuterCount;
-    const source = extra ? lastOuterSource : outerRings[index].source;
-    const ring = extra ? {source, extra: true, opacityFactor: .82 ** (index - originalOuterCount + 1)} : outerRings[index];
-    const bandWidth = growthAnchorWidth * growthScaleRatio ** (index - outwardGrowthAnchor);
-    ring.innerRatio = outerRings[index - 1].outerRatio + ringGap;
-    ring.outerRatio = ring.innerRatio + bandWidth;
+  let inwardBoundary = frontRingInnerRatio - ringGap;
+  for (const ring of innerRings) {
+    ring.outerRatio = inwardBoundary;
+    ring.innerRatio = ring.outerRatio - ring.widthRatio;
+    inwardBoundary = ring.innerRatio - ringGap;
+  }
+  for (const ring of ringBands) {
     ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
     ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
     ring.sprite = null; ring.size = 0;
-    if (extra) { outerRings.push(ring); ringBands.push(ring); }
   }
   const ringPaintOrder = [...outerRings].reverse().concat(innerRings);
   function cacheInnerRingSprites(diameter, ratio) {

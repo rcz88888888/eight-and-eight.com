@@ -2,9 +2,9 @@
 
 Das Waldfoto steht direkt nach „Common Ground — We establish the strategic foundations of brands, products and ventures.“ und vor der ersten Feldlinie des anschließenden Leistungsrasters. Es verwendet die bestehenden Fotoabstände und abgerundeten Ecken. Die Originaldatei bleibt mit 1536 × 1147 Pixeln unverändert und wird vollständig im ursprünglichen Seitenverhältnis dargestellt.
 
-## Größere äußere Timecoderinge, vollständige Logoreihen und einheitliche Schrift
+## Durchgehend gleichmäßige Timecoderinge, vollständige Logoreihen und einheitliche Schrift
 
-Ab dem gelb markierten äußeren Band wachsen Ringbreiten und Punktdurchmesser pro folgendem Band um 8 %. Der Faktor stammt aus dem Größenverhältnis der beiden vordersten Hauptlogos. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Die sieben Innenringe und die Bänder bis zum markierten Ausgangsband behalten ihre Geometrie; Winkel, Fächerzeiten und Sichtbarkeit folgen weiter den bisherigen Logoebenen.
+Alle 22 Timecodebänder folgen von der Mitte nach außen derselben additiven Skalierung: 0,506; 0,598; 0,690; …; 1,150 am vordersten Hauptlogo; …; 2,438. Jeder Schritt beträgt 0,092, entsprechend dem Größenunterschied der beiden vordersten Hauptlogos. Ringbreiten und Punktdurchmesser wachsen über sämtliche Innenringe, den Übergang zur vordersten Logoebene und alle äußeren Fortsetzungen mit gleich bleibendem Zuwachs. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Winkel, Fächerzeiten und Sichtbarkeit folgen unverändert den bisherigen Logoebenen.
 
 Die feste leere Zusatzzeile nach Sky ist entfernt. Bei 26 Logos enden die Zweierspalten nach 13 vollständigen Reihen. Nur bei ungerader Logoanzahl wird im Querformat die letzte Reihe mit genau einer leeren Zelle vervollständigt. Im Hochformat entsteht kein zusätzliches Feld.
 
@@ -28,7 +28,7 @@ Bannerhöhe und Wortmarke, Startlogo und Hauptlogos, Timecoderinge, Tapetenmaß,
 
 Auch oberhalb von 900 Pixeln bleibt die Menüanordnung des mobilen Querformats bestehen: mittige Bannerwortmarke und Hamburger mit ausklappbarer Navigation. Referenzen stehen im Querformat in zwei Spalten, im Hochformat in einer Spalte. Die unveränderten individuellen Logoanpassungen skalieren mit. Es gibt keine feste Desktop-Obergrenze für Logo oder Inhaltsbreite und keinen Dreispalten-Sprung mehr.
 
-Die Umsetzung verwendet native CSS-Abmessungen, keine vergrößerte Screenshotfläche, kein CSS-Zoom und keinen transformierten Scrollcontainer. Alle Bilddateien einschließlich der drei 1536 × 1024-Pixel-Fotos und ihrer Lichtkarten bleiben unverändert. Startsequenz, Ringstaffelung, Tempowechsel und Scrollrückkehr bleiben erhalten. Das einmalige Einrücken der Texte berücksichtigt Größenwechsel, ohne erneut abgespielt zu werden.
+Die Umsetzung verwendet native CSS-Abmessungen, keine vergrößerte Screenshotfläche, kein CSS-Zoom und keinen transformierten Scrollcontainer. Alle Bilddateien einschließlich der drei 1536 × 1024-Pixel-Fotos und ihrer Lichtkarten bleiben unverändert. Startsequenz, zeitliche Ringstaffelung, Tempowechsel und Scrollrückkehr bleiben erhalten. Das einmalige Einrücken der Texte berücksichtigt Größenwechsel, ohne erneut abgespielt zu werden.
 
 Geprüft in Chrome bei 896 × 414, 1363 × 936, 1920 × 1080, 1024 × 768, 2560 × 1080, 393 × 852 und 768 × 1024; zusätzlich mathematische Layoutprüfungen für 720 Formate. Ein nativer iPhone/Safari-Test ist hier nicht verfügbar.
 
@@ -36,7 +36,7 @@ Geprüft in Chrome bei 896 × 414, 1363 × 936, 1920 × 1080, 1024 × 768, 2560 
 
 Inhaltstexte rücken beim ersten Herunterscrollen um bis zu 32 CSS-Pixel von unten an ihre unveränderte Endposition. Der Weg folgt dem Scrollfortschritt. Beim Zurückscrollen wird er nicht zurückgespult; erreichte Endpositionen bleiben dauerhaft erhalten, auch bei Größenwechseln. Rahmen und Bilder werden dabei nicht verschoben. Reduzierte Bewegung zeigt sofort die Endposition.
 
-Alle Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder behalten ihre invertierte Größenfolge und zugehörigen Sichtbarkeiten.
+Alle Timecodebänder erhalten denselben positiven radialen Zwischenraum. Als Maß dient der kleine radiale Kantenabstand zwischen benachbarten Punktreihen im unveränderten Timecode-Muster, wie einzeln gelb im Screenshot markiert. Die drei vorhandenen radialen Abstände betragen 2,30 / 1,80 / 2,00 SVG-Einheiten; ihr Mittelwert 2,0333 wird am vordersten Ring skaliert. Der vorher verwendete größere Abstand entlang einer Punktreihe wird dadurch ersetzt. Dieser gemeinsame Abstand skaliert mit der gesamten Ringgruppe auch im Querformat. Die sieben inneren Bänder setzen dieselbe additive Größenfolge nach innen fort und behalten ihre zugehörigen Sichtbarkeiten.
 
 ## Aktuelle Größenkorrektur der Referenzen
 
@@ -74,13 +74,13 @@ Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in
 
 ## Weiterwachsende äußere Timecoderinge
 
-Ab dem breiten fünften Außenband wird die im Screenshot markierte Größenfolge nach außen fortgesetzt. Ringbreiten und Punktdurchmesser wachsen pro Band mit dem Größenfaktor 1,08 der beiden vordersten Hauptlogos weiter. Die schmalen Zwischenräume bleiben gleich; sieben zusätzliche Außenbänder setzen das Muster zum Rand und darüber hinaus fort. Die sieben Innenringe und die inneren Außenbänder bleiben unverändert. Die Ergänzungen übernehmen die Phase des bisher äußersten Rings und führen die bisherige Sichtbarkeitsabstufung fort.
+Die sieben zusätzlichen Außenbänder setzen denselben additiven Skalenschritt von 0,092 fort, der bereits für alle innen liegenden Bänder gilt. Ringbreiten und Punktdurchmesser wachsen stetig nach außen. Die schmalen Zwischenräume bleiben gleich. Die Ergänzungen übernehmen die Phase des bisher äußersten Rings und führen die bisherige Sichtbarkeitsabstufung fort.
 
 Für zusätzliche Ringe, die vollständig jenseits aller sichtbaren Ecken liegen, werden keine großen Leinwandtexturen angelegt. Zusätzliche Berechnungen oder Zeitgeber während des Scrollens entstehen nicht.
 
-## Wiederherstellung der ursprünglichen Ringstaffelung
+## Zuordnung der Timecoderinge zu den Hauptlogos
 
-Die Ebenenzuordnungen der bisherigen 15 Ringbänder stammen aus der Fassung vor der Änderung vom 29. Oktober. Die äußere Wachstumsfolge ist nun wie oben beschrieben erweitert. Die ursprünglich angepassten drei innersten Außenringe und die sieben invertierten Innenringe behalten exakt ihre ursprünglichen Mittenradien. Die schmalen Zwischenräume entstehen ausschließlich durch passende Bandbreiten, ohne die ursprüngliche Größenstaffelung radial zu verschieben. Jeder Ring übernimmt Winkel und Sichtbarkeit seiner ursprünglichen Logoebene. Der Scrollfächer folgt den ursprünglichen Zeitkurven; die Startstaffelung ist durchgangsweise wie oben beschrieben angepasst.
+Alle Bänder behalten ihre bisherigen Logoebenen. Die vorderste äußere Ringkante wird weiter an derselben Hauptlogogeometrie verankert. Von dort werden die Bänder anhand ihrer gleichmäßig steigenden Breite und des gemeinsamen Kantenabstands nach innen und außen positioniert. Ihre Mittenradien ergeben sich daraus. Jeder Ring übernimmt Winkel, Sichtbarkeit und Fächerzeiten seiner ursprünglichen Logoebene; auch die sieben Erweiterungen bleiben an die hinterste Ebene gekoppelt.
 
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
