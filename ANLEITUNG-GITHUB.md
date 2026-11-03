@@ -1,12 +1,24 @@
-## Scrollabhängiger Logoregen und freie Referenzfläche
+## Waldfoto im Abschnitt Strategy
+
+Das Waldfoto steht direkt nach „Common Ground — We establish the strategic foundations of brands, products and ventures.“ und vor der ersten Feldlinie des anschließenden Leistungsrasters. Es verwendet die bestehenden Fotoabstände und abgerundeten Ecken. Die Originaldatei bleibt mit 1536 × 1147 Pixeln unverändert und wird vollständig im ursprünglichen Seitenverhältnis dargestellt.
+
+## Größere äußere Timecoderinge, vollständige Logoreihen und einheitliche Schrift
+
+Ab dem gelb markierten äußeren Band wachsen Ringbreiten und Punktdurchmesser pro folgendem Band um 8 %. Der Faktor stammt aus dem Größenverhältnis der beiden vordersten Hauptlogos. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Die sieben Innenringe und die Bänder bis zum markierten Ausgangsband behalten ihre Geometrie; Winkel, Fächerzeiten und Sichtbarkeit folgen weiter den bisherigen Logoebenen.
+
+Die feste leere Zusatzzeile nach Sky ist entfernt. Bei 26 Logos enden die Zweierspalten nach 13 vollständigen Reihen. Nur bei ungerader Logoanzahl wird im Querformat die letzte Reihe mit genau einer leeren Zelle vervollständigt. Im Hochformat entsteht kein zusätzliches Feld.
+
+Trebuchet MS steht nun für sämtliche Ansichten an erster Stelle. Die bisherigen geräteabhängigen Rundschrift-Alternativen entfallen; die vorhandenen Schriftgrößen und Schriftschnitte bleiben erhalten.
+
+## Scrollabhängiger Logoregen
 
 Nach der scrollgesteuerten Rückkehr aller Hauptlogos in die Ausgangsposition wird der Logoregen an die Scrollposition gekoppelt. Ohne weiteres Scrollen bleibt er stehen; Zurückscrollen stellt dieselben Regenpositionen wieder her. Bei regulärem Start ohne Unterbrechung erfolgt die Kopplung beim ersten Verlassen des Seitenanfangs. Bis dahin läuft der Regen wie bisher zeitgesteuert. Die maximale Geschwindigkeit ist nochmals halbiert (4 statt 2 Sekunden Mindestdurchlauf); im Scrollmodus entspricht ein solcher Durchlauf vier sichtbaren Bildschirmhöhen.
 
-Alle Ausrichtungen verwenden 282 Regenlogos wie die bisherige Ansicht bei 1600 × 900. Relative Positionen bleiben bei Größenwechseln erhalten. Navigation und Referenzlogos sind in ihren Flächen zentriert. Nach Sky bleibt ein leeres, vollständig umrandetes Feld über die Inhaltsbreite reserviert. Alle 26 Referenzen und die Originalfotos bleiben erhalten.
+Alle Ausrichtungen verwenden 282 Regenlogos wie die bisherige Ansicht bei 1600 × 900. Relative Positionen bleiben bei Größenwechseln erhalten. Navigation und Referenzlogos sind in ihren Flächen zentriert. Die Referenzfläche endet direkt nach der letzten vollständigen Logoreihe. Alle 26 Referenzen und die Originalfotos bleiben erhalten.
 
 # Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
-Diese ZIP enthält 57 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
+Diese ZIP enthält 58 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
 
 ## Einheitliche Proportionen auf allen Auflösungen
 
@@ -62,7 +74,7 @@ Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in
 
 ## Weiterwachsende äußere Timecoderinge
 
-Ab dem breiten fünften Außenband wird die im Screenshot markierte Größenfolge nach außen fortgesetzt. Ringbreiten und Punktdurchmesser wachsen pro Band mit derselben Skaleneinheit von 0,092 weiter. Die schmalen Zwischenräume bleiben gleich; sieben zusätzliche Außenbänder setzen das Muster zum Rand und darüber hinaus fort. Die sieben Innenringe und die inneren Außenbänder bleiben unverändert. Die Ergänzungen übernehmen die Phase des bisher äußersten Rings und führen die bisherige Sichtbarkeitsabstufung fort.
+Ab dem breiten fünften Außenband wird die im Screenshot markierte Größenfolge nach außen fortgesetzt. Ringbreiten und Punktdurchmesser wachsen pro Band mit dem Größenfaktor 1,08 der beiden vordersten Hauptlogos weiter. Die schmalen Zwischenräume bleiben gleich; sieben zusätzliche Außenbänder setzen das Muster zum Rand und darüber hinaus fort. Die sieben Innenringe und die inneren Außenbänder bleiben unverändert. Die Ergänzungen übernehmen die Phase des bisher äußersten Rings und führen die bisherige Sichtbarkeitsabstufung fort.
 
 Für zusätzliche Ringe, die vollständig jenseits aller sichtbaren Ecken liegen, werden keine großen Leinwandtexturen angelegt. Zusätzliche Berechnungen oder Zeitgeber während des Scrollens entstehen nicht.
 

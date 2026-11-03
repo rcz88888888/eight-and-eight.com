@@ -125,6 +125,7 @@ body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-chil
   .content-scroll .logo-stage { height: calc(var(--opening-viewport-height) * .78 - var(--header-height)); }
 }
 .content-scroll .concept-photo { --photo-radius: var(--layout-photo-radius); margin-block: var(--layout-photo-margin); }
+.content-scroll .strategy-forest-photo img { aspect-ratio: auto; }
 body .content-scroll > .wallpaper-end { height: calc(220 * var(--layout-unit) + env(safe-area-inset-bottom, 0px)); }
 body .footer { padding-block: calc(25 * var(--layout-unit)) calc(45 * var(--layout-unit)); font-size: calc(13 * var(--layout-unit)); }
 /* Keep the portrait artwork's viewBox-sized box independent of tablet width. */
@@ -166,9 +167,15 @@ body .site-nav a { justify-self: center; text-align: center; }
 .content-scroll .partner-grid { overflow: hidden; }
 .content-scroll .partner-slot { display: flex; align-items: center; justify-content: center; border-radius: 0 !important; }
 .content-scroll .partner-slot img { display: block; margin: 0 auto; object-position: 50% 50%; }
-body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot.partner-slot-empty {
-  grid-column: 1 / -1;
-  border-left: 0 !important;
-  border-top: var(--layout-line) solid var(--metallic-gold) !important;
-  min-height: calc(140 * var(--layout-unit) + 2 * var(--layout-slot-padding));
+/* A single-column list needs no filler. In two columns, complete only an
+   unfinished last pair; an even logo count creates no extra row or cell. */
+.content-scroll .partner-grid::after { content: none; }
+@media (orientation: landscape) {
+  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd))::after {
+    content: "";
+    border-left: var(--layout-line) solid var(--metallic-gold);
+  }
+  .content-scroll .partner-grid:has(> .partner-slot:last-child:nth-child(odd)):has(> .partner-slot:nth-child(3))::after {
+    border-top: var(--layout-line) solid var(--metallic-gold);
+  }
 }

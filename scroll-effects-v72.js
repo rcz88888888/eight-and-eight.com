@@ -112,21 +112,22 @@
     ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
     ring.sprite = null; ring.size = 0;
   }
-  // Continue the outward growth from the broad outer band shown by the
-  // arrow. Use the same 0.092 logo-scale unit, also for the dot diameters.
+  // At the arrow-marked outer band, continue with the front logo pair's
+  // proportional size step. Each wider band retains the same edge gap and
+  // its original source layer for rotation, fan timing and visibility.
   const outwardGrowthAnchor = 4;
   const growthAnchor = outerRings[outwardGrowthAnchor];
-  const growthScaleStep = innerRingOrder[1].scale - innerRingOrder[0].scale;
-  const growthWidthUnit = (growthAnchor.outerRatio - growthAnchor.innerRatio) / growthAnchor.source.scale;
+  const growthScaleRatio = innerRingOrder[1].scale / frontRingLayer.scale;
+  const growthAnchorWidth = growthAnchor.outerRatio - growthAnchor.innerRatio;
   const originalOuterCount = outerRings.length;
   const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
   for (let index = outwardGrowthAnchor + 1; index < originalOuterCount + 7; index++) {
     const extra = index >= originalOuterCount;
     const source = extra ? lastOuterSource : outerRings[index].source;
     const ring = extra ? {source, extra: true, opacityFactor: .82 ** (index - originalOuterCount + 1)} : outerRings[index];
-    const sourceScale = growthAnchor.source.scale + (index - outwardGrowthAnchor) * growthScaleStep;
+    const bandWidth = growthAnchorWidth * growthScaleRatio ** (index - outwardGrowthAnchor);
     ring.innerRatio = outerRings[index - 1].outerRatio + ringGap;
-    ring.outerRatio = ring.innerRatio + growthWidthUnit * sourceScale;
+    ring.outerRatio = ring.innerRatio + bandWidth;
     ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
     ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
     ring.sprite = null; ring.size = 0;

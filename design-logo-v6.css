@@ -498,9 +498,9 @@ p,
   visibility: visible;
 }
 
-/* Alternative typography version: Bahnschrift Light Condensed throughout. */
+/* Use the Windows desktop reference face in every layout and on iOS. */
 :root {
-  --site-font: "Bahnschrift Light Condensed", "Bahnschrift Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --site-font: "Trebuchet MS", TrebuchetMS, Arial, sans-serif;
 }
 
 body,
@@ -510,7 +510,7 @@ input,
 select,
 textarea {
   font-family: var(--site-font) !important;
-  font-stretch: condensed;
+  font-stretch: normal;
 }
 
 body,
@@ -1196,11 +1196,10 @@ body, main *, .footer, .footer *, .site-nav a, .site-nav a:hover {
   color: var(--site-dark-gold) !important;
 }
 
-/* Subtly rounded display/text faces: preserve the existing scale and spacing
-   while avoiding sharp, squared-off menu and body glyphs where available. */
+/* Keep the same desktop face at every breakpoint rather than selecting a
+   different rounded font according to the device's installed fonts. */
 body, body *, button, input, select, textarea {
-  font-family: "Avenir Next Rounded", "Arial Rounded MT Bold", "Trebuchet MS",
-    var(--site-font) !important;
+  font-family: var(--site-font) !important;
   letter-spacing: .008em;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
