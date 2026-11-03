@@ -183,6 +183,15 @@
   let surfaceHeight = 0;
   let rain = [], rainWidth = 0, rainHeight = 0, rainMaxWidth = 0;
   let rainTime = 0, lastRainTime;
+  let rainScrollOrigin = null, rainScrollUnit = 1;
+  function anchorRainToScroll(scroll) {
+    if (rainScrollOrigin !== null) return;
+    rainScrollOrigin = scroll;
+    rainScrollUnit = Math.max(1, openingViewport?.height || innerHeight);
+    rain.forEach(mark => { mark.scrollPhase = mark.progress; });
+    lastRainTime = undefined;
+    background.dataset.motion = 'scroll';
+  }
   let lastMainPaint = '', lastLogoScene;
   let lastFeedPaint = '';
   let sprites = [];
@@ -373,6 +382,7 @@
   }
   function finishStartScrollReturn(time) {
     startScrollReturn = null; startScrollReleased = true;
+    anchorRainToScroll(scrollPosition());
     heroIdleAngle = mainIdleAngle = heroSpeed = 0;
     layers.forEach(layer => {
       layer.ringIdleAngle = layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
@@ -894,35 +904,51 @@
     const key = `${width}:${Math.round(pageHeight)}:${portrait}:${rainSizeWidth.toFixed(1)}`;
     if (key === sceneKey) { rainWidth=width;rainHeight=height; return; }
     sceneKey = key;
-    const count = portrait ? 2222 : 8888;
-    // Keep tiny marks and opacity; halve the maximum rain-logo dimensions.
-    // Browser toolbar height changes do not rebuild this scene.
-    if (!sceneViewportHeight || width !== lastWidth) sceneViewportHeight = height;
-    const stableHeight = sceneViewportHeight;
-    // The active rain pool below is the only rain geometry needed. The old
-    // 2,222/8,888-object preparation array was never drawn on either canvas.
+    // Match the 282 visible marks of the 1600 × 900 reference in every mode.
+    // Keep their random phases and relative positions through layout changes.
+    const oldWidth = rainWidth, oldMaxWidth = rainMaxWidth;
     rainWidth=width;rainHeight=height;rainMaxWidth=rainSizeWidth;
-    const previousPoolSize=Math.max(24,Math.min(portrait?160:256,Math.round(count*stableHeight/pageHeight)));
-    const baselinePoolSize=portrait?Math.round(previousPoolSize/3):previousPoolSize;
-    const poolSize=Math.ceil(baselinePoolSize*1.1);
-    rain=Array.from({length:poolSize},()=>spawnRain(true));
+    const poolSize=282;
+    if (rain.length) {
+      for (const mark of rain) {
+        const factor = oldMaxWidth > 0 ? rainMaxWidth / oldMaxWidth : 1;
+        mark.x = (mark.x + mark.width / 2) / Math.max(1, oldWidth) * width - mark.width * factor / 2;
+        mark.width *= factor; mark.height *= factor;
+      }
+    } else {
+      rain=Array.from({length:poolSize},()=>spawnRain(true));
+    }
     lastRainTime=undefined;
     background.dataset.logoCount = String(poolSize);
     cacheSpriteChoices();
   }
   function spawnRain(initial=false) {
     const width=rainMaxWidth*(.004+.216*Math.random()**2.6);
-    // Two seconds is the fastest traversal (previously one). Retain the
-    // existing slowest traversal of eight seconds and randomise in between.
-    const duration=2+6*Math.random();
+    // Half the previous speed for every mark: fastest traversal 4 s, slowest 16 s.
+    // In scroll mode these durations represent viewport distances, not a clock.
+    const duration=4+12*Math.random();
     return {x:Math.random()*rainWidth-width/2,width,height:width*1368/922,
       opacity:(.08+Math.random()*.24)*.2206456,duration,
       progress:initial?Math.random():0,sprite:spriteFor(width*bgRatio)};
   }
-  function advanceRain(time,width,height) {
+  function advanceRain(time,width,height,scroll) {
+    if (rainScrollOrigin === null && scroll > .5 && !startScrollReturn)
+      anchorRainToScroll(0);
+    if(reduced.matches){lastRainTime=undefined;return;}
+    if (rainScrollOrigin !== null) {
+      const travel=(scroll-rainScrollOrigin)/rainScrollUnit;
+      // A pure position function: no respawning, accumulated delta, or elapsed
+      // time. Returning to a scroll position restores the exact same scene.
+      for (const mark of rain) {
+        const phase=(mark.scrollPhase ?? mark.progress)+travel/mark.duration;
+        mark.progress=((phase%1)+1)%1;
+      }
+      rainTime=travel;
+      lastRainTime=undefined;
+      return;
+    }
     const dt=lastRainTime===undefined?0:Math.min(.1,Math.max(0,(time-lastRainTime)/1000));
     lastRainTime=time;
-    if(reduced.matches)return;
     rainTime+=dt;
     for(let i=0;i<rain.length;i++) {
       const mark=rain[i];mark.progress+=dt/mark.duration;
@@ -1081,7 +1107,7 @@
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     updateScrollRotations(easedProgress,time,resetMotion,state.scroll);
     updateIdleRotation(time,state.scroll);
-    advanceRain(time,width,height);
+    advanceRain(time,width,height,state.scroll);
     paintCanvas(state, easedProgress, time, resetMotion);
     paintBannerFeed(width, height);
     if (startScrollReturn?.progress === 1) finishStartScrollReturn(time);
@@ -1090,7 +1116,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rain.length && sprites.length)) schedule();
+    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rainScrollOrigin === null && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     sprites = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {

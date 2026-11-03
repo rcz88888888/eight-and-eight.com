@@ -1,3 +1,9 @@
+## Scrollabhängiger Logoregen und freie Referenzfläche
+
+Nach der scrollgesteuerten Rückkehr aller Hauptlogos in die Ausgangsposition wird der Logoregen an die Scrollposition gekoppelt. Ohne weiteres Scrollen bleibt er stehen; Zurückscrollen stellt dieselben Regenpositionen wieder her. Bei regulärem Start ohne Unterbrechung erfolgt die Kopplung beim ersten Verlassen des Seitenanfangs. Bis dahin läuft der Regen wie bisher zeitgesteuert. Die maximale Geschwindigkeit ist nochmals halbiert (4 statt 2 Sekunden Mindestdurchlauf); im Scrollmodus entspricht ein solcher Durchlauf vier sichtbaren Bildschirmhöhen.
+
+Alle Ausrichtungen verwenden 282 Regenlogos wie die bisherige Ansicht bei 1600 × 900. Relative Positionen bleiben bei Größenwechseln erhalten. Navigation und Referenzlogos sind in ihren Flächen zentriert. Nach Sky bleibt ein leeres, vollständig umrandetes Feld über die Inhaltsbreite reserviert. Alle 26 Referenzen und die Originalfotos bleiben erhalten.
+
 # Eight&Eight – Geordnete Referenzen und scrollgesteuertes Fotolicht
 
 Diese ZIP enthält 57 Dateien einschließlich dieser Anleitung und CNAME. Für GitHub Pages alle Dateien aus dem enthaltenen Ordner in das bestehende Website-Verzeichnis übernehmen; die Fotos und Materialkarten gehören dazu.
