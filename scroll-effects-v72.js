@@ -251,6 +251,13 @@
     lastRainTime = undefined;
     background.dataset.motion = 'scroll';
   }
+  function resumeTimedRain() {
+    // A new start-animation cycle must release the previous scroll anchor.
+    // Keep current positions so resuming never snaps the rain to a new scene.
+    rainScrollOrigin = null;
+    lastRainTime = undefined;
+    background.dataset.motion = 'time';
+  }
   let lastMainPaint = '', lastLogoScene;
   let lastFeedPaint = '';
   let sprites = [];
@@ -509,7 +516,10 @@
         // rotations have also reached their starting orientations.
         if(scrollRotationPending)idleSince=time;
         if(idleSince===undefined)idleSince=time;
-        if(time-idleSince>=8000){idleMode='running';spinSince=time;startScrollReleased=false;}
+        if(time-idleSince>=8000){
+          idleMode='running';spinSince=time;startScrollReleased=false;
+          resumeTimedRain();
+        }
       }
       if(idleMode==='running') {
         const elapsed=Math.max(0,(time-spinSince)/1000);

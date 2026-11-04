@@ -8,6 +8,16 @@ Alle 22 Timecodebänder folgen von der Mitte nach außen derselben additiven Ska
 
 Die Referenzfläche endet direkt mit der letzten Logoreihe an der abgerundeten Außenkante. Die zusätzliche Abschlusslinie, der untere Innenabstand und alle Füllzellen entfallen. Bei ungerader Logoanzahl nimmt das letzte Logo im Querformat die gesamte letzte Reihe ein.
 
+## Bannerrand und Absatzgrößen
+
+Die untere Linie des geöffneten Menübanners wird in allen Ausrichtungen als nativer Rahmen gezeichnet und bleibt beim Scrollen innerhalb der Navigation an deren Außenkante. Die Einleitungsabsätze unter „Eight&Eight“ und „From premise to implementation.“ verwenden dieselbe Schriftgröße wie die folgenden Absätze: 22 Referenzpixel, proportional zur gemeinsamen Layouteinheit.
+
+## Hauptlogo-Größe nach Bildmarkierungen
+
+Im Hochformat sind die ursprünglichen Größen und Positionen des Startlogos und aller acht Hauptlogo-Ebenen wiederhergestellt. Nur im Querformat werden sie gegenüber dieser Ausgangsversion um 30 Prozent vergrößert. Die freie Fläche vor dem ersten Inhaltsfeld wächst passend mit: Die sichtbare Logokontur hat oben zur Bannerunterkante und unten zur Oberkante des ABOUT-Feldes denselben Abstand. Die Linie unter der ABOUT-Beschriftung dient nicht als Messpunkt. Bestehende Größenstufen, Timecode-Abstände und Tapetenmaß bleiben erhalten.
+
+Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn zuvor gescrollt wurde. Bei jedem erneuten Start wird seine vorherige Scrollbindung ohne Positionssprung gelöst. Nach der scrollgesteuerten Rückkehr der Hauptlogos wird er wie bisher wieder an die Scrollposition gebunden.
+
 ## Optimierte Animationen
 
 Hauptlogo-Konturen werden einmal in der benötigten Darstellungsauflösung vorbereitet und anschließend als Grafiken wiederverwendet. Die GPU zeichnet alle 18.668 Timecode-Punkte aus kleinen, dauerhaft wiederverwendeten Geometriepuffern und übernimmt auch die acht Hauptlogos. Bei fehlendem WebGL oder Kontextverlust greift automatisch die vorberechnete Canvas-Darstellung. Dort teilen sich gemeinsam rotierende Ringbänder eine Grafik und werden auf ihre Ringflächen begrenzt. Unbenutzte Ringtexturen entfallen. Die statischen goldenen Feldlinien verwenden native Rahmen statt zusätzlicher Maskenflächen. Textmasken entstehen nur in Bildschirmnähe und in freien Browserzeiten; entfernte Textfilter werden ausgeblendet. Foto-Beleuchtungskarten werden vor Erreichen des Fotos vorbereitet. Die Originalfotos, Beleuchtungskarten und ihre Scrolleffekte bleiben erhalten.
