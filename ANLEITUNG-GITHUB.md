@@ -20,10 +20,6 @@ Im Hochformat sind die ursprünglichen Größen und Positionen des Startlogos un
 
 Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn zuvor gescrollt wurde. Bei jedem erneuten Start wird seine vorherige Scrollbindung ohne Positionssprung gelöst. Nach der scrollgesteuerten Rückkehr der Hauptlogos wird er wie bisher wieder an die Scrollposition gebunden.
 
-## Timecode-Sichtbarkeit um 10 Prozent erhöht
-
-Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
-
 ## Flüssige Übergänge und verringerte Zeichenlast
 
 Scrollimpulse geben der Startrückkehr ein Ziel; die acht Logos laufen kontinuierlich darauf zu. Ein Menüklick übernimmt die gerade sichtbaren Winkel und Sichtbarkeiten, statt sie auf null zu setzen. Auch der Wechsel zurück zum Seitenanfang, die Bewegung der gemeinsamen Mitte und größere Scrollsprünge werden geglättet. Die acht Größenstufen, Fächerzeiten, Startgeschwindigkeiten und Punktreihen bleiben erhalten. Beim Ausblenden der Seite pausiert die gemeinsame Animationsuhr und setzt dieselbe Phase fort.
