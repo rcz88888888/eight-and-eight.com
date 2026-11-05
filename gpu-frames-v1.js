@@ -142,7 +142,9 @@
           }
         });
       }
-      cached = {handle: buffer(new Float32Array(values)), count: values.length / 4};
+      cached = {handle: buffer(new Float32Array(values)), count: values.length / 4,
+        inner: Math.min(...group.bands.map(band=>band.innerRatio)),
+        outer: Math.max(...group.bands.map(band=>band.outerRatio))};
       pointBuffers.set(group, cached);
       return cached;
     }
@@ -154,8 +156,14 @@
       gl.uniform1f(points.u_ratio, ratio);
       gl.uniform1f(points.u_opacity, opacity);
       for (const group of groups) {
-        if (!group.sprite) continue;
         const cached = ringBuffer(group, geometry.rows, geometry.inner, geometry.outer);
+        const x=scene.centerX,y=scene.centerY;
+        const nearX=Math.max(0,-x,x-width),nearY=Math.max(0,-y,y-height);
+        const farX=Math.max(Math.abs(x),Math.abs(width-x));
+        const farY=Math.max(Math.abs(y),Math.abs(height-y));
+        const inner=cached.inner*scene.ringDiameter,outer=cached.outer*scene.ringDiameter;
+        if(nearX*nearX+nearY*nearY>(outer+1)**2 ||
+          farX*farX+farY*farY<Math.max(0,inner-1)**2)continue;
         gl.bindBuffer(gl.ARRAY_BUFFER, cached.handle);
         gl.enableVertexAttribArray(points.a_point);
         gl.vertexAttribPointer(points.a_point, 4, gl.FLOAT, false, 16, 0);
@@ -192,9 +200,24 @@
           gl.deleteTexture(handle); textures.delete(image);
         }
       },
-      draw(scene, layers, back, front, opacityFor, ringOpacity, geometry) {
+      draw(scene, layers, back, front, opacityFor, ringOpacity, geometry, rain) {
         if (gl.isContextLost()) return false;
         gl.clear(gl.COLOR_BUFFER_BIT);
+        if (rain) {
+          gl.useProgram(images.handle);
+          gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+          gl.enableVertexAttribArray(images.a_position);
+          gl.vertexAttribPointer(images.a_position,2,gl.FLOAT,false,8,0);
+          gl.uniform2f(images.u_resolution,width,height);
+          gl.uniform1i(images.u_image,0);gl.uniform1f(images.u_angle,0);
+          for(const mark of rain.marks){
+            const top=-mark.height+mark.progress*(rain.surfaceHeight+mark.height);
+            if(top+mark.height<0 || top>height || mark.x+mark.width<0 || mark.x>width || !mark.sprite)continue;
+            gl.uniform2f(images.u_center,mark.x+mark.width/2,top+mark.height/2);
+            drawImage(mark.sprite,mark.width,mark.height,mark.opacity);
+          }
+          gl.disableVertexAttribArray(images.a_position);
+        }
         drawRings(back, scene, ringOpacity, geometry);
         gl.useProgram(images.handle);
         gl.bindBuffer(gl.ARRAY_BUFFER, quad);

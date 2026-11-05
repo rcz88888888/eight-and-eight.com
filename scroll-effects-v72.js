@@ -15,8 +15,7 @@
   const navigation = document.querySelector('.site-nav');
   let lastHeroAngle;
   const bannerMask = document.querySelector('.banner-content-mask');
-  const bannerFeed = document.querySelector('.banner-logo-feed');
-  const feed = bannerFeed?.getContext('2d');
+  let bannerFeed = document.querySelector('.banner-logo-feed');
   let feedHeight = 0;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const subscribers = [];
@@ -27,6 +26,10 @@
   let gpu = window.EightEightGpu?.create(logos, () => { if (gpu) fallbackToCanvas(); });
   if (gpu) logos = gpu.canvas;
   let ink = gpu ? null : logos?.getContext('2d');
+  let bannerGpu = gpu && bannerFeed ? window.EightEightGpu.create(bannerFeed,
+    () => { if (bannerGpu) fallbackBannerToCanvas(); }) : null;
+  if (bannerGpu) bannerFeed = bannerGpu.canvas;
+  let feed = bannerGpu ? null : bannerFeed?.getContext('2d');
   if (!gpu && logos) logos.dataset.renderer = 'canvas2d';
   function fallbackToCanvas() {
     const previous = gpu;
@@ -38,6 +41,16 @@
     logos.dataset.renderer = 'canvas2d';
     previous?.dispose();
     lastMainPaint = lastFeedPaint = ''; invalidate();
+  }
+  function fallbackBannerToCanvas() {
+    const previous = bannerGpu;
+    bannerGpu = null;
+    const canvas = bannerFeed.cloneNode(false);
+    bannerFeed.replaceWith(canvas); bannerFeed = canvas;
+    feed = canvas.getContext('2d');
+    feed.setTransform(inkRatio,0,0,inkRatio,0,0);
+    previous?.dispose();
+    lastFeedPaint = ''; invalidate();
   }
   // iOS clips fixed composited layers above its translucent browser controls.
   // Document-positioned canvases can paint in the same region as page rules.
@@ -59,13 +72,12 @@
       if (canvas) canvas.style.transform = `translateY(${scroll}px)`;
     }
   }
-  const layers = [...document.querySelectorAll('.main-logo-layer')].map(node => ({
-    node,
-    scale: parseFloat(node.style.getPropertyValue('--layer-scale')) || 1,
-    opacity: parseFloat(node.style.opacity) || .08,
-    depth: Number(node.dataset.depth),
+  // One canonical eight-layer stack. Its metadata has no painted SVG copies;
+  // both renderers and the clipped banner feed use these same ordered layers.
+  const layers = JSON.parse(main.dataset.mainLogoLayers).map(({scale, opacity, depth}) => ({
+    scale, opacity, depth,
     idleAngle: 0, idleVisibility: .7, ringIdleAngle: 0, ringIdleVisibility: .7, settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
-    speed: .92 ** Number(node.dataset.depth)
+    speed: .92 ** depth
   }));
   // One continuous pattern-scale progression, with the original layer bindings.
   const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
@@ -163,74 +175,29 @@
   const immutableSprite = canvas => typeof createImageBitmap === 'function'
     ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
   function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
-  function cacheInnerRingSprites(diameter, ratio) {
-    const width = root.clientWidth;
-    const farthestRadius = Math.max(...[
-      {x: width / 2, y: mainBox.top + mainBox.height / 2},
-      openingCenter || {x: width / 2, y: surfaceHeight / 2}
-    ].map(center => Math.hypot(Math.max(Math.abs(center.x), Math.abs(width - center.x)),
-      Math.max(Math.abs(center.y), Math.abs(surfaceHeight - center.y))))) + 2;
+  function cacheInnerRingPaths() {
     for (const group of ringSpriteGroups) {
-      const active = group.bands.filter(ring => ring.innerRatio * diameter <= farthestRadius);
-      if (!active.length) { releaseSprites([group.sprite]); group.sprite = null; group.key = ''; continue; }
-      group.innerRatio = Math.min(...active.map(ring => ring.innerRatio));
-      group.outerRatio = Math.max(...active.map(ring => ring.outerRatio));
-      group.diameterFactor = 2 * group.outerRatio * 640 / ringOuterRadius;
-      const size = Math.max(32, Math.min(2048, Math.ceil(diameter * group.diameterFactor * ratio)));
-      const key = `${size}:${active.map(ring => ring.centerRatio).join(',')}`;
-      if (group.sprite && group.key === key) continue;
-      group.clipPath = null;
-      if (typeof Path2D === 'function') {
-        const clip = new Path2D();
-        const padding = group.diameterFactor / size;
-        for (const ring of active) {
-          const outer = ring.outerRatio + padding;
-          const inner = Math.max(0, ring.innerRatio - padding);
-          clip.moveTo(outer, 0); clip.arc(0, 0, outer, 0, Math.PI * 2);
-          clip.moveTo(inner, 0); clip.arc(0, 0, inner, 0, Math.PI * 2, true);
-        }
-        group.clipPath = clip;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const context = canvas.getContext('2d');
-      const unit = size / group.diameterFactor;
-      context.setTransform(unit, 0, 0, unit, size / 2, size / 2);
-      context.fillStyle = '#c2b594';
-      for (const ring of active) {
-        const radialScale = (ring.outerRatio - ring.innerRatio) / (ringOuterRadius - ringInnerRadius);
-        for (const [rowIndex, row] of ringRows.entries()) {
-          context.globalAlpha = ring.rowOpacities[rowIndex];
-          const radius = ring.innerRatio + (row.radius - ringInnerRadius) * radialScale;
-          const dot = row.dot * radialScale;
-          context.beginPath();
-          for (let point = 0; point < row.count; point++) {
-            const angle = (point + row.phase) * Math.PI * 2 / row.count;
-            const x = Math.sin(angle) * radius, y = -Math.cos(angle) * radius;
-            context.moveTo(x + dot, y);
-            context.arc(x, y, dot, 0, Math.PI * 2);
+      if (group.rowPaths) continue;
+      group.rowPaths=[];
+      for (const ring of group.bands) {
+        const radialScale=(ring.outerRatio-ring.innerRatio)/(ringOuterRadius-ringInnerRadius);
+        ringRows.forEach((row,index)=>{
+          const radius=ring.innerRatio+(row.radius-ringInnerRadius)*radialScale;
+          const dot=row.dot*radialScale;
+          const path=typeof Path2D==='function'?new Path2D():null;
+          const points=path?null:[];
+          for(let i=0;i<row.count;i++){
+            const angle=(i+row.phase)*Math.PI*2/row.count;
+            const x=Math.sin(angle)*radius,y=-Math.cos(angle)*radius;
+            if(path){path.moveTo(x+dot,y);path.arc(x,y,dot,0,Math.PI*2);}
+            else points.push(x,y);
           }
-          context.fill();
-        }
+          group.rowPaths.push({path,points,radius,dot,opacity:ring.rowOpacities[index]});
+        });
       }
-      releaseSprites([group.sprite]);
-      group.sprite = canvas; group.key = key;
-      // Immutable sources can stay uploaded instead of synchronizing a mutable
-      // offscreen canvas for every copy into the page and banner canvases.
-      immutableSprite(canvas).then(sprite => {
-        if (sprite === canvas) return;
-        if (group.key !== key || group.sprite !== canvas) { releaseSprites([sprite]); return; }
-        group.sprite = sprite;
-        lastMainPaint = lastFeedPaint = ''; schedule();
-      });
-    }
-    if (logos) {
-      logos.dataset.innerRingCount = String(innerRings.length);
-      logos.dataset.outerRingCount = String(outerRings.length);
-      logos.dataset.innerRowCount = String(innerRings.length * ringRows.length);
-      logos.dataset.additionalInnerRowCount = String(additionalInnerRowCount);
     }
   }
+
   let raf = 0;
   let layoutDirty = true;
   let viewportDirty = true;
@@ -302,7 +269,6 @@
   let lastLogoTime;
   let lastBackgroundPaint = '';
   let lastSubscriberState = '';
-  let mainGeometryKey = '';
   // One frame clock for idle rotation, scroll handoff and the return wobble.
   const TAU = Math.PI * 2;
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
@@ -400,7 +366,7 @@
     const maximum = Math.max(Math.abs(hero), Math.abs(mainAngle),
       ...angles.map(Math.abs), ...ringAngles.map(Math.abs));
     if (maximum < .0001) return false;
-    startScrollReturn = {hero, mainAngle, progress: 0, distance: 0,
+    startScrollReturn = {hero, mainAngle, progress: 0, target: 0, distance: 0,
       span: Math.max(48, maximum / Math.PI * 180)};
     layers.forEach((layer, index) => {
       layer.returnAngle = angles[index];
@@ -431,8 +397,22 @@
   function advanceStartScrollReturn(delta) {
     startScrollReturn.distance = Math.min(startScrollReturn.span,
       startScrollReturn.distance + Math.abs(delta));
-    startScrollReturn.progress = startScrollReturn.distance / startScrollReturn.span;
+    startScrollReturn.target = startScrollReturn.distance / startScrollReturn.span;
     schedule();
+  }
+  function stepStartScrollReturn(dt) {
+    const state = startScrollReturn;
+    if (!state) return;
+    const step=(state.target-state.progress)*(1-Math.exp(-dt/.07));
+    state.progress += Math.min(step,dt/.45);
+    if (state.target === 1 && 1 - state.progress < .0001) state.progress = 1;
+  }
+  function releaseStartScrollToNavigation() {
+    // Keep the currently displayed angles. The ordinary scroll handoff fades
+    // these offsets instead of forcing every layer straight to zero.
+    startScrollReturn = null; startScrollReleased = true;
+    anchorRainToScroll(scrollPosition());
+    idleMode = 'scroll-return'; handoffSince = undefined;
   }
   function captureNativeStartScroll() {
     const distance = scrollPosition();
@@ -472,6 +452,7 @@
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
       layers.forEach(layer=>layer.ringIdleAngle=layer.idleAngle=0);
     } else if (startScrollReturn) {
+      stepStartScrollReturn(dt);
       const remaining = 1 - smoothEnd(startScrollReturn.progress);
       heroIdleAngle = startScrollReturn.hero * remaining;
       mainIdleAngle = startScrollReturn.mainAngle * remaining;
@@ -481,14 +462,19 @@
       // original scroll angle keeps updating underneath this 600ms handoff.
       if(idleMode!=='scrolling' || handoffSince===undefined){
         handoffSince=time;handoffMain=shortestAngle(mainIdleAngle);
-        layers.forEach(layer=>{ layer.handoffAngle=shortestAngle(layer.idleAngle); layer.ringHandoffAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle); });
+        layers.forEach(layer=>{
+          layer.handoffAngle=shortestAngle(layer.idleAngle);
+          layer.ringHandoffAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle);
+          layer.handoffVisibility=layer.idleVisibility;
+          layer.ringHandoffVisibility=layer.ringIdleVisibility;
+        });
       }
       idleMode='scrolling';idleSince=undefined;
       const handoffProgress=Math.min(1,Math.max(0,(time-handoffSince)/600));
       const remaining=1-smoothEnd(handoffProgress);
       mainIdleAngle=handoffMain*remaining;
       layers.forEach(layer=>{ layer.idleAngle=layer.handoffAngle*remaining; layer.ringIdleAngle=layer.ringHandoffAngle*remaining; });
-      handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001 || Math.abs(layer.ringIdleAngle)>.000001);
+      handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001 || Math.abs(layer.ringIdleAngle)>.000001 || Math.abs(layer.handoffVisibility-.7)>.000001 || Math.abs(layer.ringHandoffVisibility-.7)>.000001);
       heroIdleAngle += heroSpeed * .22 * (1-Math.exp(-dt/.22));
       heroSpeed *= Math.exp(-dt/.22);
       if (heroSpeed < .001) heroSpeed=0;
@@ -498,7 +484,12 @@
         idleMode='settling';settleSince=time;
         settleHero=shortestAngle(heroIdleAngle);
         settleMain=shortestAngle(mainIdleAngle);
-        layers.forEach(layer=>{ layer.settleAngle=shortestAngle(layer.idleAngle); layer.ringSettleAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle); });
+        layers.forEach(layer=>{
+          layer.settleAngle=shortestAngle(layer.idleAngle);
+          layer.ringSettleAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle);
+          layer.settleVisibility=layer.idleVisibility;
+          layer.ringSettleVisibility=layer.ringIdleVisibility;
+        });
         heroSpeed=0;
       }
       if (idleMode==='settling') {
@@ -541,19 +532,31 @@
       const elapsed=idleMode==='running'?spinTimeForLayer((time-spinSince)/1000,layer.depth):-1;
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
-        : idleRotationVisibility(elapsed);
+        : transitionVisibility(layer,idleRotationVisibility(elapsed),time);
       const ringElapsed = idleMode === 'running'
         ? spinTimeForLayer((time - spinSince) / 1000, layer.depth, true) : -1;
       layer.ringIdleVisibility = startScrollReturn
         ? layer.ringReturnVisibility + (.7 - layer.ringReturnVisibility) * smoothEnd(startScrollReturn.progress)
-        : idleRotationVisibility(ringElapsed);
+        : transitionVisibility(layer,idleRotationVisibility(ringElapsed),time,true);
     }
-    const wrappedHeroAngle = shortestAngle(heroIdleAngle);
-    const heroAngle = Math.abs(wrappedHeroAngle)<1e-10 ? 0 : wrappedHeroAngle;
-    if (openingLogo && heroAngle !== lastHeroAngle) {
+    // Keep the CSS rotation on the nearest continuous turn across ±π.
+    const heroAngle = lastHeroAngle === undefined ? heroIdleAngle :
+      lastHeroAngle + shortestAngle(heroIdleAngle - lastHeroAngle);
+    if (openingLogo && (lastHeroAngle === undefined || Math.abs(heroAngle-lastHeroAngle)>1e-8)) {
       openingLogo.style.setProperty('--hero-idle-angle', `${heroAngle}rad`);
       lastHeroAngle = heroAngle;
     }
+  }
+  function transitionVisibility(layer, value, time, ring = false) {
+    if (idleMode === 'scrolling' && handoffSince !== undefined) {
+      const start = layer[ring ? 'ringHandoffVisibility' : 'handoffVisibility'] ?? value;
+      return start + (.7-start)*smoothEnd(Math.min(1,Math.max(0,(time-handoffSince)/600)));
+    }
+    if (idleMode === 'settling' && settleSince !== undefined) {
+      const start = layer[ring ? 'ringSettleVisibility' : 'settleVisibility'] ?? value;
+      return start + (.7-start)*smoothEnd(Math.min(1,Math.max(0,(time-settleSince)/1100)));
+    }
+    return value;
   }
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
@@ -574,27 +577,6 @@
     // Match the nearest background logo to the foreground artwork itself.
     // The other seven retain their existing size progression and rings.
     return openingScale > 0 && canvasScale > 0 ? openingScale / (canvasScale * frontScale) : 1;
-  }
-  function syncMainWallpaperGeometry() {
-    if (!mainBox) return;
-    const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
-    if (!(scale > 0)) return;
-    const pixels = parseFloat(getComputedStyle(root).getPropertyValue('--wallpaper-tile-size')) || 220;
-    const key = `${scale}:${pixels}`;
-    if (key === mainGeometryKey) return;
-    mainGeometryKey = key;
-    for (const layer of layers) {
-      // Also keep the native SVG fallback correct before canvas is ready.
-      layer.node.style.setProperty('--layer-scale', layer.scale * openingScaleFactor);
-      const pattern = layer.node.querySelector('pattern');
-      const image = pattern?.querySelector('image');
-      if (!pattern || !image) continue;
-      const tile = pixels / (scale * layer.scale);
-      for (const node of [pattern, image]) {
-        node.setAttribute('width', tile); node.setAttribute('height', tile);
-      }
-      pattern.setAttribute('x', (922 - tile) / 2);
-    }
   }
   function cacheMainWallpaperSprites() {
     if (!sprites.length || !wallpaperData || !openingLogo || !mainBox) return;
@@ -667,6 +649,7 @@
         mainBorderSprites = prepared.slice(layers.length, layers.length * 2);
         mainSolidSprites = prepared.slice(layers.length * 2);
         gpu?.retainSprites(prepared);
+        bannerGpu?.retainSprites([...prepared, ...sprites]);
         lastMainPaint = lastFeedPaint = ''; cacheSpriteChoices(); schedule();
         releaseSprites(previous);
       });
@@ -699,7 +682,13 @@
     for (const [index, layer] of layers.entries()) {
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSprites[index];layer.solidSprite=mainSolidSprites[index];
     }
-    cacheInnerRingSprites(mainRingWidth * scale, inkRatio);
+    // GPU point buffers need no CPU paths. The Canvas fallback reuses exact
+    // per-row paths, without compositing enormous transparent ring images.
+    if (!gpu || !bannerGpu) cacheInnerRingPaths();
+    logos.dataset.innerRingCount=String(innerRings.length);
+    logos.dataset.outerRingCount=String(outerRings.length);
+    logos.dataset.innerRowCount=String(innerRings.length*ringRows.length);
+    logos.dataset.additionalInnerRowCount=String(additionalInnerRowCount);
     for (const mark of rain) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
@@ -709,12 +698,35 @@
       // Time-based damping fills the gaps between touch-scroll events. Only
       // the eight-logo drawing is eased; document scrolling and masks stay native.
       const dt = lastLogoTime !== undefined ? Math.max(0, Math.min(64, time - lastLogoTime)) : 1000 / 60;
+      const previousAngle = (.5-.5*Math.cos(Math.PI*logoProgress))*Math.PI*16;
       logoProgress += (target - logoProgress) * (1 - Math.exp(-dt / 42));
+      const nextAngle = (.5-.5*Math.cos(Math.PI*logoProgress))*Math.PI*16;
+      // A large wheel/keyboard impulse must not skip multiple turns in one
+      // frame. Follow the same eight-turn path, catching up continuously.
+      const maxStep = TAU*2*dt/1000;
+      if (Math.abs(nextAngle-previousAngle)>maxStep) {
+        const angle=previousAngle+Math.sign(nextAngle-previousAngle)*maxStep;
+        logoProgress=Math.acos(Math.max(-1,Math.min(1,1-angle/(Math.PI*8))))/Math.PI;
+      }
     }
     lastLogoTime = time;
-    logoAnimating = Math.abs(target - logoProgress) > .00001;
+    logoAnimating = Math.abs(target - logoProgress) > .000001;
     if (!logoAnimating) logoProgress = target;
     return logoProgress;
+  }
+  let visualLogoScroll, visualLogoTime, visualLogoMoving = false;
+  function easeLogoScroll(target, time) {
+    const dt = visualLogoTime === undefined ? 0 : Math.max(0, Math.min(64,time-visualLogoTime));
+    visualLogoTime = time;
+    if (visualLogoScroll === undefined || reduced.matches) visualLogoScroll = target;
+    else {
+      const step=(target-visualLogoScroll)*(1-Math.exp(-dt/42));
+      const limit=Math.max(1,openingViewport?.height || innerHeight)*dt/180;
+      visualLogoScroll += Math.max(-limit,Math.min(limit,step));
+    }
+    visualLogoMoving = Math.abs(target-visualLogoScroll) > .01;
+    if (!visualLogoMoving) visualLogoScroll = target;
+    return visualLogoScroll;
   }
   function scrollFanTiming(scroll) {
     // First screenshot: About's top edge just below the banner.
@@ -931,13 +943,13 @@
     // Toolbar/visual-viewport motion only changes the canvas centre and crop.
     // Reuse logo/ring textures and leave hidden SVG geometry untouched.
     if (layoutDirty) {
-      syncMainWallpaperGeometry();
       cacheMainWallpaperSprites();
       cacheSpriteChoices();
     }
-    if (feed && bannerMask) {
+    if ((feed || bannerGpu) && bannerMask) {
       feedHeight = Math.max(0, Math.min(height, bannerMask.getBoundingClientRect().height));
-      resizeSurface(bannerFeed, feed, width, feedHeight, Math.min(devicePixelRatio || 1, 1.5));
+      if (bannerGpu) bannerGpu.resize(width,feedHeight,inkRatio);
+      else resizeSurface(bannerFeed, feed, width, feedHeight, inkRatio);
     }
     if (!bg || (!ink && !gpu) || !mainBox) return;
     resizeSurface(background, bg, width, surfaceHeight, bgRatio);
@@ -1023,8 +1035,9 @@
       if (background.dataset.visibleLogos !== count) background.dataset.visibleLogos = count;
       lastBackgroundPaint = backgroundKey;
     }
-    const patternVisibility=mainPatternVisibility(state.scroll);
-    const fillVisibility=mainFillVisibility(state.scroll);
+    const sceneScroll = easeLogoScroll(state.scroll,time);
+    const patternVisibility=mainPatternVisibility(sceneScroll);
+    const fillVisibility=mainFillVisibility(sceneScroll);
     const center = commonLogoCenter(patternVisibility);
     const {x:centerX, y:centerY} = center;
     const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}:${layer.ringIdleAngle}:${layer.ringIdleVisibility}`).join(',')}`;
@@ -1087,20 +1100,31 @@
     // A shared animation fade preserves the equal differences between rows.
     const visibility = mainLayerOpacity(frontRingLayer, patternVisibility, fillVisibility,
       frontRingLayer.ringIdleVisibility ?? frontRingLayer.idleVisibility) / frontRingLayer.opacity;
-    for (const ring of rings) {
-      if (!ring.sprite || !(ringDiameter > 0) || !ringIntersectsViewport(centerX,centerY,
-        ring.innerRatio*ringDiameter,ring.outerRatio*ringDiameter,width,surfaceHeight)) continue;
+    context.fillStyle='#c2b594';
+    for (const group of rings) {
+      if (!group.rowPaths || !(ringDiameter>0)) continue;
       context.save();
-      context.translate(centerX, centerY);
-      context.rotate(ring.source.scrollAngle + (ring.source.ringIdleAngle ?? ring.source.idleAngle));
-      context.scale(ringDiameter, ringDiameter);
-      if (ring.clipPath) context.clip(ring.clipPath);
-      context.globalAlpha = visibility;
-      const diameter = ring.diameterFactor;
-      context.drawImage(ring.sprite, -diameter / 2, -diameter / 2, diameter, diameter);
+      context.translate(centerX,centerY);
+      context.rotate(group.source.scrollAngle+(group.source.ringIdleAngle ?? group.source.idleAngle));
+      context.scale(ringDiameter,ringDiameter);
+      for(const row of group.rowPaths){
+        if(!ringIntersectsViewport(centerX,centerY,(row.radius-row.dot)*ringDiameter,
+          (row.radius+row.dot)*ringDiameter,width,surfaceHeight))continue;
+        context.globalAlpha=visibility*row.opacity;
+        if(row.path)context.fill(row.path);
+        else{
+          context.beginPath();
+          for(let i=0;i<row.points.length;i+=2){
+            context.moveTo(row.points[i]+row.dot,row.points[i+1]);
+            context.arc(row.points[i],row.points[i+1],row.dot,0,TAU);
+          }
+          context.fill();
+        }
+      }
       context.restore();
     }
   }
+
   function drawRain(context,width,clipHeight) {
     let visible=0;
     for (const mark of rain) {
@@ -1134,20 +1158,35 @@
   // full-size canvas into a second canvas forces expensive rendering flushes.
   // Both crops share every position, angle, texture and the same frame clock.
   function paintBannerFeed(width,height) {
-    if(!feed || !lastLogoScene || !feedHeight || !width || !height)return;
+    if((!feed && !bannerGpu) || !lastLogoScene || !feedHeight || !width || !height)return;
     const feedKey=`${lastBackgroundPaint}:${lastMainPaint}:${width}:${height}:${feedHeight}`;
     if(feedKey===lastFeedPaint)return;
     lastFeedPaint=feedKey;
+    if (bannerGpu) {
+      const scene = lastLogoScene;
+      const opacity = mainLayerOpacity(frontRingLayer,scene.patternVisibility,scene.fillVisibility,
+        frontRingLayer.ringIdleVisibility ?? frontRingLayer.idleVisibility) / frontRingLayer.opacity;
+      let painted = false;
+      try {
+        painted = bannerGpu.draw(scene,layers,backRingPaintOrder,ringPaintOrder,
+          mainLayerOpacity,opacity,{rows:ringRows,inner:ringInnerRadius,outer:ringOuterRadius},
+          {marks:rain,surfaceHeight});
+      } catch { /* The same scene remains available through Canvas. */ }
+      if (painted) return;
+      fallbackBannerToCanvas();
+    }
     feed.clearRect(0,0,width,feedHeight);
     drawRain(feed,width,feedHeight);
     drawLogoLayers(feed,lastLogoScene,width,feedHeight);
   }
+  let pausedAt = null, pausedDuration = 0;
   function render(time = performance.now()) {
     raf = 0;
     if (document.hidden) return;
+    time -= pausedDuration;
     const controlledScroll=frameDrivers.size>0;
     // Explicit menu navigation remains available during a partial return.
-    if (controlledScroll && startScrollReturn) finishStartScrollReturn(time);
+    if (controlledScroll && startScrollReturn) releaseStartScrollToNavigation();
     for(const driver of [...frameDrivers])driver(time);
     captureNativeStartScroll();
     syncSurfacePosition(scrollPosition());
@@ -1155,7 +1194,7 @@
     // Do not force layout after the viewport-following canvas transform write.
     const width = geometryDirty || !lastWidth ? root.clientWidth : lastWidth;
     const height = geometryDirty || !lastHeight ? innerHeight : lastHeight;
-    const resetMotion = width !== lastWidth;
+    const resetMotion = !lastWidth;
     if (geometryDirty) {
       measure(width, height);
       layoutDirty = viewportDirty = false;
@@ -1176,7 +1215,7 @@
       subscribers.forEach(item => item.paint?.(state));
       lastSubscriberState = subscriberState;
     }
-    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || scrollRotationPending || (!reduced.matches && rainScrollOrigin === null && rain.length && sprites.length)) schedule();
+    if (startScrollReturn || (!reduced.matches && (state.scroll <= .5 || heroSpeed > 0)) || handoffActive || frameDrivers.size || logoAnimating || visualLogoMoving || scrollRotationPending || (!reduced.matches && rainScrollOrigin === null && rain.length && sprites.length)) schedule();
   }
   image.addEventListener('load', () => {
     const prepared = [...new Set([8, 16, 32, 64, 128, 256, 384, 512, 768, Math.min(1536, image.naturalWidth || 922)])].sort((a, b) => a - b).map(width => {
@@ -1265,7 +1304,16 @@
   }, {passive: true});
   addEventListener('load', invalidate, {once: true});
   addEventListener('pageshow', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', () => { lastRainTime=undefined;lastLogoTime=undefined;idleLastTime=undefined;idleSince=undefined;handoffSince=undefined;if(idleMode==='running')idleMode='scrolling';schedule(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pausedAt = performance.now();
+    else if (pausedAt !== null) {
+      pausedDuration += performance.now()-pausedAt;
+      pausedAt = null;
+    }
+    // Resume the same animation phase; hidden wall-clock time is not motion.
+    lastRainTime=lastLogoTime=idleLastTime=visualLogoTime=scrollRotationFrameTime=undefined;
+    schedule();
+  });
   reduced.addEventListener('change', invalidate);
   document.fonts?.ready.then(invalidate);
   if ('ResizeObserver' in window) {
