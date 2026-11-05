@@ -14,11 +14,17 @@ Die untere Linie des geöffneten Menübanners wird in allen Ausrichtungen als na
 
 ## Hauptlogo-Größe nach Bildmarkierungen
 
+Startlogo und vorderste animierte Ebene verwenden nun auch im Hochformat denselben Maßstab. Die frühere Querformat-Beschränkung dieser Angleichung entfällt. Die äußeren Startlogo-Abmessungen bleiben unverändert; alle acht animierten Ebenen werden gemeinsam daran ausgerichtet, mit unveränderten relativen Größenstufen. Die Berechnung verwendet nicht gerundete CSS-Abmessungen. Auch Tapetenmaß und Konturvorbereitung verwenden diesen gemeinsamen Faktor.
+
 Die acht separaten SVG-Kopien der Hauptlogos sind aus der sichtbaren Seite entfernt. Eine einzige gemeinsame Liste enthält die ursprünglichen acht Ebenen in der Reihenfolge 7 bis 0 mit unveränderten Größen- und Sichtbarkeitsstufen. GPU, Canvas-Ersatzdarstellung und der begrenzte Bannerausschnitt verwenden ausschließlich diese eine Folge und dieselbe Mittelachse.
 
 Im Hochformat sind die ursprünglichen Größen und Positionen des Startlogos und aller acht Hauptlogo-Ebenen wiederhergestellt. Nur im Querformat werden sie gegenüber dieser Ausgangsversion um 30 Prozent vergrößert. Die freie Fläche vor dem ersten Inhaltsfeld wächst passend mit: Die sichtbare Logokontur hat oben zur Bannerunterkante und unten zur Oberkante des ABOUT-Feldes denselben Abstand. Die Linie unter der ABOUT-Beschriftung dient nicht als Messpunkt. Bestehende Größenstufen, Timecode-Abstände und Tapetenmaß bleiben erhalten.
 
 Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn zuvor gescrollt wurde. Bei jedem erneuten Start wird seine vorherige Scrollbindung ohne Positionssprung gelöst. Nach der scrollgesteuerten Rückkehr der Hauptlogos wird er wie bisher wieder an die Scrollposition gebunden.
+
+## Timecode-Sichtbarkeit um 10 Prozent erhöht
+
+Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
 
 ## Flüssige Übergänge und verringerte Zeichenlast
 

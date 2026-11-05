@@ -117,8 +117,9 @@
   const ringBands = [...innerRings].reverse().concat(outerRings);
   // Keep the previous visibility range, with one equal increase per point row
   // all the way from the innermost row to the outermost extension.
-  const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length);
-  const ringOpacityMax = frontRingLayer.opacity;
+  const ringVisibilityGain = 1.10;
+  const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
+  const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
   ringBands.forEach((ring, bandIndex) => {
     ring.rowOpacities = ringRows.map((row, rowIndex) =>
@@ -569,9 +570,15 @@
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility,idleVisibility=layer.idleVisibility) =>
     layer.opacity*(1-.38*fillVisibility)*(1-(1-idleVisibility)*patternVisibility);
+  function openingLogoScale() {
+    if (!openingLogo) return 0;
+    const style = getComputedStyle(openingLogo);
+    return Math.min((parseFloat(style.width) || openingLogo.clientWidth) / 922,
+      (parseFloat(style.height) || openingLogo.clientHeight) / 1368);
+  }
   function openingMainScaleFactor() {
-    if (!openingLogo || !mainBox || !matchMedia('(orientation: landscape)').matches) return 1;
-    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    if (!openingLogo || !mainBox) return 1;
+    const openingScale = openingLogoScale();
     const canvasScale = Math.min(mainBox.width / 922, mainBox.height / 1368);
     const frontScale = layers.find(layer => layer.depth === 0)?.scale || 1;
     // Match the nearest background logo to the foreground artwork itself.
@@ -580,7 +587,7 @@
   }
   function cacheMainWallpaperSprites() {
     if (!sprites.length || !wallpaperData || !openingLogo || !mainBox) return;
-    const openingScale = Math.min(openingLogo.clientWidth / 922, openingLogo.clientHeight / 1368);
+    const openingScale = openingLogoScale();
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     if (!(openingScale > 0) || !(scale > 0)) return;
     const pattern = openingLogo.querySelector('#hero-paper-pattern');
@@ -815,6 +822,7 @@
   };
   const invalidate = () => { layoutDirty = true; viewportDirty = true; schedule(); };
   window.EightEightEffects = {
+    openingLogoScale,
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
     // Navigation advances first, then all canvases and lights use the same
     // resulting scroll position in this frame (no second animation clock).
