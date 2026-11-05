@@ -117,8 +117,9 @@
   const ringBands = [...innerRings].reverse().concat(outerRings);
   // Keep the previous visibility range, with one equal increase per point row
   // all the way from the innermost row to the outermost extension.
-  const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length);
-  const ringOpacityMax = frontRingLayer.opacity;
+  const ringVisibilityGain = 1.10;
+  const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
+  const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
   ringBands.forEach((ring, bandIndex) => {
     ring.rowOpacities = ringRows.map((row, rowIndex) =>
