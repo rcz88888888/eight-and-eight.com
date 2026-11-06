@@ -26,6 +26,14 @@ Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn
 
 Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
 
+## Feste Tempoabläufe für die Timecoderinge
+
+Die erste achtsekündige Pause beginnt erst, wenn sämtliche Hauptlogo-Grafiken vorbereitet sind. Die Startsequenz kann dadurch nicht mehr während des Ladens unsichtbar über die erste langsame Phase laufen. Wiederholungen bleiben auf denselben berechneten Zyklusgrenzen verankert; verspätete Einzelbilder verschieben den nächsten Start nicht.
+
+Jede Ringebene erhält vorab berechnete Übergangszeitpunkte: acht abwechselnde Abschnitte mit 8,8888888 und 33,333333 U/min, jeweils 0,8 Sekunden Tempoübergang und den bestehenden Fächerzeiten 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Eine veränderte Fächerzeit dehnt oder staucht die Ring-Zeitachse nicht mehr. Die bestehende Schlussbeschleunigung und der aufrechte Abschluss bleiben erhalten. Pause, App-Wechsel und Scrollunterbrechung verwenden weiterhin die gemeinsame Animationsuhr.
+
+Der optische Stroboskopeindruck hängt zusätzlich von den tatsächlich gezeichneten Bildern und der Display-Bildfolge ab. Exakte Drehzahlen und feste Ablaufzeiten garantieren deshalb keinen identischen scheinbaren Stillstand auf unterschiedlichen oder wechselnden Bildraten.
+
 ## Flüssige Übergänge und verringerte Zeichenlast
 
 Scrollimpulse geben der Startrückkehr ein Ziel; die acht Logos laufen kontinuierlich darauf zu. Ein Menüklick übernimmt die gerade sichtbaren Winkel und Sichtbarkeiten, statt sie auf null zu setzen. Auch der Wechsel zurück zum Seitenanfang, die Bewegung der gemeinsamen Mitte und größere Scrollsprünge werden geglättet. Die acht Größenstufen, Fächerzeiten, Startgeschwindigkeiten und Punktreihen bleiben erhalten. Beim Ausblenden der Seite pausiert die gemeinsame Animationsuhr und setzt dieselbe Phase fort.

@@ -273,6 +273,7 @@
   // One frame clock for idle rotation, scroll handoff and the return wobble.
   const TAU = Math.PI * 2;
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
+  let startAssetsReady = false;
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
   let handoffSince, handoffMain = 0, handoffActive = false;
@@ -316,6 +317,49 @@
   const spinMotionEnd = spinCursor;
   appendSpin(lastStartLayer * startPassStaggers[7] + 8, 0);
   const spinDuration = spinCursor;
+  // Each ring follows actual RPM segments on the shared clock. Changing fan
+  // delays moves a transition's fixed start time; it never stretches time.
+  function buildRingTimeline(depth) {
+    const segments=[];
+    let cursor=0,turns=0,previousRpm=0;
+    function append(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
+      if (!(duration>0)) return;
+      const from=fromRpm/60,to=toRpm/60;
+      segments.push({start:cursor,end:cursor+duration,duration,from,to,turns,curve,correction});
+      cursor+=duration;turns+=duration*(from+to)/2+correction;
+    }
+    for (const pass of spinMotionWindows) {
+      const start=pass.start+(depth+1)*pass.stagger;
+      append(start-cursor,previousRpm);
+      append(spinTransitionDuration,previousRpm,pass.rpm);
+      previousRpm=pass.rpm;
+    }
+    const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
+    append(finalStart-cursor,previousRpm);
+    const finalTurns=turns+1.8*(previousRpm+888)/120;
+    append(1.8,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
+    return {segments,start:(depth+1)*startPassStaggers[0],end:cursor,turns};
+  }
+  const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildRingTimeline(layer.depth)]));
+  function ringPhase(seconds,depth) {
+    const timeline=ringTimelines.get(depth);
+    if(seconds<=0)return 0;
+    if(seconds>=timeline.end)return TAU*timeline.turns;
+    for(const segment of timeline.segments){
+      if(seconds>=segment.end)continue;
+      const x=(seconds-segment.start)/segment.duration;
+      return TAU*(segment.turns+segment.duration*(segment.from*x+
+        (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x)))+
+        segment.correction*smoothEnd(x));
+    }
+    return TAU*timeline.turns;
+  }
+  function ringVisibility(seconds,depth) {
+    const timeline=ringTimelines.get(depth);
+    if(seconds<timeline.start || seconds>=timeline.end)return .7;
+    return .7+.3*smoothEnd(Math.min(1,(seconds-timeline.start)/1.8))*
+      smoothEnd(Math.min(1,(timeline.end-seconds)/1.8));
+  }
   function spinTimeForLayer(seconds, depth, forRing = false) {
     let passIndex = 0;
     while (passIndex + 1 < spinMotionWindows.length &&
@@ -506,27 +550,29 @@
       if(idleMode==='waiting') {
         // The shared eight-second pause begins after the delayed scroll
         // rotations have also reached their starting orientations.
-        if(scrollRotationPending)idleSince=time;
+        const ready=mainSprites.length===layers.length && mainBorderSprites.length===layers.length &&
+          mainSolidSprites.length===layers.length && sprites.length>0;
+        if(ready!==startAssetsReady){idleSince=time;startAssetsReady=ready;}
+        if(scrollRotationPending || !ready)idleSince=time;
         if(idleSince===undefined)idleSince=time;
-        if(time-idleSince>=8000){
-          idleMode='running';spinSince=time;startScrollReleased=false;
+        if(ready && time-idleSince>=8000){
+          idleMode='running';spinSince=idleSince+8000;startScrollReleased=false;
           resumeTimedRain();
         }
       }
       if(idleMode==='running') {
-        const elapsed=Math.max(0,(time-spinSince)/1000);
+        let elapsed=Math.max(0,(time-spinSince)/1000);
+        if(elapsed>=spinDuration){
+          const cycles=Math.floor(elapsed/spinDuration);
+          spinSince+=cycles*spinDuration*1000;
+          elapsed-=cycles*spinDuration;
+        }
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
         layers.forEach(layer => {
           layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth));
-          layer.ringIdleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth, true));
+          layer.ringIdleAngle = ringPhase(elapsed,layer.depth);
         });
-        if(elapsed >= spinDuration){
-          // Begin the shared pause only once all nine logos have arrived.
-          mainIdleAngle=heroIdleAngle=heroSpeed=0;
-          layers.forEach(layer=>layer.ringIdleAngle=layer.idleAngle=0);
-          idleMode='waiting';idleSince=time-8000;
-        }
       }
     }
     for(const layer of layers){
@@ -534,11 +580,10 @@
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
         : transitionVisibility(layer,idleRotationVisibility(elapsed),time);
-      const ringElapsed = idleMode === 'running'
-        ? spinTimeForLayer((time - spinSince) / 1000, layer.depth, true) : -1;
       layer.ringIdleVisibility = startScrollReturn
         ? layer.ringReturnVisibility + (.7 - layer.ringReturnVisibility) * smoothEnd(startScrollReturn.progress)
-        : transitionVisibility(layer,idleRotationVisibility(ringElapsed),time,true);
+        : transitionVisibility(layer,idleMode==='running'
+          ? ringVisibility((time-spinSince)/1000,layer.depth) : .7,time,true);
     }
     // Keep the CSS rotation on the nearest continuous turn across ±π.
     const heroAngle = lastHeroAngle === undefined ? heroIdleAngle :
