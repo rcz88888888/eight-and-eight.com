@@ -53,10 +53,13 @@ body .topbar .menu-toggle {
   display: block; position: absolute; right: 5%; top: 50% !important;
   transform: translateY(-50%); margin: 0; padding: calc(5 * var(--layout-unit));
 }
-body .topbar .menu-toggle > span {
-  width: calc(25 * var(--layout-unit)); height: calc(2.25 * var(--layout-unit)) !important;
-  min-height: calc(2.25 * var(--layout-unit)) !important;
+body .topbar .menu-toggle > svg {
+  display: block;
+  width: calc(25 * var(--layout-unit));
+  height: auto;
   margin: calc(6 * var(--layout-unit)) 0;
+  color: var(--banner-logo-metal);
+  overflow: visible;
 }
 body .site-nav {
   display: none; position: fixed !important; z-index: 1000;
