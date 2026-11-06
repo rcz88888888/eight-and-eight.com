@@ -25,16 +25,19 @@
     void main() { gl_FragColor = texture2D(u_image, v_uv) * u_opacity; }`;
   const pointVertex = `
     attribute vec4 a_point;
+    attribute float a_pitch;
     uniform vec2 u_resolution;
     uniform vec2 u_center;
     uniform float u_diameter;
     uniform float u_ratio;
     uniform float u_angle;
+    uniform float u_strobe_steps;
     varying mediump float v_radius;
     varying mediump float v_size;
     varying mediump float v_opacity;
     void main() {
-      float c = cos(u_angle), s = sin(u_angle);
+      float angle = u_angle - u_strobe_steps * a_pitch;
+      float c = cos(angle), s = sin(angle);
       vec2 p = vec2(c * a_point.x - s * a_point.y, s * a_point.x + c * a_point.y);
       p = p * u_diameter + u_center;
       gl_Position = vec4(p.x / u_resolution.x * 2. - 1., 1. - p.y / u_resolution.y * 2., 0., 1.);
@@ -103,8 +106,8 @@
     try {
       images = program(vertex, fragment, ['a_position'],
         ['u_resolution','u_center','u_size','u_angle','u_image','u_opacity']);
-      points = program(pointVertex, pointFragment, ['a_point'],
-        ['u_resolution','u_center','u_diameter','u_ratio','u_angle','u_opacity']);
+      points = program(pointVertex, pointFragment, ['a_point','a_pitch'],
+        ['u_resolution','u_center','u_diameter','u_ratio','u_angle','u_strobe_steps','u_opacity']);
       quad = buffer(new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]));
     } catch {
       for (const handle of programs) gl.deleteProgram(handle);
@@ -136,13 +139,14 @@
         rows.forEach((row, index) => {
           const radius = band.innerRatio + (row.radius - innerRadius) * radialScale;
           const dot = row.dot * radialScale;
+          const pitch = Math.PI * 2 / row.count;
           for (let point = 0; point < row.count; point++) {
             const angle = (point + row.phase) * Math.PI * 2 / row.count;
-            values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, band.rowOpacities[index]);
+            values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, band.rowOpacities[index], pitch);
           }
         });
       }
-      cached = {handle: buffer(new Float32Array(values)), count: values.length / 4,
+      cached = {handle: buffer(new Float32Array(values)), count: values.length / 5,
         inner: Math.min(...group.bands.map(band=>band.innerRatio)),
         outer: Math.max(...group.bands.map(band=>band.outerRatio))};
       pointBuffers.set(group, cached);
@@ -166,12 +170,16 @@
           farX*farX+farY*farY<Math.max(0,inner-1)**2)continue;
         gl.bindBuffer(gl.ARRAY_BUFFER, cached.handle);
         gl.enableVertexAttribArray(points.a_point);
-        gl.vertexAttribPointer(points.a_point, 4, gl.FLOAT, false, 16, 0);
+        gl.enableVertexAttribArray(points.a_pitch);
+        gl.vertexAttribPointer(points.a_point, 4, gl.FLOAT, false, 20, 0);
+        gl.vertexAttribPointer(points.a_pitch, 1, gl.FLOAT, false, 20, 16);
         gl.uniform1f(points.u_angle, group.source.scrollAngle +
           (group.source.ringIdleAngle ?? group.source.idleAngle));
+        gl.uniform1f(points.u_strobe_steps, group.source.ringStrobeSteps ?? 0);
         gl.drawArrays(gl.POINTS, 0, cached.count);
       }
       gl.disableVertexAttribArray(points.a_point);
+      gl.disableVertexAttribArray(points.a_pitch);
     }
     function drawImage(image, sizeX, sizeY, opacity) {
       if (!image || opacity <= 0) return;
