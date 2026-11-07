@@ -128,7 +128,7 @@ Die Fächerstaffelung verwendet ab dem zweiten Durchgang dieselben Wechselzeitpu
 
 ## Banner und Animation
 
-Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation. Beide Tapetenbanner besitzen waagerechte Randlinien oben und unten. Im Quer- und Desktopformat sind die Banner- und Feldlinien doppelt so dick wie zuvor. Die Verdopplung bezieht sich auf die tatsächlich gezeichnete Dicke nach der Pixelrundung des Browsers. Im Hochformat gilt die bisherige Dicke.
+Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation. Beide Tapetenbanner besitzen waagerechte Randlinien oben und unten. Die Bannerränder und Feldlinien verwenden in allen Ansichten die Strichstärke des Hochformats von 1,5 CSS-Pixeln. Das Tapetenmuster schließt direkt an die Randlinien an.
 
 Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wiederverwendete Konturen und Ringtexturen, gemeinsamer Szenenzustand für Banner und Hauptfläche sowie eine gemeinsame Mitte unter dem oberen Banner. Sieben zusätzliche Ringbänder laufen nach innen weiter. Größen, Sichtbarkeiten, Staffelung und die bisherige Querformat-Skalierung bleiben erhalten.
 

@@ -299,16 +299,7 @@ body { height: auto; min-height: 100%; overflow: visible; }
   pointer-events: none;
 }
 
-/* Landscape only: preserve which edges exist, but use 0.8px on every edge. */
 @media (orientation: landscape) {
-  body .site-shell *, body .site-nav, body .site-nav * {
-    border-width: .8px !important;
-    outline-width: .8px;
-    text-decoration-thickness: .8px;
-  }
-  body :is(#work, [data-display-id="work"]) .partner-grid > .partner-slot:nth-child(n) {
-    border-width: .8px !important;
-  }
   .hero-static-logo mask > g,
   body .site-nav::after, body .site-nav a::after { height: .8px !important; }
   body .topbar .menu-toggle > span { height: .8px !important; min-height: .8px !important; }
@@ -596,16 +587,11 @@ body .gold-text-light {
   height: calc(220px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Wallpaper banners carry horizontal rules along their top and bottom edges. */
-:root { --banner-edge-width: 1.5px; }
-@media (orientation: landscape) {
-  :root { --banner-edge-width: .8px; }
-}
+/* The wallpaper banners use the same native line width as the field frames. */
 .topbar, .content-scroll > .wallpaper-end {
-  border: var(--banner-edge-width) solid var(--metallic-gold) !important;
+  border: var(--layout-line, 1.5px) solid var(--metallic-gold) !important;
   border-style: solid none !important;
 }
-
 /* An empty text-clipped surface supplies a plain cream edge colour to Safari
    without painting a strip, covering the wallpaper or taking up layout space. */
 .browser-top-color { display: none; }
