@@ -83,13 +83,16 @@
     speed: .92 ** depth
   }));
   // One continuous pattern-scale progression, with the original layer bindings.
-  const ringInnerRadius = 559.65, ringOuterRadius = 593.15;
-  const ringRows = [
-    {count: 171, radius: 563, dot: 3.35, phase: 0},
-    {count: 177, radius: 572, dot: 3.35, phase: .5},
-    {count: 182, radius: 581, dot: 3.85, phase: 0},
-    {count: 188, radius: 590, dot: 3.15, phase: .5}
-  ].map((row,index)=>({...row,index,pitch:Math.PI*2/row.count}));
+  const ringRows = JSON.parse(document.getElementById('strobe-source-geometry').textContent)
+    .map(({radius, dot, degrees}, index) => ({
+      radius, dot, index, count: degrees.length, pitch: Math.PI * 2 / degrees.length,
+      unitPoints: degrees.map(degree => {
+        const angle = degree * Math.PI / 180;
+        return [Math.sin(angle), -Math.cos(angle)];
+      })
+    }));
+  const ringInnerRadius = Math.min(...ringRows.map(({radius, dot}) => radius - dot));
+  const ringOuterRadius = Math.max(...ringRows.map(({radius, dot}) => radius + dot));
   const pointClearance = ringRows.slice(1).reduce((sum, row, index) => {
     const previous = ringRows[index];
     return sum + row.radius - row.dot - previous.radius - previous.dot;
@@ -181,12 +184,11 @@
       if (group.rowPaths) continue;
       for (const row of group.rows) {
         if (row.path || row.points) continue;
-        const {count,phase,radius,dot}=row;
+        const {unitPoints,radius,dot}=row;
         const path=typeof Path2D==='function'?new Path2D():null;
         const points=path?null:[];
-        for (let index=0; index<count; index++) {
-          const angle=(index+phase)*Math.PI*2/count;
-          const x=Math.sin(angle)*radius,y=-Math.cos(angle)*radius;
+        for (const [unitX, unitY] of unitPoints) {
+          const x=unitX*radius,y=unitY*radius;
           if(path){path.moveTo(x+dot,y);path.arc(x,y,dot,0,Math.PI*2);}
           else points.push(x,y);
         }
