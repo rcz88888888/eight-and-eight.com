@@ -76,7 +76,7 @@
   // both renderers and the clipped banner feed use these same ordered layers.
   const layers = JSON.parse(main.dataset.mainLogoLayers).map(({scale, opacity, depth}) => ({
     scale, opacity, depth,
-    idleAngle: 0, idleVisibility: .7, ringIdleAngle: 0, ringIdleVisibility: .7, ringStrobeSteps: 0,
+    idleAngle: 0, idleVisibility: .7, ringIdleAngle: 0, ringIdleVisibility: .7,
     settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** depth
   }));
@@ -87,14 +87,19 @@
     {count: 177, radius: 572, dot: 3.35, phase: .5},
     {count: 182, radius: 581, dot: 3.85, phase: 0},
     {count: 188, radius: 590, dot: 3.15, phase: .5}
-  ];
+  ].map((row,index)=>({...row,index,pitch:Math.PI*2/row.count}));
   const pointClearance = ringRows.slice(1).reduce((sum, row, index) => {
     const previous = ringRows[index];
     return sum + row.radius - row.dot - previous.radius - previous.dot;
   }, 0) / (ringRows.length - 1);
   const ringEdgeOverlap = .75;
   const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
-  for (const layer of layers) layer.ringScale = 1;
+  for (const layer of layers) {
+    layer.ringScale = 1;
+    layer.ringStrobeSteps = new Float64Array(ringRows.length);
+    layer.ringRowAngles = new Float64Array(ringRows.length);
+    layer.ringStrobeLag = 0;
+  }
   for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
     const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
     const nextScale = next.scale * next.ringScale;
@@ -118,7 +123,7 @@
   const ringBands = [...innerRings].reverse().concat(outerRings);
   // Keep the previous visibility range, with one equal increase per point row
   // all the way from the innermost row to the outermost extension.
-  const ringVisibilityGain = 1.10;
+  const ringVisibilityGain = 1.10 * 1.10;
   const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
   const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
@@ -152,52 +157,75 @@
     inwardBoundary = ring.innerRatio - ringGap;
   }
   for (const ring of ringBands) {
-    ring.centerRatio = (ring.innerRatio + ring.outerRatio) / 2;
-    ring.diameterFactor = 2 * ring.outerRatio * 640 / ringOuterRadius;
-    ring.sprite = null; ring.size = 0;
+    const radialScale=(ring.outerRatio-ring.innerRatio)/(ringOuterRadius-ringInnerRadius);
+    ring.rows=ringRows.map(row=>({
+      ...row,
+      radius:ring.innerRatio+(row.radius-ringInnerRadius)*radialScale,
+      dot:row.dot*radialScale,
+      opacity:ring.rowOpacities[row.index]
+    }));
   }
-  // Circular bands with the same phase never overlap another band's radius.
-  // Bake them together once instead of blending a large transparent square
-  // for every individual band on every animation frame.
+  const landscapeExtraRowCount = 16;
+  const innermostRows = innerRings[innerRings.length-1].rows;
+  const innermostRow = innermostRows[0];
+  // Landscape doubles the ring diameter. Bring the new rows inward to the
+  // same relative radius as the first portrait row, behind the logo stack.
+  const landscapeExtension = {
+    source:lastInnerSource,
+    rows:Array.from({length:landscapeExtraRowCount},(_,index)=>{
+      const row=innermostRows[ringRows.length-1-index%ringRows.length];
+      const inward=(index+1)/landscapeExtraRowCount;
+      return {
+        ...row,
+        radius:innermostRow.radius*(1-inward/2),
+        dot:row.dot*(1-inward/4),
+        opacity:innermostRow.opacity*(1-inward/2)
+      };
+    })
+  };
+  // Group rows by phase so each depth still uses one draw call.
   function groupRingBands(bands) {
     const groups = new Map();
     for (const ring of bands) {
       let group = groups.get(ring.source);
       if (!group) {
-        group = {source: ring.source, bands: [], sprite: null, key: ''};
+        group = {source:ring.source,rows:[],innerRadius:Infinity,outerRadius:0};
         groups.set(ring.source, group);
       }
-      group.bands.push(ring);
+      for (const row of ring.rows) {
+        group.rows.push(row);
+        group.innerRadius=Math.min(group.innerRadius,row.radius-row.dot);
+        group.outerRadius=Math.max(group.outerRadius,row.radius+row.dot);
+      }
     }
     return [...groups.values()];
   }
-  const backRingPaintOrder = groupRingBands(innerRings.filter(ring => ring.inwardExtension));
+  const inwardBands = innerRings.filter(ring => ring.inwardExtension);
+  const portraitBackRings = groupRingBands(inwardBands);
+  const landscapeBackRings = groupRingBands([...inwardBands,landscapeExtension]);
+  let backRingPaintOrder = portraitBackRings;
   const ringPaintOrder = groupRingBands([...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension)));
-  const ringSpriteGroups = backRingPaintOrder.concat(ringPaintOrder);
   const immutableSprite = canvas => typeof createImageBitmap === 'function'
     ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
   function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
   function cacheInnerRingPaths() {
-    for (const group of ringSpriteGroups) {
+    for (const group of [...backRingPaintOrder,...ringPaintOrder]) {
       if (group.rowPaths) continue;
-      group.rowPaths=[];
-      for (const ring of group.bands) {
-        const radialScale=(ring.outerRatio-ring.innerRatio)/(ringOuterRadius-ringInnerRadius);
-        ringRows.forEach((row,index)=>{
-          const radius=ring.innerRatio+(row.radius-ringInnerRadius)*radialScale;
-          const dot=row.dot*radialScale;
-          const pitch=2*Math.PI/row.count;
-          const path=typeof Path2D==='function'?new Path2D():null;
-          const points=path?null:[];
-          for(let i=0;i<row.count;i++){
-            const angle=(i+row.phase)*Math.PI*2/row.count;
-            const x=Math.sin(angle)*radius,y=-Math.cos(angle)*radius;
-            if(path){path.moveTo(x+dot,y);path.arc(x,y,dot,0,Math.PI*2);}
-            else points.push(x,y);
-          }
-          group.rowPaths.push({path,points,radius,dot,pitch,opacity:ring.rowOpacities[index]});
-        });
+      for (const row of group.rows) {
+        if (row.path || row.points) continue;
+        const {count,phase,radius,dot}=row;
+        const path=typeof Path2D==='function'?new Path2D():null;
+        const points=path?null:[];
+        for (let index=0; index<count; index++) {
+          const angle=(index+phase)*Math.PI*2/count;
+          const x=Math.sin(angle)*radius,y=-Math.cos(angle)*radius;
+          if(path){path.moveTo(x+dot,y);path.arc(x,y,dot,0,Math.PI*2);}
+          else points.push(x,y);
+        }
+        row.path=path;
+        row.points=points;
       }
+      group.rowPaths=group.rows;
     }
   }
 
@@ -275,6 +303,7 @@
   // One frame clock for idle rotation, scroll handoff and the return wobble.
   const TAU = Math.PI * 2;
   let idleMode = 'waiting', idleSince, spinSince, idleLastTime;
+  let previousRingElapsed;
   let startAssetsReady = false;
   let mainIdleAngle = 0, heroIdleAngle = 0, heroSpeed = 0;
   let idlePreviousScroll = 0, settleSince, settleHero = 0, settleMain = 0;
@@ -282,6 +311,7 @@
   let startScrollReturn = null, startScrollReleased = false;
   let touchScrollY = null, touchScrollConsumed = false;
   const shortestAngle = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
+  const wrapRingStep = steps => steps-Math.round(steps);
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothDerivative = x => 30*x*x*(1-x)*(1-x);
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
@@ -323,8 +353,16 @@
   // One pitch per beat leaves a small counterclockwise drift at 8 RPM.
   const slowRingRpm = 8;
   const ringStrobeRate = Math.floor(slowRingRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
+  const slowRingStrobeRates = ringRows.map(() => ringStrobeRate);
+  // At the fast plateau, add each row's extra dot passages to its beat rate.
+  // This gives the same visible counterclockwise drift as the slow plateau.
+  const fastRingStrobeRates = ringRows.map(({count}) =>
+    ringStrobeRate + (fastRpm - slowRingRpm) * count / 60);
+  const ringHoverStepsPerSecond = ringRows.map(({count}) => slowRingRpm*count/60-ringStrobeRate);
+  const maxFastRingFrameDelta = .112;
   function buildRingTimeline(depth) {
     const segments=[], strobeWindows=[];
+    const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
     let cursor=0,turns=0,previousRpm=0;
     function append(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
       if (!(duration>0)) return;
@@ -338,14 +376,16 @@
       append(start-cursor,previousRpm);
       append(spinTransitionDuration,previousRpm,rpm);
       previousRpm=rpm;
-      if (rpm===slowRingRpm) {
-        const next=spinMotionWindows[index+1];
-        const release=next.start+(depth+1)*next.stagger;
-        const steps=ringStrobeRate*(release-start);
-        strobeWindows.push({start,release,correction:Math.round(steps)-steps});
-      }
+      const next=spinMotionWindows[index+1];
+      const release=next ? next.start+(depth+1)*next.stagger : finalStart;
+      const rates=rpm===slowRingRpm ? slowRingStrobeRates : fastRingStrobeRates;
+      // Fade each row back to a whole pitch during the next tempo transition.
+      const corrections=rates.map(rate=>{
+        const steps=rate*(release-start);
+        return Math.round(steps)-steps;
+      });
+      strobeWindows.push({start,release,rates,corrections});
     }
-    const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
     append(finalStart-cursor,previousRpm);
     const finalTurns=turns+1.8*(previousRpm+888)/120;
     append(1.8,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
@@ -365,24 +405,56 @@
     }
     return TAU*timeline.turns;
   }
+  function strobeAlignment(progress) {
+    // Integrate a broad speed profile with zero slope at both ends.
+    // Its peak derivative of 45/32 keeps the alignment from reversing the drift.
+    const centered=2*progress-1;
+    const fourth=centered**4;
+    return .5+centered*(45-fourth*(18-5*fourth))/64;
+  }
   // Interpolate the positions of a virtual strobe continuously. Whole pitches
   // only permute identical dots, so the residual stays small even after a pause.
-  function ringStrobePhase(seconds,depth) {
+  function updateRingStrobeSteps(seconds,layer,previousSeconds) {
     const duration=spinTransitionDuration;
-    for (const {start,release,correction} of ringTimelines.get(depth).strobeWindows) {
+    const steps=layer.ringStrobeSteps;
+    const timeline=ringTimelines.get(layer.depth);
+    if (previousSeconds===undefined || previousSeconds>seconds) layer.ringStrobeLag=0;
+    steps.fill(0);
+    for (const {start,release,rates,corrections} of timeline.strobeWindows) {
       const elapsed=seconds-start, outgoing=seconds-release;
       if (elapsed<=0) break;
       if (outgoing>=duration) continue;
-      let steps=elapsed<duration
-        ? ringStrobeRate*duration*smoothIntegral(elapsed/duration)
-        : ringStrobeRate*(elapsed-duration/2);
-      if (outgoing>0) {
-        const progress=outgoing/duration;
-        steps+=correction*smoothEnd(progress)-ringStrobeRate*duration*smoothIntegral(progress);
+      if (rates===fastRingStrobeRates && elapsed>=duration && outgoing<=0 && previousSeconds!==undefined) {
+        // Cap the visible advance after a long frame gap. A jump of more
+        // than half a dot pitch otherwise looks like motion the other way.
+        const fastFrameTime=seconds-Math.max(previousSeconds,start+duration);
+        layer.ringStrobeLag+=Math.max(0,fastFrameTime-maxFastRingFrameDelta);
       }
-      return steps-Math.round(steps);
+      const entry=elapsed<duration ? duration*smoothIntegral(elapsed/duration) : elapsed-duration/2;
+      const progress=Math.max(0,outgoing/duration);
+      const activeTime=entry-duration*smoothIntegral(progress);
+      const alignment=strobeAlignment(progress);
+      for (let index=0; index<steps.length; index++) {
+        const phase=steps[index]+rates[index]*activeTime+corrections[index]*alignment;
+        steps[index]=wrapRingStep(phase);
+      }
     }
-    return 0;
+    if (layer.ringStrobeLag>0) {
+      // Keep the phase continuous through the next tempo changes, then
+      // release the delay during the existing final acceleration.
+      const finalStart=timeline.strobeWindows[timeline.strobeWindows.length-1].release;
+      const progress=Math.min(1,Math.max(0,(seconds-finalStart)/duration));
+      const remaining=1-smoothEnd(progress);
+      for (let index=0; index<steps.length; index++) {
+        const lag=wrapRingStep(ringHoverStepsPerSecond[index]*layer.ringStrobeLag);
+        steps[index]=wrapRingStep(steps[index]+lag*remaining);
+      }
+    }
+  }
+  function scaleRingStrobeSteps(steps,initial,scale) {
+    for (let index=0; index<steps.length; index++) {
+      steps[index]=initial[index]*scale;
+    }
   }
   function ringVisibility(seconds,depth) {
     const timeline=ringTimelines.get(depth);
@@ -440,14 +512,14 @@
       (layer.ringIdleAngle ?? layer.idleAngle) + layer.scrollAngle));
     const maximum = Math.max(Math.abs(hero), Math.abs(mainAngle),
       ...angles.map(Math.abs), ...ringAngles.map(Math.abs));
-    if (maximum < .0001 && !layers.some(layer=>Math.abs(layer.ringStrobeSteps)>.0001)) return false;
+    if (maximum < .0001 && !layers.some(layer=>layer.ringStrobeSteps.some(step=>Math.abs(step)>.0001))) return false;
     startScrollReturn = {hero, mainAngle, progress: 0, target: 0, distance: 0,
       span: Math.max(48, maximum / Math.PI * 180)};
     layers.forEach((layer, index) => {
       layer.returnAngle = angles[index];
       layer.returnVisibility = layer.idleVisibility;
       layer.ringReturnAngle = ringAngles[index];
-      layer.ringReturnStrobeSteps = layer.ringStrobeSteps;
+      layer.ringReturnStrobeSteps = layer.ringStrobeSteps.slice();
       layer.ringReturnVisibility = layer.ringIdleVisibility ?? layer.idleVisibility;
       layer.ringIdleAngle = ringAngles[index];
       layer.idleAngle = angles[index];
@@ -505,7 +577,8 @@
     anchorRainToScroll(scrollPosition());
     heroIdleAngle = mainIdleAngle = heroSpeed = 0;
     layers.forEach(layer => {
-      layer.ringStrobeSteps = layer.ringIdleAngle = layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
+      layer.ringIdleAngle = layer.idleAngle = layer.scrollAngle = layer.scrollTarget = layer.scrollDelayedAngle = 0;
+      layer.ringStrobeSteps.fill(0);
     });
     scrollRotationHistory.length = 0;
     scrollRotationPending = false; scrollRotationFrameTime = undefined;
@@ -526,7 +599,10 @@
       idleMode='waiting';idleSince=time;
       handoffSince=undefined;handoffActive=false;
       mainIdleAngle=heroIdleAngle=heroSpeed=0;
-      layers.forEach(layer=>layer.ringStrobeSteps=layer.ringIdleAngle=layer.idleAngle=0);
+      layers.forEach(layer=>{
+        layer.ringIdleAngle=layer.idleAngle=0;
+        layer.ringStrobeSteps.fill(0);
+      });
     } else if (startScrollReturn) {
       stepStartScrollReturn(dt);
       const remaining = 1 - smoothEnd(startScrollReturn.progress);
@@ -535,7 +611,7 @@
       layers.forEach(layer => {
         layer.idleAngle = layer.returnAngle * remaining;
         layer.ringIdleAngle = layer.ringReturnAngle * remaining;
-        layer.ringStrobeSteps = layer.ringReturnStrobeSteps * remaining;
+        scaleRingStrobeSteps(layer.ringStrobeSteps,layer.ringReturnStrobeSteps,remaining);
       });
     } else if (!atTop || moved) {
       // Remove the idle offsets along each logo's shortest path. The
@@ -545,7 +621,7 @@
         layers.forEach(layer=>{
           layer.handoffAngle=shortestAngle(layer.idleAngle);
           layer.ringHandoffAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle);
-          layer.ringHandoffStrobeSteps=layer.ringStrobeSteps;
+          layer.ringHandoffStrobeSteps=layer.ringStrobeSteps.slice();
           layer.handoffVisibility=layer.idleVisibility;
           layer.ringHandoffVisibility=layer.ringIdleVisibility;
         });
@@ -557,10 +633,11 @@
       layers.forEach(layer=>{
         layer.idleAngle=layer.handoffAngle*remaining;
         layer.ringIdleAngle=layer.ringHandoffAngle*remaining;
-        layer.ringStrobeSteps=layer.ringHandoffStrobeSteps*remaining;
+        scaleRingStrobeSteps(layer.ringStrobeSteps,layer.ringHandoffStrobeSteps,remaining);
       });
       handoffActive=handoffProgress<1 && layers.some(layer=>Math.abs(layer.idleAngle)>.000001 || Math.abs(layer.ringIdleAngle)>.000001 ||
-        Math.abs(layer.ringStrobeSteps)>.000001 || Math.abs(layer.handoffVisibility-.7)>.000001 || Math.abs(layer.ringHandoffVisibility-.7)>.000001);
+        layer.ringStrobeSteps.some(step=>Math.abs(step)>.000001) ||
+        Math.abs(layer.handoffVisibility-.7)>.000001 || Math.abs(layer.ringHandoffVisibility-.7)>.000001);
       heroIdleAngle += heroSpeed * .22 * (1-Math.exp(-dt/.22));
       heroSpeed *= Math.exp(-dt/.22);
       if (heroSpeed < .001) heroSpeed=0;
@@ -573,7 +650,7 @@
         layers.forEach(layer=>{
           layer.settleAngle=shortestAngle(layer.idleAngle);
           layer.ringSettleAngle=shortestAngle(layer.ringIdleAngle ?? layer.idleAngle);
-          layer.ringSettleStrobeSteps=layer.ringStrobeSteps;
+          layer.ringSettleStrobeSteps=layer.ringStrobeSteps.slice();
           layer.settleVisibility=layer.idleVisibility;
           layer.ringSettleVisibility=layer.ringIdleVisibility;
         });
@@ -589,7 +666,7 @@
         layers.forEach(layer=>{
           layer.idleAngle=layer.settleAngle*envelope;
           layer.ringIdleAngle=layer.ringSettleAngle*envelope;
-          layer.ringStrobeSteps=layer.ringSettleStrobeSteps*envelope;
+          scaleRingStrobeSteps(layer.ringStrobeSteps,layer.ringSettleStrobeSteps,envelope);
         });
         if(t===1){heroIdleAngle=mainIdleAngle=0;idleMode='waiting';idleSince=time;}
       }
@@ -603,6 +680,7 @@
         if(idleSince===undefined)idleSince=time;
         if(ready && time-idleSince>=8000){
           idleMode='running';spinSince=idleSince+8000;startScrollReleased=false;
+          previousRingElapsed=undefined;
           resumeTimedRain();
         }
       }
@@ -612,14 +690,16 @@
           const cycles=Math.floor(elapsed/spinDuration);
           spinSince+=cycles*spinDuration*1000;
           elapsed-=cycles*spinDuration;
+          previousRingElapsed=undefined;
         }
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
         layers.forEach(layer => {
           layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth));
           layer.ringIdleAngle = ringPhase(elapsed,layer.depth);
-          layer.ringStrobeSteps = ringStrobePhase(elapsed,layer.depth);
+          updateRingStrobeSteps(elapsed,layer,previousRingElapsed);
         });
+        previousRingElapsed=elapsed;
       }
     }
     for(const layer of layers){
@@ -775,7 +855,10 @@
     // outside the largest logo's rotation envelope, with 1/64 logo-size clearance.
     // Keep the existing local ring fits, shared motion and logo sizes intact.
     const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
-    const ringEnlargement = matchMedia('(orientation: landscape)').matches ? 2 : 1;
+    const landscape = matchMedia('(orientation: landscape)').matches;
+    const ringEnlargement = landscape ? 2 : 1;
+    const extraRows = landscape ? landscapeExtraRowCount : 0;
+    backRingPaintOrder = landscape ? landscapeBackRings : portraitBackRings;
     mainRingWidth = Math.max(originalRingWidth,
       requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale)) * ringEnlargement;
     for (const [index, layer] of layers.entries()) {
@@ -784,10 +867,10 @@
     // GPU point buffers need no CPU paths. The Canvas fallback reuses exact
     // per-row paths, without compositing enormous transparent ring images.
     if (!gpu || !bannerGpu) cacheInnerRingPaths();
-    logos.dataset.innerRingCount=String(innerRings.length);
+    logos.dataset.innerRingCount=String(innerRings.length+extraRows/ringRows.length);
     logos.dataset.outerRingCount=String(outerRings.length);
-    logos.dataset.innerRowCount=String(innerRings.length*ringRows.length);
-    logos.dataset.additionalInnerRowCount=String(additionalInnerRowCount);
+    logos.dataset.innerRowCount=String(innerRings.length*ringRows.length+extraRows);
+    logos.dataset.additionalInnerRowCount=String(additionalInnerRowCount+extraRows);
     for (const mark of rain) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
@@ -1124,6 +1207,16 @@
     return {width, height, scroll, progress, travel,
       motionScroll: reduced.matches ? 0 : scroll, motionProgress: motion};
   }
+  function updateRingRowAngles() {
+    for (const layer of layers) {
+      const angle=layer.scrollAngle+(layer.ringIdleAngle ?? layer.idleAngle);
+      // Draw only the visible phase of each periodic row. Both renderers and
+      // the banner get the same bounded angle, independent of the full turns.
+      for (const {index,pitch} of ringRows) {
+        layer.ringRowAngles[index]=wrapRingStep(angle/pitch-layer.ringStrobeSteps[index])*pitch;
+      }
+    }
+  }
   function paintCanvas(state, easedProgress, time, resetMotion) {
     if (!bg || (!ink && !gpu) || !mainBox || !sprites.length || !mainSprites.length ||
         !mainBorderSprites.length || !mainSolidSprites.length) return;
@@ -1143,6 +1236,7 @@
     const mainPaintKey=`${sceneKey}:${width}:${height}:${surfaceHeight}:${openingScaleFactor}:${mainRingWidth}:${centerX}:${centerY}:${easedProgress}:${scrollStackBlend}:${patternVisibility}:${fillVisibility}:${layers.map(layer=>`${layer.scrollAngle}:${layer.idleAngle}:${layer.idleVisibility}:${layer.ringIdleAngle}:${layer.ringIdleVisibility}:${layer.ringStrobeSteps}`).join(',')}`;
     if(mainPaintKey===lastMainPaint)return;
     lastMainPaint=mainPaintKey;
+    updateRingRowAngles();
     // Eight unlit logos share one canvas; native document scrolling is untouched.
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
     const w = 922 * scale;
@@ -1160,7 +1254,7 @@
       let painted = false;
       try {
         painted = gpu.draw(lastLogoScene, layers, backRingPaintOrder, ringPaintOrder,
-          mainLayerOpacity, ringOpacity, {rows: ringRows, inner: ringInnerRadius, outer: ringOuterRadius});
+          mainLayerOpacity, ringOpacity);
       } catch { /* The prepared 2D renderer remains available on every device. */ }
       if (!painted) fallbackToCanvas();
     }
@@ -1205,16 +1299,15 @@
       if (!group.rowPaths || !(ringDiameter>0)) continue;
       context.save();
       context.translate(centerX,centerY);
-      context.rotate(group.source.scrollAngle+(group.source.ringIdleAngle ?? group.source.idleAngle));
       context.scale(ringDiameter,ringDiameter);
-      let rowOffset=0;
+      let rowAngle=0;
       for(const row of group.rowPaths){
         if(!ringIntersectsViewport(centerX,centerY,(row.radius-row.dot)*ringDiameter,
           (row.radius+row.dot)*ringDiameter,width,surfaceHeight))continue;
-        const offset=-group.source.ringStrobeSteps*row.pitch;
-        if(offset!==rowOffset){
-          context.rotate(offset-rowOffset);
-          rowOffset=offset;
+        const angle=group.source.ringRowAngles[row.index];
+        if(angle!==rowAngle){
+          context.rotate(angle-rowAngle);
+          rowAngle=angle;
         }
         context.globalAlpha=visibility*row.opacity;
         if(row.path)context.fill(row.path);
@@ -1275,7 +1368,7 @@
       let painted = false;
       try {
         painted = bannerGpu.draw(scene,layers,backRingPaintOrder,ringPaintOrder,
-          mainLayerOpacity,opacity,{rows:ringRows,inner:ringInnerRadius,outer:ringOuterRadius},
+          mainLayerOpacity,opacity,
           {marks:rain,surfaceHeight});
       } catch { /* The same scene remains available through Canvas. */ }
       if (painted) return;
