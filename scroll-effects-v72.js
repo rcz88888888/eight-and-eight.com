@@ -130,10 +130,6 @@
   const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
   const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
-  ringBands.forEach((ring, bandIndex) => {
-    ring.rowOpacities = ringRows.map((row, rowIndex) =>
-      ringOpacityMin + (bandIndex * ringRows.length + rowIndex) * ringOpacityStep);
-  });
   const ringGap = pointClearance * frontRingLayer.scale / 1280;
   // The same additive logo-scale step applies to ALL bands, including the
   // inward continuation and the outer extensions. Never restart at a boundary.
@@ -159,46 +155,34 @@
     ring.innerRatio = ring.outerRatio - ring.widthRatio;
     inwardBoundary = ring.innerRatio - ringGap;
   }
-  for (const ring of ringBands) {
-    const radialScale=(ring.outerRatio-ring.innerRatio)/(ringOuterRadius-ringInnerRadius);
-    ring.rows=ringRows.map(row=>({
+  function makeRingRows(innerRatio, widthRatio, bandIndex) {
+    const radialScale = widthRatio / (ringOuterRadius - ringInnerRadius);
+    return ringRows.map(row => ({
       ...row,
-      radius:ring.innerRatio+(row.radius-ringInnerRadius)*radialScale,
-      dot:row.dot*radialScale,
-      opacity:ring.rowOpacities[row.index]
+      radius: innerRatio + (row.radius - ringInnerRadius) * radialScale,
+      dot: row.dot * radialScale,
+      opacity: ringOpacityMin + (bandIndex * ringRows.length + row.index) * ringOpacityStep
     }));
   }
+  for (const [index, ring] of ringBands.entries()) {
+    ring.rows = makeRingRows(ring.innerRatio, ring.outerRatio - ring.innerRatio, index);
+  }
   const landscapeExtraRowCount = 16;
-  const innermostRow = innerRings[innerRings.length-1].rows[0];
-  const landscapeOpacityMin = lastInnerSource.opacity * .75 * ringVisibilityGain;
-  const landscapeOpacityStep = (ringOpacityMax - landscapeOpacityMin) /
-    (ringBands.length * ringRows.length + landscapeExtraRowCount - 1);
-  const landscapeOpacity = index => landscapeOpacityMin + index * landscapeOpacityStep;
-  // The portrait-equivalent radius stops outside the side wings in landscape.
-  // Carry the existing circles into the wings, to about 30% of the emblem height.
-  const landscapeInnerRadius = innermostRow.radius * .28;
-  const landscapeRadiusStep = (innermostRow.radius - landscapeInnerRadius) / landscapeExtraRowCount;
-  const landscapeExtension = {
-    source: lastInnerSource,
-    rows: Array.from({length: landscapeExtraRowCount}, (_, index) => {
-      const row = ringRows[ringRows.length - 1 - index % ringRows.length];
-      const radius = innermostRow.radius - (index + 1) * landscapeRadiusStep;
-      return {
-        ...row,
-        radius,
-        dot: radius * row.dot / row.radius,
-        opacity: landscapeOpacity(landscapeExtraRowCount - 1 - index)
-      };
-    })
-  };
-  // Continue the same opacity increment across the join to the existing rows.
-  const landscapeBands = new Map(ringBands.map((ring, bandIndex) => [ring, {
-    source: ring.source,
-    rows: ring.rows.map(row => ({
-      ...row,
-      opacity: landscapeOpacity(landscapeExtraRowCount + bandIndex * ringRows.length + row.index)
-    }))
-  }]));
+  const landscapeExtension = Array.from({length: landscapeExtraRowCount / ringRows.length},
+    () => ({source: lastInnerSource}));
+  const innermostBand = ringBands[0];
+  const landscapeBands = new Map();
+  // Place the complete landscape pattern at the side wings. Start at the
+  // original smallest scale so adding four bands keeps every step positive.
+  let landscapeInnerEdge = innermostBand.innerRatio * .28;
+  for (const [index, band] of [...landscapeExtension, ...ringBands].entries()) {
+    const width = ringWidthUnit * (innermostBand.patternScale + index * ringScaleStep);
+    landscapeBands.set(band, {
+      source: band.source,
+      rows: makeRingRows(landscapeInnerEdge, width, index)
+    });
+    landscapeInnerEdge += width + ringGap;
+  }
   // Group rows by phase so each depth still uses one draw call.
   function groupRingBands(bands) {
     const groups = new Map();
@@ -220,7 +204,7 @@
   const frontBands = [...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension));
   const portraitRings = {back: groupRingBands(inwardBands), front: groupRingBands(frontBands)};
   const landscapeRings = {
-    back: groupRingBands([...inwardBands.map(ring => landscapeBands.get(ring)), landscapeExtension]),
+    back: groupRingBands([...inwardBands, ...landscapeExtension].map(ring => landscapeBands.get(ring))),
     front: groupRingBands(frontBands.map(ring => landscapeBands.get(ring)))
   };
   let {back: backRingPaintOrder, front: ringPaintOrder} = portraitRings;
@@ -863,9 +847,8 @@
     const logoExtent = Number(ringGeometry?.getAttribute('data-logo-extent')) || 0;
     const largestLogoScale = Math.max(...layers.map(layer => layer.scale));
     const innermostRingScale = Math.min(...layers.map(layer => layer.scale * layer.ringScale));
-    // Enlarge the complete ring stack uniformly. Its innermost point edge sits
-    // outside the largest logo's rotation envelope, with 1/64 logo-size clearance.
-    // Keep the existing local ring fits, shared motion and logo sizes intact.
+    // Use the established logo clearance as the ring stack's reference scale.
+    // The inward extensions are positioned relative to that scale.
     const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
     const landscape = matchMedia('(orientation: landscape)').matches;
     const ringEnlargement = landscape ? 2 : 1;

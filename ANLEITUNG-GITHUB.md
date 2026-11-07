@@ -24,7 +24,7 @@ Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn
 
 ## Timecode-Punktreihen bis in die seitlichen Logoflächen
 
-Im Querformat führen 16 gleichmäßig verteilte Punktreihen das Muster links und rechts bis hinter die seitlichen Logoflächen fort. Ihre Abstände sind gleich und ihre Punkte werden nach innen kleiner. Die Deckkraft erhält den Faktor 1,10. Im Querformat wird der Deckkraftverlauf über den Übergang zu den bestehenden Reihen in gleichen Schritten abgestuft. Das Hochformat hat 104 Punktreihen, das Querformat einschließlich Desktop 120. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselbe Geometrie und dieselbe sichtbare Punktphase.
+Im Querformat reichen 16 zusätzliche Punktreihen in vier Gruppen bis hinter die seitlichen Logoflächen. Die Gruppen wiederholen die ursprünglichen Punktzahlen 171, 177, 182 und 188 sowie deren Versatz. Das gesamte Ringmuster ist nach innen versetzt und verwendet dieselben schmalen Zwischenräume, Größenstufen von 0,092 und Deckkraftschritte wie das ursprüngliche Muster. Das Hochformat hat 104 Punktreihen, das Querformat einschließlich Desktop 120. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselbe Geometrie und dieselbe sichtbare Punktphase.
 
 ## Feste Tempoabläufe für die Timecoderinge
 
