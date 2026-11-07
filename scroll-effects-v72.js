@@ -116,20 +116,22 @@
   const additionalInnerRowCount = 16;
   const lastInnerSource = innerRings[innerRings.length - 1].source;
   for (let index = 0; index < additionalInnerRowCount / ringRows.length; index++) {
-    innerRings.push({source: lastInnerSource, inwardExtension: true});
+    innerRings.push({source: lastInnerSource});
   }
   const outerRings = innerRingOrder.map(source => ({source}));
   const lastOuterSource = innerRingOrder[innerRingOrder.length - 1];
   for (let index = 0; index < 7; index++) {
-    outerRings.push({source: lastOuterSource, extra: true});
+    outerRings.push({source: lastOuterSource});
   }
   const ringBands = [...innerRings].reverse().concat(outerRings);
-  // Keep the previous visibility range, with one equal increase per point row
-  // all the way from the innermost row to the outermost extension.
   const ringVisibilityGain = 1.10 ** 3;
-  const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
   const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
-  const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
+  const landscapeExtraRowCount = 16;
+  // Use each layout's previous outermost opacity as its brightness reference.
+  const previousOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
+  const previousOpacityStep = (ringOpacityMax - previousOpacityMin) / (ringBands.length * ringRows.length - 1);
+  const landscapeOpacityMax = (ringOpacityMax + landscapeExtraRowCount * previousOpacityStep) * 1.15;
+  const ringOpacityFalloff = .92;
   const ringGap = pointClearance * frontRingLayer.scale / 1280;
   // The same additive logo-scale step applies to ALL bands, including the
   // inward continuation and the outer extensions. Never restart at a boundary.
@@ -155,34 +157,34 @@
     ring.innerRatio = ring.outerRatio - ring.widthRatio;
     inwardBoundary = ring.innerRatio - ringGap;
   }
-  function makeRingRows(innerRatio, widthRatio, bandIndex) {
+  function makeRingRows(innerRatio, widthRatio, bandsFromOutside, peakOpacity) {
     const radialScale = widthRatio / (ringOuterRadius - ringInnerRadius);
+    // Spread the fade across the four rows. Matching rows in neighbouring
+    // bands are exactly 8% dimmer toward the center, including at the joins.
     return ringRows.map(row => ({
       ...row,
       radius: innerRatio + (row.radius - ringInnerRadius) * radialScale,
       dot: row.dot * radialScale,
-      opacity: ringOpacityMin + (bandIndex * ringRows.length + row.index) * ringOpacityStep
+      opacity: peakOpacity * ringOpacityFalloff **
+        (bandsFromOutside + (ringRows.length - 1 - row.index) / ringRows.length)
     }));
   }
   for (const [index, ring] of ringBands.entries()) {
-    ring.rows = makeRingRows(ring.innerRatio, ring.outerRatio - ring.innerRatio, index);
+    ring.rows = makeRingRows(ring.innerRatio, ring.outerRatio - ring.innerRatio,
+      ringBands.length - 1 - index, ringOpacityMax);
   }
-  const landscapeExtraRowCount = 16;
   const landscapeExtension = Array.from({length: landscapeExtraRowCount / ringRows.length},
     () => ({source: lastInnerSource}));
   const innermostBand = ringBands[0];
-  const landscapeBands = new Map();
   // Place the complete landscape pattern at the side wings. Start at the
   // original smallest scale so adding four bands keeps every step positive.
   let landscapeInnerEdge = innermostBand.innerRatio * .28;
-  for (const [index, band] of [...landscapeExtension, ...ringBands].entries()) {
+  const landscapeBands = [...landscapeExtension, ...ringBands].map((band, index, bands) => {
     const width = ringWidthUnit * (innermostBand.patternScale + index * ringScaleStep);
-    landscapeBands.set(band, {
-      source: band.source,
-      rows: makeRingRows(landscapeInnerEdge, width, index)
-    });
+    const rows = makeRingRows(landscapeInnerEdge, width, bands.length - 1 - index, landscapeOpacityMax);
     landscapeInnerEdge += width + ringGap;
-  }
+    return {source: band.source, rows};
+  });
   // Group rows by phase so each depth still uses one draw call.
   function groupRingBands(bands) {
     const groups = new Map();
@@ -200,19 +202,14 @@
     }
     return [...groups.values()];
   }
-  const inwardBands = innerRings.filter(ring => ring.inwardExtension);
-  const frontBands = [...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension));
-  const portraitRings = {back: groupRingBands(inwardBands), front: groupRingBands(frontBands)};
-  const landscapeRings = {
-    back: groupRingBands([...inwardBands, ...landscapeExtension].map(ring => landscapeBands.get(ring))),
-    front: groupRingBands(frontBands.map(ring => landscapeBands.get(ring)))
-  };
-  let {back: backRingPaintOrder, front: ringPaintOrder} = portraitRings;
+  const portraitRings = groupRingBands(ringBands);
+  const landscapeRings = groupRingBands(landscapeBands);
+  let ringPaintOrder = portraitRings;
   const immutableSprite = canvas => typeof createImageBitmap === 'function'
     ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
   function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
   function cacheInnerRingPaths() {
-    for (const group of [...backRingPaintOrder,...ringPaintOrder]) {
+    for (const group of ringPaintOrder) {
       if (group.rowPaths) continue;
       for (const row of group.rows) {
         if (row.path || row.points) continue;
@@ -320,90 +317,62 @@
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
   const spinTransitionDuration = .8;
   const spinStageDuration = 8;
+  const spinFinishDuration = 1.8;
   const startPassStaggers = [.18, 0, .08, .16, .24, .32, .40, .48];
   const lastStartLayer = Math.max(0, ...layers.map(layer => layer.depth + 1));
-  let spinCursor = 0, spinTotalTurns = 0;
-  const spinSegments=[], spinMotionWindows=[];
-  function appendSpin(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
-    const from=fromRpm/60, to=toRpm/60;
-    const segment={start:spinCursor,end:spinCursor+duration,duration,from,to,
-      turns:spinTotalTurns,curve,correction};
-    spinCursor=segment.end;spinTotalTurns+=duration*(from+to)/2+correction;
-    spinSegments.push(segment);
-    return segment;
-  }
-  // Eight continuous eight-second passes alternate the two exact plateaus.
-  // The fast 1.8-second finish appears only at the end of pass eight.
-  const slowRpm = 8.8888888, fastRpm = 33.333333;
-  for (let pass = 0; pass < startPassStaggers.length; pass++) {
-    const start = spinCursor;
-    const rpm = pass % 2 === 0 ? slowRpm : fastRpm;
-    const previousRpm = pass === 0 ? 0 : pass % 2 === 0 ? fastRpm : slowRpm;
-    appendSpin(spinTransitionDuration, previousRpm, rpm);
-    appendSpin(spinStageDuration - spinTransitionDuration - (pass === 7 ? 1.8 : 0), rpm);
-    if (pass === 7) {
-      // Keep exact endpoint speeds and end on a whole turn. The phase
-      // correction and its derivative vanish at the acceleration endpoints.
-      const finalTurns = spinTotalTurns + 1.8 * (rpm + 888) / 120;
-      appendSpin(1.8, rpm, 888, 'linear', Math.round(finalTurns) - finalTurns);
-    }
-    spinMotionWindows.push({start, end: spinCursor, stagger: startPassStaggers[pass], rpm});
-  }
-  const spinMotionEnd = spinCursor;
-  appendSpin(lastStartLayer * startPassStaggers[7] + 8, 0);
-  const spinDuration = spinCursor;
+  const finalPassStagger = startPassStaggers[startPassStaggers.length - 1];
+  const passStarts = startPassStaggers.map((_, index) => index * spinStageDuration);
+  const spinMotionEnd = passStarts.length * spinStageDuration;
+  const spinDuration = spinMotionEnd + lastStartLayer * finalPassStagger + 8;
+  const slowRpm = 8.8888888, slowRingRpm = 8, fastRpm = 33.333333;
   // The lowest whole beat rate above every row's dot-passage rate is 26 Hz.
   // One pitch per beat leaves a small counterclockwise drift at 8 RPM.
-  const slowRingRpm = 8;
   const ringStrobeRate = Math.floor(slowRingRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
   const slowRingStrobeRates = ringRows.map(() => ringStrobeRate);
-  // Compensate the extra passages at 33.333333 RPM. One additional beat per
-  // second makes this plateau's counterclockwise drift distinct from 8 RPM.
+  // Compensate the extra passages at 33.333333 RPM. Two additional beats per
+  // second make this plateau's counterclockwise drift distinct from 8 RPM.
   const fastRingStrobeRates = ringRows.map(({count}) =>
-    ringStrobeRate + 1 + (fastRpm - slowRingRpm) * count / 60);
+    ringStrobeRate + 2 + (fastRpm - slowRingRpm) * count / 60);
   const maxRingStepPerFrame = .4;
-  function buildRingTimeline(depth) {
-    const segments=[], strobeWindows=[];
-    const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
-    let cursor=0,turns=0,previousRpm=0;
-    function append(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
-      if (!(duration>0)) return;
-      const from=fromRpm/60,to=toRpm/60;
-      segments.push({start:cursor,end:cursor+duration,duration,from,to,turns,curve,correction});
-      cursor+=duration;turns+=duration*(from+to)/2+correction;
+  function buildSpinTrack(starts, finalStart, slowTempo) {
+    const segments = [];
+    let cursor = 0, turns = 0, previousRpm = 0;
+    function append(duration, fromRpm, toRpm = fromRpm, curve = 'smooth', correction = 0) {
+      if (!(duration > 0)) return;
+      const from = fromRpm / 60, to = toRpm / 60;
+      segments.push({start: cursor, end: cursor + duration, duration, from, to, turns, curve, correction});
+      cursor += duration;
+      turns += duration * (from + to) / 2 + correction;
     }
-    for (const [index, pass] of spinMotionWindows.entries()) {
-      const start=pass.start+(depth+1)*pass.stagger;
-      const rpm=pass.rpm===slowRpm ? slowRingRpm : pass.rpm;
-      append(start-cursor,previousRpm);
-      append(spinTransitionDuration,previousRpm,rpm);
-      previousRpm=rpm;
-      const next=spinMotionWindows[index+1];
-      const release=next ? next.start+(depth+1)*next.stagger : finalStart;
-      const rates=rpm===slowRingRpm ? slowRingStrobeRates : fastRingStrobeRates;
-      // Fade each row back to a whole pitch during the next tempo transition.
+    for (const [index, start] of starts.entries()) {
+      const rpm = index % 2 === 0 ? slowTempo : fastRpm;
+      append(start - cursor, previousRpm);
+      append(spinTransitionDuration, previousRpm, rpm);
+      previousRpm = rpm;
+    }
+    append(finalStart - cursor, previousRpm);
+    // The closing acceleration ends on a whole turn for both artwork layers.
+    const finalTurns = turns + spinFinishDuration * (previousRpm + 888) / 120;
+    append(spinFinishDuration, previousRpm, 888, 'linear', Math.round(finalTurns) - finalTurns);
+    return {segments, start: starts[0], end: cursor, turns};
+  }
+  const heroMotion = buildSpinTrack(passStarts, spinMotionEnd - spinFinishDuration, slowRpm);
+  for (const layer of layers) {
+    const depth = layer.depth + 1;
+    const starts = passStarts.map((start, index) => start + depth * startPassStaggers[index]);
+    const finalStart = spinMotionEnd - spinFinishDuration + depth * finalPassStagger;
+    // Only the rings fan out on the first pass. After that, both tracks use
+    // exactly the same boundaries and ease for each layer's tempo changes.
+    const logo = buildSpinTrack([0, ...starts.slice(1)], finalStart, slowRpm);
+    const ring = buildSpinTrack(starts, finalStart, slowRingRpm);
+    const strobeWindows = starts.map((start, index) => {
+      const release = starts[index + 1] ?? finalStart;
+      const rates = index % 2 === 0 ? slowRingStrobeRates : fastRingStrobeRates;
       const endSteps = rates.map(rate => Math.round(rate * (release - start)));
       const corrections = rates.map((rate, row) => endSteps[row] - rate * (release - start));
-      strobeWindows.push({start, release, rates, corrections, endSteps});
-    }
-    append(finalStart-cursor,previousRpm);
-    const finalTurns=turns+1.8*(previousRpm+888)/120;
-    append(1.8,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
-    return {segments,strobeWindows,start:(depth+1)*startPassStaggers[0],finalStart,end:cursor,turns};
-  }
-  const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildRingTimeline(layer.depth)]));
-  function ringPhase(seconds,depth) {
-    const timeline=ringTimelines.get(depth);
-    if(seconds<=0)return 0;
-    if(seconds>=timeline.end)return TAU*timeline.turns;
-    for(const segment of timeline.segments){
-      if(seconds>=segment.end)continue;
-      const x=(seconds-segment.start)/segment.duration;
-      return TAU*(segment.turns+segment.duration*(segment.from*x+
-        (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x)))+
-        segment.correction*smoothEnd(x));
-    }
-    return TAU*timeline.turns;
+      return {start, release, rates, corrections, endSteps};
+    });
+    layer.startMotion = {logo, ring, finalStart, strobeWindows};
   }
   function strobeAlignment(progress) {
     // Integrate a broad speed profile with zero slope at both ends.
@@ -417,7 +386,7 @@
   function updateRingStrobeSteps(seconds,layer,previousSeconds) {
     const duration = spinTransitionDuration;
     const {ringStrobeSteps: steps, ringOpticalSteps: opticalSteps, ringPhaseCarry: carry} = layer;
-    const {start: firstStart, finalStart, strobeWindows} = ringTimelines.get(layer.depth);
+    const {ring: {start: firstStart}, finalStart, strobeWindows} = layer.startMotion;
     if (previousSeconds === undefined || previousSeconds > seconds) carry.fill(0);
     steps.fill(0);
     for (const {start, release, rates, corrections, endSteps} of strobeWindows) {
@@ -452,43 +421,20 @@
       steps[index]=initial[index]*scale;
     }
   }
-  function ringVisibility(seconds,depth) {
-    const timeline=ringTimelines.get(depth);
-    if(seconds<timeline.start || seconds>=timeline.end)return .7;
-    return .7+.3*smoothEnd(Math.min(1,(seconds-timeline.start)/1.8))*
-      smoothEnd(Math.min(1,(timeline.end-seconds)/1.8));
-  }
-  function spinTimeForLayer(seconds, depth, forRing = false) {
-    let passIndex = 0;
-    while (passIndex + 1 < spinMotionWindows.length &&
-      seconds >= spinMotionWindows[passIndex + 1].start) passIndex++;
-    const pass = spinMotionWindows[passIndex];
-    // Only first-pass logos lose their fan; rings retain the old timeline.
-    const ownStagger = !forRing && passIndex === 0 ? 0 : pass.stagger;
-    const previousStagger = passIndex
-      ? (!forRing && passIndex === 1 ? 0 : spinMotionWindows[passIndex - 1].stagger)
-      : ownStagger;
-    // Join changed fan intervals without snapping phases. A linear delay
-    // ramp keeps sample time monotonic even for the deepest 0.64s change.
-    const blend = Math.max(0, Math.min(1, (seconds - pass.start) / spinTransitionDuration));
-    const stagger = previousStagger + (ownStagger - previousStagger) * blend;
-    return Math.max(0, Math.min(spinMotionEnd, seconds - (depth + 1) * stagger));
-  }
-  function spinPhase(seconds) {
+  function spinPhase(seconds, track) {
     if(seconds<=0)return 0;
-    if(seconds>=spinDuration)return TAU*spinTotalTurns;
-    for(const segment of spinSegments){
+    for(const segment of track.segments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       return TAU*(segment.turns+segment.duration*(segment.from*x+
         (segment.to-segment.from)*(segment.curve==='linear'?x*x/2:smoothIntegral(x)))+
         segment.correction*smoothEnd(x));
     }
-    return 0;
+    return TAU*track.turns;
   }
-  function spinSpeed(seconds) {
-    if(seconds<=0 || seconds>=spinDuration)return 0;
-    for(const segment of spinSegments){
+  function spinSpeed(seconds, track) {
+    if(seconds<=0 || seconds>=track.end)return 0;
+    for(const segment of track.segments){
       if(seconds>=segment.end)continue;
       const x=(seconds-segment.start)/segment.duration;
       return TAU*(segment.from+(segment.to-segment.from)*
@@ -688,25 +634,25 @@
           elapsed-=cycles*spinDuration;
           previousRingElapsed=undefined;
         }
-        heroSpeed=spinSpeed(elapsed);
-        mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
+        heroSpeed=spinSpeed(elapsed, heroMotion);
+        mainIdleAngle=heroIdleAngle=spinPhase(elapsed, heroMotion);
         layers.forEach(layer => {
-          layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth));
-          layer.ringIdleAngle = ringPhase(elapsed,layer.depth);
+          const {logo, ring} = layer.startMotion;
+          layer.idleAngle = spinPhase(elapsed, logo);
+          layer.ringIdleAngle = spinPhase(elapsed, ring);
           updateRingStrobeSteps(elapsed,layer,previousRingElapsed);
         });
         previousRingElapsed=elapsed;
       }
     }
+    const elapsed = idleMode === 'running' ? (time - spinSince) / 1000 : -1;
     for(const layer of layers){
-      const elapsed=idleMode==='running'?spinTimeForLayer((time-spinSince)/1000,layer.depth):-1;
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
-        : transitionVisibility(layer,idleRotationVisibility(elapsed),time);
+        : transitionVisibility(layer,idleRotationVisibility(elapsed, layer.startMotion.logo),time);
       layer.ringIdleVisibility = startScrollReturn
         ? layer.ringReturnVisibility + (.7 - layer.ringReturnVisibility) * smoothEnd(startScrollReturn.progress)
-        : transitionVisibility(layer,idleMode==='running'
-          ? ringVisibility((time-spinSince)/1000,layer.depth) : .7,time,true);
+        : transitionVisibility(layer,idleRotationVisibility(elapsed, layer.startMotion.ring),time,true);
     }
     // Keep the CSS rotation on the nearest continuous turn across ±π.
     const heroAngle = lastHeroAngle === undefined ? heroIdleAngle :
@@ -730,10 +676,10 @@
   const spriteFor = pixels => sprites.find(sprite => sprite.width >= pixels) || sprites[sprites.length - 1];
   const mainPatternVisibility = scroll => 1-smoothEnd(Math.max(0,Math.min(1,scroll/mainPatternFadeEnd)));
   const mainFillVisibility = scroll => Number.isFinite(mainFillEnd) ? smoothEnd(Math.max(0,Math.min(1,(scroll-mainFillStart)/Math.max(1,mainFillEnd-mainFillStart)))) : 0;
-  const idleRotationVisibility = elapsed => {
-    if (elapsed < 0 || elapsed >= spinMotionEnd) return .7;
-    const fadeIn = smoothEnd(Math.max(0, Math.min(1, elapsed / 1.8)));
-    const fadeOut = smoothEnd(Math.max(0, Math.min(1, (spinMotionEnd - elapsed) / 1.8)));
+  const idleRotationVisibility = (elapsed, track) => {
+    if (elapsed < track.start || elapsed >= track.end) return .7;
+    const fadeIn = smoothEnd(Math.min(1, (elapsed - track.start) / 1.8));
+    const fadeOut = smoothEnd(Math.min(1, (track.end - elapsed) / 1.8));
     return .7 + .3 * fadeIn * fadeOut;
   };
   const mainLayerOpacity = (layer,patternVisibility,fillVisibility,idleVisibility=layer.idleVisibility) =>
@@ -853,7 +799,7 @@
     const landscape = matchMedia('(orientation: landscape)').matches;
     const ringEnlargement = landscape ? 2 : 1;
     const extraRows = landscape ? landscapeExtraRowCount : 0;
-    ({back: backRingPaintOrder, front: ringPaintOrder} = landscape ? landscapeRings : portraitRings);
+    ringPaintOrder = landscape ? landscapeRings : portraitRings;
     mainRingWidth = Math.max(originalRingWidth,
       requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale)) * ringEnlargement;
     for (const [index, layer] of layers.entries()) {
@@ -1248,8 +1194,7 @@
         frontRingLayer.ringIdleVisibility ?? frontRingLayer.idleVisibility) / frontRingLayer.opacity;
       let painted = false;
       try {
-        painted = gpu.draw(lastLogoScene, layers, backRingPaintOrder, ringPaintOrder,
-          mainLayerOpacity, ringOpacity);
+        painted = gpu.draw(lastLogoScene, layers, ringPaintOrder, mainLayerOpacity, ringOpacity);
       } catch { /* The prepared 2D renderer remains available on every device. */ }
       if (!painted) fallbackToCanvas();
     }
@@ -1263,7 +1208,7 @@
   }
   function drawLogoLayers(context,scene,width,surfaceHeight) {
     const {centerX,centerY,w,h,scale,ringDiameter,patternVisibility,fillVisibility}=scene;
-    drawTimecodeRings(context,scene,width,surfaceHeight,backRingPaintOrder);
+    drawTimecodeRings(context,scene,width,surfaceHeight,ringPaintOrder);
     for (const layer of layers) {
       context.save();
       context.translate(centerX, centerY);
@@ -1282,7 +1227,6 @@
       context.drawImage(layer.borderSprite,-w/2,-h/2,w,h);
       context.restore();
     }
-    drawTimecodeRings(context,scene,width,surfaceHeight,ringPaintOrder);
   }
   function drawTimecodeRings(context,scene,width,surfaceHeight,rings) {
     const {centerX,centerY,ringDiameter,patternVisibility,fillVisibility}=scene;
@@ -1362,8 +1306,7 @@
         frontRingLayer.ringIdleVisibility ?? frontRingLayer.idleVisibility) / frontRingLayer.opacity;
       let painted = false;
       try {
-        painted = bannerGpu.draw(scene,layers,backRingPaintOrder,ringPaintOrder,
-          mainLayerOpacity,opacity,
+        painted = bannerGpu.draw(scene,layers,ringPaintOrder,mainLayerOpacity,opacity,
           {marks:rain,surfaceHeight});
       } catch { /* The same scene remains available through Canvas. */ }
       if (painted) return;

@@ -24,13 +24,13 @@ Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn
 
 ## Timecode-Punktreihen bis in die seitlichen Logoflächen
 
-Im Querformat reichen 16 zusätzliche Punktreihen in vier Gruppen bis hinter die seitlichen Logoflächen. Die Gruppen wiederholen die ursprünglichen Punktzahlen 171, 177, 182 und 188 sowie deren Versatz. Das gesamte Ringmuster ist nach innen versetzt und verwendet dieselben schmalen Zwischenräume, Größenstufen von 0,092 und Deckkraftschritte wie das ursprüngliche Muster. Das Hochformat hat 104 Punktreihen, das Querformat einschließlich Desktop 120. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselbe Geometrie und dieselbe sichtbare Punktphase.
+Im Querformat reichen 16 zusätzliche Punktreihen in vier Gruppen bis hinter die seitlichen Logoflächen. Die Gruppen wiederholen die ursprünglichen Punktzahlen 171, 177, 182 und 188 sowie deren Versatz. Das Ringmuster verwendet dieselben schmalen Zwischenräume und Größenstufen von 0,092. Die Deckkraft fällt je Vierergruppe nach innen um 8 Prozent, gleichmäßig auf die vier Punktreihen verteilt. Die Sichtbarkeitsbasis im Quer- und Desktopformat ist um 15 Prozent erhöht. Alle 104 Punktreihen im Hochformat und alle 120 Punktreihen im Querformat werden hinter sämtlichen Hauptlogos gezeichnet. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselbe Geometrie und sichtbare Punktphase.
 
 ## Feste Tempoabläufe für die Timecoderinge
 
 Die erste achtsekündige Pause beginnt erst, wenn sämtliche Hauptlogo-Grafiken vorbereitet sind. Die Startsequenz kann dadurch nicht mehr während des Ladens unsichtbar über die erste langsame Phase laufen. Wiederholungen bleiben auf denselben berechneten Zyklusgrenzen verankert; verspätete Einzelbilder verschieben den nächsten Start nicht.
 
-Die Ringebenen wechseln in acht Abschnitten zwischen 8 und 33,333333 U/min. Jeder Tempoübergang dauert 0,8 Sekunden. Die Fächerzeiten betragen 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Eine veränderte Fächerzeit dehnt oder staucht die Ring-Zeitachse nicht mehr. Die bestehende Schlussbeschleunigung und der aufrechte Abschluss bleiben erhalten. Pause, App-Wechsel und Scrollunterbrechung verwenden weiterhin die gemeinsame Animationsuhr.
+Die Ringebenen wechseln in acht Abschnitten zwischen 8 und 33,333333 U/min. Ab dem zweiten Durchgang beginnt jeder Tempowechsel für eine Hauptlogo-Ebene und ihre Ringe gleichzeitig. Beide durchlaufen dieselbe weiche 0,8-Sekunden-Kurve zwischen ihren Solltempi. Die Fächerzeiten betragen 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Im ersten Durchgang gilt der Fächer nur für die Ringe. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Schlussbeschleunigung und Scrollrückkehr enden aufrecht.
 
 Die sichtbare Punktphase wird für beide Tempi aus dem virtuellen Stroboskoptakt berechnet. Bei 33,333333 U/min ist die Rückwärtsdrift deutlicher als bei 8 U/min. Zwischen zwei gezeichneten Bildern bewegt sich das Muster im Schwebeabschnitt um höchstens 40 Prozent eines Punktabstands rückwärts, auch wenn der Browser Bilder auslässt. Die Zeitpunkte der Tempowechsel folgen der gemeinsamen Uhr.
 
@@ -104,9 +104,9 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 
 ## Aktuelle Startsequenz: acht abwechselnde Tempodurchgänge
 
-Die Hauptlogos verwenden in den acht Durchgängen abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Timecoderinge verwenden in den langsamen Phasen exakt 8 rpm. Ein virtueller Stroboskop-Takt von 26 Schritten pro Sekunde lässt die Punktreihen dabei gleichmäßig gegen den Uhrzeigersinn driften. Bei 33,333333 rpm gleicht ein eigener Takt pro Punktreihe das höhere Tempo aus und verstärkt die sichtbare Rückwärtsdrift um einen Punktabstand pro Sekunde. Jeder Tempoabschnitt dauert acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens. Es gibt keine 45-rpm-Stufe und keine Zwischenstopps zwischen diesen acht Tempoabschnitten.
+Die Hauptlogos verwenden in den acht Durchgängen abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Timecoderinge verwenden in den langsamen Phasen exakt 8 rpm. Ein virtueller Stroboskop-Takt von 26 Schritten pro Sekunde lässt die Punktreihen dabei gleichmäßig gegen den Uhrzeigersinn driften. Bei 33,333333 rpm gleicht ein eigener Takt pro Punktreihe das höhere Tempo aus und verstärkt die sichtbare Rückwärtsdrift um zwei Punktabstände pro Sekunde. Jeder Durchgang hat einen Grundtakt von acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens.
 
-Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron ohne Fächer. Die Ringe behalten dort ihren bisherigen Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang bleibt die bisherige Folge erhalten: im zweiten 0, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Die Hauptlogos verbinden die Fächerzeiten über den 0,8-Sekunden-Übergang. In der zweiten Tempophase drehen nach diesem Übergang alle Logos und Ringe mit exakt 33,333333 rpm.
+Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron. Die Ringe behalten dort ihren Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang verwenden beide dieselben Fächerzeiten je Ebene, von 0 Sekunden im zweiten Durchgang bis 0,48 Sekunden im achten. In allen schnellen Phasen drehen Logos und Ringe nach dem Übergang mit exakt 33,333333 rpm.
 
 Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in 1,8 Sekunden von 33,333333 auf 888 rpm, danach direkt aufrechter Stopp. Die gemeinsame achtsekündige Pause beginnt, wenn auch die letzte verzögerte Ebene aufrecht steht. Danach wiederholt sich die Sequenz. Die Scrollstaffelung und die Ringgeometrie bleiben unverändert.
 
@@ -118,17 +118,17 @@ Für zusätzliche Ringe, die vollständig jenseits aller sichtbaren Ecken liegen
 
 ## Zuordnung der Timecoderinge zu den Hauptlogos
 
-Alle Bänder behalten ihre bisherigen Logoebenen. Die vorderste äußere Ringkante wird weiter an derselben Hauptlogogeometrie verankert. Von dort werden die Bänder anhand ihrer gleichmäßig steigenden Breite und des gemeinsamen Kantenabstands nach innen und außen positioniert. Ihre Mittenradien ergeben sich daraus. Jeder Ring übernimmt Winkel, Sichtbarkeit und Fächerzeiten seiner ursprünglichen Logoebene; auch die sieben Erweiterungen bleiben an die hinterste Ebene gekoppelt.
+Alle Bänder behalten ihre Zuordnung zu den acht Hauptlogo-Ebenen. Die Bänder verwenden die jeweilige Scrollrotation und wechseln bei der Startanimation gemeinsam mit ihrer Logoebene das Tempo. Die inneren und äußeren Erweiterungen folgen der hintersten Ebene. Die Bänder liegen hinter dem gesamten Logostapel.
 
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
 Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
 
-Die zeitliche Fächerstaffelung ist wiederhergestellt: Im ersten Durchgang laufen Startlogo und Hauptlogos gemeinsam; nur die Ringe behalten ihre 0,18 Sekunden Abstand je Ebene. Die sieben späteren Durchgänge verwenden die oben aufgeführten Versätze. Jede Ebene durchläuft dieselbe analytisch berechnete Tempokurve zu ihrem versetzten Zeitpunkt. Ab dem zweiten Durchgang dreht jeder äußere und innere Timecodering wieder exakt mit seiner zugehörigen Logoebene, sodass der Fächer auch beim Scrollen wieder sichtbar bleibt. Die bestehende Scrollstaffelung mit 80 Millisekunden Abstand je Ebene und ihrer späteren Rückführung bleibt erhalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
+Die Fächerstaffelung verwendet ab dem zweiten Durchgang dieselben Wechselzeitpunkte für die Logo-Ebene und ihre Timecoderinge. Beim Scrollen folgen die Ringe direkt den zeitversetzten Winkeln ihrer Logo-Ebene. Der Scrollfächer beginnt mit 80 Millisekunden Abstand je Ebene und wird zum Ende zurückgeführt.
 
 ## Banner und Animation
 
-Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation, einschließlich gebrochener CSS-Pixel. Beide Tapetenbanner besitzen waagerechte Randlinien oben und unten. Der untere Banner bleibt das letzte Seitenelement. Der Browserfarbton bleibt Cremeweiß #fdfcfa.
+Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation. Beide Tapetenbanner besitzen waagerechte Randlinien oben und unten. Im Quer- und Desktopformat sind die Banner- und Feldlinien doppelt so dick wie zuvor. Die Verdopplung bezieht sich auf die tatsächlich gezeichnete Dicke nach der Pixelrundung des Browsers. Im Hochformat gilt die bisherige Dicke.
 
 Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wiederverwendete Konturen und Ringtexturen, gemeinsamer Szenenzustand für Banner und Hauptfläche sowie eine gemeinsame Mitte unter dem oberen Banner. Sieben zusätzliche Ringbänder laufen nach innen weiter. Größen, Sichtbarkeiten, Staffelung und die bisherige Querformat-Skalierung bleiben erhalten.
 

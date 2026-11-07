@@ -205,7 +205,7 @@
           gl.deleteTexture(handle); textures.delete(image);
         }
       },
-      draw(scene, layers, back, front, opacityFor, ringOpacity, rain) {
+      draw(scene, layers, rings, opacityFor, ringOpacity, rain) {
         if (gl.isContextLost()) return false;
         gl.clear(gl.COLOR_BUFFER_BIT);
         if (rain) {
@@ -223,7 +223,7 @@
           }
           gl.disableVertexAttribArray(images.a_position);
         }
-        drawRings(back, scene, ringOpacity);
+        drawRings(rings, scene, ringOpacity);
         gl.useProgram(images.handle);
         gl.bindBuffer(gl.ARRAY_BUFFER, quad);
         gl.enableVertexAttribArray(images.a_position);
@@ -240,7 +240,6 @@
           drawImage(layer.borderSprite, w, h, opacity);
         }
         gl.disableVertexAttribArray(images.a_position);
-        drawRings(front, scene, ringOpacity);
         if (checkDraw) { checkDraw = false; return gl.getError() === gl.NO_ERROR; }
         return true;
       },
