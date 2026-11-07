@@ -39,6 +39,7 @@
     ink = logos.getContext('2d');
     ink.setTransform(inkRatio,0,0,inkRatio,0,0);
     logos.dataset.renderer = 'canvas2d';
+    cacheInnerRingPaths();
     previous?.dispose();
     lastMainPaint = lastFeedPaint = ''; invalidate();
   }
@@ -49,6 +50,7 @@
     bannerFeed.replaceWith(canvas); bannerFeed = canvas;
     feed = canvas.getContext('2d');
     feed.setTransform(inkRatio,0,0,inkRatio,0,0);
+    cacheInnerRingPaths();
     previous?.dispose();
     lastFeedPaint = ''; invalidate();
   }
@@ -98,7 +100,8 @@
     layer.ringScale = 1;
     layer.ringStrobeSteps = new Float64Array(ringRows.length);
     layer.ringRowAngles = new Float64Array(ringRows.length);
-    layer.ringStrobeLag = 0;
+    layer.ringOpticalSteps = new Float64Array(ringRows.length);
+    layer.ringPhaseCarry = new Float64Array(ringRows.length);
   }
   for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
     const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
@@ -123,7 +126,7 @@
   const ringBands = [...innerRings].reverse().concat(outerRings);
   // Keep the previous visibility range, with one equal increase per point row
   // all the way from the innermost row to the outermost extension.
-  const ringVisibilityGain = 1.10 * 1.10;
+  const ringVisibilityGain = 1.10 ** 3;
   const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
   const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
@@ -166,23 +169,36 @@
     }));
   }
   const landscapeExtraRowCount = 16;
-  const innermostRows = innerRings[innerRings.length-1].rows;
-  const innermostRow = innermostRows[0];
-  // Landscape doubles the ring diameter. Bring the new rows inward to the
-  // same relative radius as the first portrait row, behind the logo stack.
+  const innermostRow = innerRings[innerRings.length-1].rows[0];
+  const landscapeOpacityMin = lastInnerSource.opacity * .75 * ringVisibilityGain;
+  const landscapeOpacityStep = (ringOpacityMax - landscapeOpacityMin) /
+    (ringBands.length * ringRows.length + landscapeExtraRowCount - 1);
+  const landscapeOpacity = index => landscapeOpacityMin + index * landscapeOpacityStep;
+  // The portrait-equivalent radius stops outside the side wings in landscape.
+  // Carry the existing circles into the wings, to about 30% of the emblem height.
+  const landscapeInnerRadius = innermostRow.radius * .28;
+  const landscapeRadiusStep = (innermostRow.radius - landscapeInnerRadius) / landscapeExtraRowCount;
   const landscapeExtension = {
-    source:lastInnerSource,
-    rows:Array.from({length:landscapeExtraRowCount},(_,index)=>{
-      const row=innermostRows[ringRows.length-1-index%ringRows.length];
-      const inward=(index+1)/landscapeExtraRowCount;
+    source: lastInnerSource,
+    rows: Array.from({length: landscapeExtraRowCount}, (_, index) => {
+      const row = ringRows[ringRows.length - 1 - index % ringRows.length];
+      const radius = innermostRow.radius - (index + 1) * landscapeRadiusStep;
       return {
         ...row,
-        radius:innermostRow.radius*(1-inward/2),
-        dot:row.dot*(1-inward/4),
-        opacity:innermostRow.opacity*(1-inward/2)
+        radius,
+        dot: radius * row.dot / row.radius,
+        opacity: landscapeOpacity(landscapeExtraRowCount - 1 - index)
       };
     })
   };
+  // Continue the same opacity increment across the join to the existing rows.
+  const landscapeBands = new Map(ringBands.map((ring, bandIndex) => [ring, {
+    source: ring.source,
+    rows: ring.rows.map(row => ({
+      ...row,
+      opacity: landscapeOpacity(landscapeExtraRowCount + bandIndex * ringRows.length + row.index)
+    }))
+  }]));
   // Group rows by phase so each depth still uses one draw call.
   function groupRingBands(bands) {
     const groups = new Map();
@@ -201,10 +217,13 @@
     return [...groups.values()];
   }
   const inwardBands = innerRings.filter(ring => ring.inwardExtension);
-  const portraitBackRings = groupRingBands(inwardBands);
-  const landscapeBackRings = groupRingBands([...inwardBands,landscapeExtension]);
-  let backRingPaintOrder = portraitBackRings;
-  const ringPaintOrder = groupRingBands([...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension)));
+  const frontBands = [...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension));
+  const portraitRings = {back: groupRingBands(inwardBands), front: groupRingBands(frontBands)};
+  const landscapeRings = {
+    back: groupRingBands([...inwardBands.map(ring => landscapeBands.get(ring)), landscapeExtension]),
+    front: groupRingBands(frontBands.map(ring => landscapeBands.get(ring)))
+  };
+  let {back: backRingPaintOrder, front: ringPaintOrder} = portraitRings;
   const immutableSprite = canvas => typeof createImageBitmap === 'function'
     ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
   function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
@@ -354,12 +373,11 @@
   const slowRingRpm = 8;
   const ringStrobeRate = Math.floor(slowRingRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
   const slowRingStrobeRates = ringRows.map(() => ringStrobeRate);
-  // At the fast plateau, add each row's extra dot passages to its beat rate.
-  // This gives the same visible counterclockwise drift as the slow plateau.
+  // Compensate the extra passages at 33.333333 RPM. One additional beat per
+  // second makes this plateau's counterclockwise drift distinct from 8 RPM.
   const fastRingStrobeRates = ringRows.map(({count}) =>
-    ringStrobeRate + (fastRpm - slowRingRpm) * count / 60);
-  const ringHoverStepsPerSecond = ringRows.map(({count}) => slowRingRpm*count/60-ringStrobeRate);
-  const maxFastRingFrameDelta = .112;
+    ringStrobeRate + 1 + (fastRpm - slowRingRpm) * count / 60);
+  const maxRingStepPerFrame = .4;
   function buildRingTimeline(depth) {
     const segments=[], strobeWindows=[];
     const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
@@ -380,16 +398,14 @@
       const release=next ? next.start+(depth+1)*next.stagger : finalStart;
       const rates=rpm===slowRingRpm ? slowRingStrobeRates : fastRingStrobeRates;
       // Fade each row back to a whole pitch during the next tempo transition.
-      const corrections=rates.map(rate=>{
-        const steps=rate*(release-start);
-        return Math.round(steps)-steps;
-      });
-      strobeWindows.push({start,release,rates,corrections});
+      const endSteps = rates.map(rate => Math.round(rate * (release - start)));
+      const corrections = rates.map((rate, row) => endSteps[row] - rate * (release - start));
+      strobeWindows.push({start, release, rates, corrections, endSteps});
     }
     append(finalStart-cursor,previousRpm);
     const finalTurns=turns+1.8*(previousRpm+888)/120;
     append(1.8,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
-    return {segments,strobeWindows,start:(depth+1)*startPassStaggers[0],end:cursor,turns};
+    return {segments,strobeWindows,start:(depth+1)*startPassStaggers[0],finalStart,end:cursor,turns};
   }
   const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildRingTimeline(layer.depth)]));
   function ringPhase(seconds,depth) {
@@ -412,43 +428,39 @@
     const fourth=centered**4;
     return .5+centered*(45-fourth*(18-5*fourth))/64;
   }
-  // Interpolate the positions of a virtual strobe continuously. Whole pitches
-  // only permute identical dots, so the residual stays small even after a pause.
+  // Keep an unwrapped optical phase until after calculating the frame delta.
+  // Wrapping earlier makes a long frame look like a step in the other direction.
   function updateRingStrobeSteps(seconds,layer,previousSeconds) {
-    const duration=spinTransitionDuration;
-    const steps=layer.ringStrobeSteps;
-    const timeline=ringTimelines.get(layer.depth);
-    if (previousSeconds===undefined || previousSeconds>seconds) layer.ringStrobeLag=0;
+    const duration = spinTransitionDuration;
+    const {ringStrobeSteps: steps, ringOpticalSteps: opticalSteps, ringPhaseCarry: carry} = layer;
+    const {start: firstStart, finalStart, strobeWindows} = ringTimelines.get(layer.depth);
+    if (previousSeconds === undefined || previousSeconds > seconds) carry.fill(0);
     steps.fill(0);
-    for (const {start,release,rates,corrections} of timeline.strobeWindows) {
-      const elapsed=seconds-start, outgoing=seconds-release;
-      if (elapsed<=0) break;
-      if (outgoing>=duration) continue;
-      if (rates===fastRingStrobeRates && elapsed>=duration && outgoing<=0 && previousSeconds!==undefined) {
-        // Cap the visible advance after a long frame gap. A jump of more
-        // than half a dot pitch otherwise looks like motion the other way.
-        const fastFrameTime=seconds-Math.max(previousSeconds,start+duration);
-        layer.ringStrobeLag+=Math.max(0,fastFrameTime-maxFastRingFrameDelta);
+    for (const {start, release, rates, corrections, endSteps} of strobeWindows) {
+      const elapsed = seconds - start, outgoing = seconds - release;
+      if (elapsed <= 0) break;
+      if (outgoing >= duration) {
+        for (const {index} of ringRows) steps[index] += endSteps[index];
+        continue;
       }
-      const entry=elapsed<duration ? duration*smoothIntegral(elapsed/duration) : elapsed-duration/2;
-      const progress=Math.max(0,outgoing/duration);
-      const activeTime=entry-duration*smoothIntegral(progress);
-      const alignment=strobeAlignment(progress);
-      for (let index=0; index<steps.length; index++) {
-        const phase=steps[index]+rates[index]*activeTime+corrections[index]*alignment;
-        steps[index]=wrapRingStep(phase);
-      }
+      const entry = elapsed < duration ? duration * smoothIntegral(elapsed / duration) : elapsed - duration / 2;
+      const progress = Math.max(0, outgoing / duration);
+      const activeTime = entry - duration * smoothIntegral(progress);
+      const alignment = strobeAlignment(progress);
+      for (const {index} of ringRows) steps[index] += rates[index] * activeTime + corrections[index] * alignment;
     }
-    if (layer.ringStrobeLag>0) {
-      // Keep the phase continuous through the next tempo changes, then
-      // release the delay during the existing final acceleration.
-      const finalStart=timeline.strobeWindows[timeline.strobeWindows.length-1].release;
-      const progress=Math.min(1,Math.max(0,(seconds-finalStart)/duration));
-      const remaining=1-smoothEnd(progress);
-      for (let index=0; index<steps.length; index++) {
-        const lag=wrapRingStep(ringHoverStepsPerSecond[index]*layer.ringStrobeLag);
-        steps[index]=wrapRingStep(steps[index]+lag*remaining);
+    const hovering = previousSeconds >= firstStart + duration &&
+      previousSeconds <= seconds && seconds <= finalStart;
+    const remaining = 1 - smoothEnd(Math.min(1, Math.max(0, (seconds - finalStart) / duration)));
+    for (const {index, pitch} of ringRows) {
+      const optical = layer.ringIdleAngle / pitch - steps[index];
+      if (hovering) {
+        const advance = optical - opticalSteps[index];
+        const bounded = Math.max(-maxRingStepPerFrame, Math.min(0, advance));
+        carry[index] = wrapRingStep(carry[index] + advance - bounded);
       }
+      opticalSteps[index] = optical;
+      steps[index] = wrapRingStep(steps[index] + carry[index] * remaining);
     }
   }
   function scaleRingStrobeSteps(steps,initial,scale) {
@@ -858,7 +870,7 @@
     const landscape = matchMedia('(orientation: landscape)').matches;
     const ringEnlargement = landscape ? 2 : 1;
     const extraRows = landscape ? landscapeExtraRowCount : 0;
-    backRingPaintOrder = landscape ? landscapeBackRings : portraitBackRings;
+    ({back: backRingPaintOrder, front: ringPaintOrder} = landscape ? landscapeRings : portraitRings);
     mainRingWidth = Math.max(originalRingWidth,
       requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale)) * ringEnlargement;
     for (const [index, layer] of layers.entries()) {

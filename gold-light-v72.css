@@ -596,13 +596,14 @@ body .gold-text-light {
   height: calc(220px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Both wallpaper banners are framed on all four edges. */
+/* Wallpaper banners carry horizontal rules along their top and bottom edges. */
 :root { --banner-edge-width: 1.5px; }
 @media (orientation: landscape) {
   :root { --banner-edge-width: .8px; }
 }
 .topbar, .content-scroll > .wallpaper-end {
   border: var(--banner-edge-width) solid var(--metallic-gold) !important;
+  border-style: solid none !important;
 }
 
 /* An empty text-clipped surface supplies a plain cream edge colour to Safari
