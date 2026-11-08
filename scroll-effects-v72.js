@@ -82,82 +82,113 @@
     settleAngle: 0, handoffAngle: 0, scrollAngle: 0,
     speed: .92 ** depth
   }));
-  // One continuous pattern-scale progression, with the original layer bindings.
-  const ringRows = JSON.parse(document.getElementById('strobe-source-geometry').textContent)
-    .map(({radius, dot, degrees}, index) => ({
-      radius, dot, index, count: degrees.length, pitch: Math.PI * 2 / degrees.length,
-      unitPoints: degrees.map(degree => {
-        const angle = degree * Math.PI / 180;
-        return [Math.sin(angle), -Math.cos(angle)];
-      })
-    }));
-  const ringInnerRadius = Math.min(...ringRows.map(({radius, dot}) => radius - dot));
-  const ringOuterRadius = Math.max(...ringRows.map(({radius, dot}) => radius + dot));
-  const pointClearance = ringRows.slice(1).reduce((sum, row, index) => {
-    const previous = ringRows[index];
-    return sum + row.radius - row.dot - previous.radius - previous.dot;
-  }, 0) / (ringRows.length - 1);
-  const ringEdgeOverlap = .75;
-  const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
+  const frontRingLayer = layers.find(layer => layer.depth === 0);
+  let ringRows = [];
+  let ringLayout;
+  let ringAssetPending = true;
+  const ringPaintOrder = [];
   for (const layer of layers) {
-    layer.ringScale = 1;
-    layer.ringStrobeSteps = new Float64Array(ringRows.length);
-    layer.ringRowAngles = new Float64Array(ringRows.length);
-    layer.ringOpticalSteps = new Float64Array(ringRows.length);
-    layer.ringPhaseCarry = new Float64Array(ringRows.length);
+    layer.ringStrobeSteps = new Float64Array(0);
+    layer.ringRowAngles = new Float64Array(0);
   }
-  for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
-    const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
-    const nextScale = next.scale * next.ringScale;
-    const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
-    layer.ringScale = Math.max(1, ringScale / layer.scale);
+  function readRingSource(svgText) {
+    const svg = new DOMParser().parseFromString(svgText, 'image/svg+xml').documentElement;
+    const [left, top, width, height] = (svg.getAttribute('viewBox') ?? '').trim().split(/\s+/).map(Number);
+    const source = svg.querySelector('#stroboskop-punkte');
+    if (!source || !(width > 0) || width !== height) throw new Error('Invalid strobe SVG');
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    const rows = Array.from(source.children, (group, index) => {
+      const circles = Array.from(group.children);
+      const first = circles[0];
+      const dot = Number(first?.getAttribute('r'));
+      const radius = Math.hypot(Number(first?.getAttribute('cx')) - centerX,
+        Number(first?.getAttribute('cy')) - centerY);
+      const count = circles.length;
+      if (!(dot > 0) || !(radius > dot) || !count) throw new Error('Invalid strobe row');
+      const unitPoints = circles.map(circle => {
+        const rotation = /^rotate\(([^)]+)\)$/.exec(circle.getAttribute('transform') ?? '');
+        const [degrees, pivotX, pivotY] = rotation?.[1].trim().split(/[\s,]+/).map(Number) ?? [0, centerX, centerY];
+        const x = Number(circle.getAttribute('cx')) - centerX;
+        const y = Number(circle.getAttribute('cy')) - centerY;
+        if (circle.localName !== 'circle' || !Number.isFinite(degrees) ||
+            pivotX !== centerX || pivotY !== centerY || Number(circle.getAttribute('r')) !== dot ||
+            Math.abs(Math.hypot(x, y) - radius) > 1e-6) throw new Error('Invalid strobe point');
+        const angle = degrees * Math.PI / 180;
+        const cos = Math.cos(angle), sin = Math.sin(angle);
+        return [(x * cos - y * sin) / radius, (x * sin + y * cos) / radius];
+      });
+      return {radius, dot, index, count, pitch: 2 * Math.PI / count, unitPoints};
+    });
+    if (rows.length !== 4) throw new Error('Invalid strobe row count');
+    return {rows, diameter: width};
   }
-  const frontRingLayer = innerRingOrder[0];
-  const innerLogoSources = innerRingOrder.slice(1);
-  const lastSource = innerRingOrder[innerRingOrder.length - 1];
-  const inwardExtensionBands = 8;
-  const outwardExtensionBands = 7;
-  const innerSources = innerLogoSources.concat(Array(inwardExtensionBands).fill(lastSource));
-  const outerSources = innerRingOrder.concat(Array(outwardExtensionBands).fill(lastSource));
-  const bandSources = [...innerSources].reverse().concat(outerSources);
-  const ringOpacityFalloff = .92;
-  const ringGap = pointClearance * frontRingLayer.scale / 1280;
-  const ringScaleStep = innerRingOrder[1].scale - frontRingLayer.scale;
-  const ringWidthUnit = frontRingLayer.ringScale * (ringOuterRadius - ringInnerRadius) / 1280;
-  const frontRingInnerRatio = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / 1280;
-  // Use the established extended pattern in every orientation. Its first
-  // band keeps the original smallest positive scale and radial anchor.
-  const originalInnerCount = innerLogoSources.length + inwardExtensionBands / 2;
-  const smallestScale = frontRingLayer.scale - originalInnerCount * ringScaleStep;
-  const originalInnerEdge = frontRingInnerRatio - Array.from({length: originalInnerCount}, (_, index) =>
-    ringGap + ringWidthUnit * (frontRingLayer.scale - (index + 1) * ringScaleStep)
-  ).reduce((total, width) => total + width, 0);
-  const extendedRowCount = (innerSources.length - originalInnerCount) * ringRows.length;
-  const ringVisibilityGain = 1.10 ** 3;
-  const baseOpacity = frontRingLayer.opacity * ringVisibilityGain;
-  const baseOpacityMin = lastSource.opacity * .82 ** outwardExtensionBands * ringVisibilityGain;
-  const baseOpacityStep = (baseOpacity - baseOpacityMin) /
-    ((originalInnerCount + outerSources.length) * ringRows.length - 1);
-  const peakRingOpacity = (baseOpacity + extendedRowCount * baseOpacityStep) * 1.15;
-  function makeRingRows(innerRatio, widthRatio, bandsFromOutside, peakOpacity) {
-    const radialScale = widthRatio / (ringOuterRadius - ringInnerRadius);
-    // Spread the fade across the four rows. Matching rows in neighbouring
-    // bands are exactly 8% dimmer toward the center, including at the joins.
-    return ringRows.map(row => ({
-      ...row,
-      radius: innerRatio + (row.radius - ringInnerRadius) * radialScale,
-      dot: row.dot * radialScale,
-      opacity: peakOpacity * ringOpacityFalloff **
-        (bandsFromOutside + (ringRows.length - 1 - row.index) / ringRows.length)
-    }));
+  function createRingLayout(ringRows, diameter) {
+    const ringInnerRadius = Math.min(...ringRows.map(({radius, dot}) => radius - dot));
+    const ringOuterRadius = Math.max(...ringRows.map(({radius, dot}) => radius + dot));
+    const pointClearance = ringRows.slice(1).reduce((sum, row, index) => {
+      const previous = ringRows[index];
+      return sum + row.radius - row.dot - previous.radius - previous.dot;
+    }, 0) / (ringRows.length - 1);
+    const ringEdgeOverlap = .75;
+    const innerRingOrder = [...layers].sort((a, b) => a.depth - b.depth);
+    for (const layer of layers) {
+      layer.ringScale = 1;
+    }
+    for (let index = Math.min(2, innerRingOrder.length - 2); index >= 0; index--) {
+      const layer = innerRingOrder[index], next = innerRingOrder[index + 1];
+      const nextScale = next.scale * next.ringScale;
+      const ringScale = (nextScale * ringInnerRadius + ringEdgeOverlap) / ringOuterRadius;
+      layer.ringScale = Math.max(1, ringScale / layer.scale);
+    }
+    const innerLogoSources = innerRingOrder.slice(1);
+    const lastSource = innerRingOrder[innerRingOrder.length - 1];
+    const inwardExtensionBands = 8;
+    const outwardExtensionBands = 7;
+    const innerSources = innerLogoSources.concat(Array(inwardExtensionBands).fill(lastSource));
+    const outerSources = innerRingOrder.concat(Array(outwardExtensionBands).fill(lastSource));
+    const bandSources = [...innerSources].reverse().concat(outerSources);
+    const ringOpacityFalloff = .92;
+    const ringGap = pointClearance * frontRingLayer.scale / diameter;
+    const ringScaleStep = innerRingOrder[1].scale - frontRingLayer.scale;
+    const ringWidthUnit = frontRingLayer.ringScale * (ringOuterRadius - ringInnerRadius) / diameter;
+    const frontRingInnerRatio = frontRingLayer.scale * frontRingLayer.ringScale * ringInnerRadius / diameter;
+    // Use the established extended pattern in every orientation. Its first
+    // band keeps the original smallest positive scale and radial anchor.
+    const originalInnerCount = innerLogoSources.length + inwardExtensionBands / 2;
+    const smallestScale = frontRingLayer.scale - originalInnerCount * ringScaleStep;
+    const originalInnerEdge = frontRingInnerRatio - Array.from({length: originalInnerCount}, (_, index) =>
+      ringGap + ringWidthUnit * (frontRingLayer.scale - (index + 1) * ringScaleStep)
+    ).reduce((total, width) => total + width, 0);
+    const extendedRowCount = (innerSources.length - originalInnerCount) * ringRows.length;
+    const ringVisibilityGain = 1.10 ** 3;
+    const baseOpacity = frontRingLayer.opacity * ringVisibilityGain;
+    const baseOpacityMin = lastSource.opacity * .82 ** outwardExtensionBands * ringVisibilityGain;
+    const baseOpacityStep = (baseOpacity - baseOpacityMin) /
+      ((originalInnerCount + outerSources.length) * ringRows.length - 1);
+    const peakRingOpacity = (baseOpacity + extendedRowCount * baseOpacityStep) * 1.15;
+    function makeRingRows(innerRatio, widthRatio, bandsFromOutside, peakOpacity) {
+      const radialScale = widthRatio / (ringOuterRadius - ringInnerRadius);
+      // Spread the fade across the four rows. Matching rows in neighbouring
+      // bands are exactly 8% dimmer toward the center, including at the joins.
+      return ringRows.map(row => ({
+        ...row,
+        radius: innerRatio + (row.radius - ringInnerRadius) * radialScale,
+        dot: row.dot * radialScale,
+        opacity: peakOpacity * ringOpacityFalloff **
+          (bandsFromOutside + (ringRows.length - 1 - row.index) / ringRows.length)
+      }));
+    }
+    let innerEdge = originalInnerEdge * .28;
+    const ringBands = bandSources.map((source, index) => {
+      const width = ringWidthUnit * (smallestScale + index * ringScaleStep);
+      const rows = makeRingRows(innerEdge, width, bandSources.length - 1 - index, peakRingOpacity);
+      innerEdge += width + ringGap;
+      return {source, rows};
+    });
+    return {diameter, ringInnerRadius, innerCount: innerSources.length,
+      outerCount: outerSources.length, inwardExtensionBands, groups: groupRingBands(ringBands)};
   }
-  let innerEdge = originalInnerEdge * .28;
-  const ringBands = bandSources.map((source, index) => {
-    const width = ringWidthUnit * (smallestScale + index * ringScaleStep);
-    const rows = makeRingRows(innerEdge, width, bandSources.length - 1 - index, peakRingOpacity);
-    innerEdge += width + ringGap;
-    return {source, rows};
-  });
   // Group rows by phase so each depth still uses one draw call.
   function groupRingBands(bands) {
     const groups = new Map();
@@ -175,7 +206,6 @@
     }
     return [...groups.values()];
   }
-  const ringPaintOrder = groupRingBands(ringBands);
   const immutableSprite = canvas => typeof createImageBitmap === 'function'
     ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
   function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
@@ -295,14 +325,6 @@
   const spinMotionEnd = passStarts.length * spinStageDuration;
   const spinDuration = spinMotionEnd + lastStartLayer * finalPassStagger + 8;
   const slowRpm = 8, fastRpm = 33.333333;
-  // The lowest whole beat rate above every row's dot-passage rate is 26 Hz.
-  // One pitch per beat leaves a small counterclockwise drift at 8 RPM.
-  const ringStrobeRate = Math.floor(slowRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
-  const slowRingStrobeRates = ringRows.map(() => ringStrobeRate);
-  // Compensate the extra passages at 33.333333 RPM. Two additional beats per
-  // second make this plateau's counterclockwise drift distinct from 8 RPM.
-  const fastRingStrobeRates = ringRows.map(({count}) =>
-    ringStrobeRate + 2 + (fastRpm - slowRpm) * count / 60);
   const maxRingStepPerFrame = .4;
   function buildSpinTrack(starts, finalStart) {
     const segments = [];
@@ -332,6 +354,10 @@
     const starts = passStarts.map((start, index) => start + depth * startPassStaggers[index]);
     const finalStart = spinMotionEnd - spinFinishDuration + depth * finalPassStagger;
     const track = buildSpinTrack(starts, finalStart);
+    layer.startMotion = {track, finalStart, starts, strobeWindows: []};
+  }
+  function attachStrobeWindows(layer, slowRingStrobeRates, fastRingStrobeRates) {
+    const {starts, finalStart} = layer.startMotion;
     const accumulatedSteps = new Float64Array(ringRows.length);
     const strobeWindows = starts.map((start, index) => {
       const release = starts[index + 1] ?? finalStart;
@@ -349,7 +375,40 @@
       const corrections = endSteps.map((end, row) => end - rates[row] * (release - start));
       return {start, release, rates, corrections, endSteps};
     });
-    layer.startMotion = {track, finalStart, strobeWindows};
+    layer.startMotion.strobeWindows = strobeWindows;
+  }
+  async function loadRingSource() {
+    try {
+      const href = openingLogo?.querySelector('.hero-strobe-ring')?.getAttribute('href');
+      if (!href) throw new Error('Missing strobe SVG reference');
+      const response = await fetch(href);
+      if (!response.ok) throw new Error('Strobe SVG request failed: ' + response.status);
+      const {rows, diameter} = readRingSource(await response.text());
+      ringLayout = createRingLayout(rows, diameter);
+      ringRows = rows;
+        // The lowest whole beat rate above every row's dot-passage rate is 26 Hz.
+        // One pitch per beat leaves a small counterclockwise drift at 8 RPM.
+        const ringStrobeRate = Math.floor(slowRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
+        const slowRingStrobeRates = ringRows.map(() => ringStrobeRate);
+        // Compensate the extra passages at 33.333333 RPM. Two additional beats per
+        // second make this plateau's counterclockwise drift distinct from 8 RPM.
+        const fastRingStrobeRates = ringRows.map(({count}) =>
+          ringStrobeRate + 2 + (fastRpm - slowRpm) * count / 60);
+      for (const layer of layers) {
+        layer.ringStrobeSteps = new Float64Array(rows.length);
+        layer.ringRowAngles = new Float64Array(rows.length);
+        layer.ringOpticalSteps = new Float64Array(rows.length);
+        layer.ringPhaseCarry = new Float64Array(rows.length);
+        attachStrobeWindows(layer, slowRingStrobeRates, fastRingStrobeRates);
+      }
+      ringPaintOrder.push(...ringLayout.groups);
+    } catch (error) {
+      console.warn('Could not load the strobe artwork.', error);
+    } finally {
+      ringAssetPending = false;
+      lastMainPaint = lastFeedPaint = '';
+      invalidate();
+    }
   }
   function strobeAlignment(progress) {
     // Integrate a broad speed profile with zero slope at both ends.
@@ -364,6 +423,7 @@
     const duration = spinTransitionDuration;
     const {ringStrobeSteps: steps, ringOpticalSteps: opticalSteps, ringPhaseCarry: carry} = layer;
     const {finalStart, strobeWindows} = layer.startMotion;
+    if (!strobeWindows.length) return;
     if (previousSeconds === undefined || previousSeconds > seconds) carry.fill(0);
     steps.fill(0);
     for (const {start, release, rates, corrections, endSteps} of strobeWindows) {
@@ -578,7 +638,7 @@
       if(idleMode==='waiting') {
         // The shared eight-second pause begins after the delayed scroll
         // rotations have also reached their starting orientations.
-        const ready=mainSprites.length===layers.length && mainBorderSprites.length===layers.length &&
+        const ready=!ringAssetPending && mainSprites.length===layers.length && mainBorderSprites.length===layers.length &&
           mainSolidSprites.length===layers.length && sprites.length>0;
         if(ready!==startAssetsReady){idleSince=time;startAssetsReady=ready;}
         if(scrollRotationPending || !ready)idleSince=time;
@@ -745,27 +805,27 @@
   function cacheSpriteChoices() {
     if (!sprites.length || !mainBox) return;
     const scale = Math.min(mainBox.width / 922, mainBox.height / 1368) * openingScaleFactor;
-    const ringGeometry = openingLogo?.querySelector('.hero-strobe-ring');
-    const originalRingWidth = Number(ringGeometry?.getAttribute('width')) || 0;
-    const logoRadius = Number(ringGeometry?.getAttribute('data-logo-radius')) || 0;
-    const logoExtent = Number(ringGeometry?.getAttribute('data-logo-extent')) || 0;
-    const largestLogoScale = Math.max(...layers.map(layer => layer.scale));
-    const innermostRingScale = Math.min(...layers.map(layer => layer.scale * layer.ringScale));
-    // Use the established logo clearance as the ring stack's reference scale.
-    // The inward extensions are positioned relative to that scale.
-    const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
-    mainRingWidth = Math.max(originalRingWidth,
-      requiredInnerRadius * 1280 / (ringInnerRadius * innermostRingScale)) * 2;
+    if (ringLayout) {
+      const ringGeometry = openingLogo?.querySelector('.hero-strobe-ring');
+      const originalRingWidth = Number(ringGeometry?.getAttribute('width')) || 0;
+      const logoRadius = Number(ringGeometry?.getAttribute('data-logo-radius')) || 0;
+      const logoExtent = Number(ringGeometry?.getAttribute('data-logo-extent')) || 0;
+      const largestLogoScale = Math.max(...layers.map(layer => layer.scale));
+      const innermostRingScale = Math.min(...layers.map(layer => layer.scale * layer.ringScale));
+      // Use the established logo clearance as the ring stack's reference scale.
+      // The inward extensions are positioned relative to that scale.
+      const requiredInnerRadius = (logoRadius + logoExtent / 64) * largestLogoScale;
+      mainRingWidth = Math.max(originalRingWidth,
+        requiredInnerRadius * ringLayout.diameter / (ringLayout.ringInnerRadius * innermostRingScale)) * 2;
+      if (!gpu || !bannerGpu) cacheInnerRingPaths();
+      logos.dataset.innerRingCount = String(ringLayout.innerCount);
+      logos.dataset.outerRingCount = String(ringLayout.outerCount);
+      logos.dataset.innerRowCount = String(ringLayout.innerCount * ringRows.length);
+      logos.dataset.additionalInnerRowCount = String(ringLayout.inwardExtensionBands * ringRows.length);
+    }
     for (const [index, layer] of layers.entries()) {
       layer.sprite=mainSprites[index];layer.borderSprite=mainBorderSprites[index];layer.solidSprite=mainSolidSprites[index];
     }
-    // GPU point buffers need no CPU paths. The Canvas fallback reuses exact
-    // per-row paths, without compositing enormous transparent ring images.
-    if (!gpu || !bannerGpu) cacheInnerRingPaths();
-    logos.dataset.innerRingCount=String(innerSources.length);
-    logos.dataset.outerRingCount=String(outerSources.length);
-    logos.dataset.innerRowCount=String(innerSources.length * ringRows.length);
-    logos.dataset.additionalInnerRowCount=String(inwardExtensionBands * ringRows.length);
     for (const mark of rain) mark.sprite = spriteFor(mark.width * bgRatio);
   }
   function easeLogoProgress(target, time, reset) {
@@ -1410,5 +1470,6 @@
     });
     observer.observe(document.querySelector('.site-shell'));
   }
+  loadRingSource();
   schedule();
 })();
