@@ -130,53 +130,45 @@
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
       return handle;
     }
-    function ringBuffer(group, rows, innerRadius, outerRadius) {
+    function ringBuffer(group) {
       let cached = pointBuffers.get(group);
       if (cached) return cached;
       const values = [];
-      for (const band of group.bands) {
-        const radialScale = (band.outerRatio - band.innerRatio) / (outerRadius - innerRadius);
-        rows.forEach((row, index) => {
-          const radius = band.innerRatio + (row.radius - innerRadius) * radialScale;
-          const dot = row.dot * radialScale;
-          for (let point = 0; point < row.count; point++) {
-            const angle = (point + row.phase) * Math.PI * 2 / row.count;
-            values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, band.rowOpacities[index], index);
-          }
-        });
+      for (const {count,phase,radius,dot,opacity,index} of group.rows) {
+        for (let point = 0; point < count; point++) {
+          const angle = (point + phase) * Math.PI * 2 / count;
+          values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, opacity, index);
+        }
       }
-      cached = {handle: buffer(new Float32Array(values)), count: values.length / 5,
-        inner: Math.min(...group.bands.map(band=>band.innerRatio)),
-        outer: Math.max(...group.bands.map(band=>band.outerRatio))};
+      cached = {handle: buffer(new Float32Array(values)), count: values.length / 5};
       pointBuffers.set(group, cached);
       return cached;
     }
-    function drawRings(groups, scene, opacity, geometry) {
+    function drawRings(groups, scene, opacity) {
       gl.useProgram(points.handle);
       gl.uniform2f(points.u_resolution, width, height);
       gl.uniform2f(points.u_center, scene.centerX, scene.centerY);
       gl.uniform1f(points.u_diameter, scene.ringDiameter);
       gl.uniform1f(points.u_ratio, ratio);
       gl.uniform1f(points.u_opacity, opacity);
+      const x=scene.centerX,y=scene.centerY;
+      const nearX=Math.max(0,-x,x-width),nearY=Math.max(0,-y,y-height);
+      const farX=Math.max(Math.abs(x),Math.abs(width-x));
+      const farY=Math.max(Math.abs(y),Math.abs(height-y));
+      const nearest=nearX*nearX+nearY*nearY, farthest=farX*farX+farY*farY;
       for (const group of groups) {
-        const cached = ringBuffer(group, geometry.rows, geometry.inner, geometry.outer);
-        const x=scene.centerX,y=scene.centerY;
-        const nearX=Math.max(0,-x,x-width),nearY=Math.max(0,-y,y-height);
-        const farX=Math.max(Math.abs(x),Math.abs(width-x));
-        const farY=Math.max(Math.abs(y),Math.abs(height-y));
-        const inner=cached.inner*scene.ringDiameter,outer=cached.outer*scene.ringDiameter;
-        if(nearX*nearX+nearY*nearY>(outer+1)**2 ||
-          farX*farX+farY*farY<Math.max(0,inner-1)**2)continue;
+        const inner=group.innerRadius*scene.ringDiameter,outer=group.outerRadius*scene.ringDiameter;
+        if(nearest>(outer+1)**2 || farthest<Math.max(0,inner-1)**2)continue;
+        const cached = ringBuffer(group);
         gl.bindBuffer(gl.ARRAY_BUFFER, cached.handle);
         gl.enableVertexAttribArray(points.a_point);
         gl.enableVertexAttribArray(points.a_row);
         gl.vertexAttribPointer(points.a_point, 4, gl.FLOAT, false, 20, 0);
         gl.vertexAttribPointer(points.a_row, 1, gl.FLOAT, false, 20, 16);
-        const baseAngle = group.source.scrollAngle + (group.source.ringIdleAngle ?? group.source.idleAngle);
         // One rotation per row and group. The point shader only applies it.
-        for (let index = 0; index < geometry.rows.length; index++) {
-          const pitch = Math.PI * 2 / geometry.rows[index].count;
-          const angle = baseAngle - (group.source.ringStrobeSteps?.[index] ?? 0) * pitch;
+        const angles = group.source.ringRowAngles;
+        for (let index = 0; index < angles.length; index++) {
+          const angle = angles[index];
           rowRotations[index * 2] = Math.cos(angle);
           rowRotations[index * 2 + 1] = Math.sin(angle);
         }
@@ -213,7 +205,7 @@
           gl.deleteTexture(handle); textures.delete(image);
         }
       },
-      draw(scene, layers, back, front, opacityFor, ringOpacity, geometry, rain) {
+      draw(scene, layers, back, front, opacityFor, ringOpacity, rain) {
         if (gl.isContextLost()) return false;
         gl.clear(gl.COLOR_BUFFER_BIT);
         if (rain) {
@@ -231,7 +223,7 @@
           }
           gl.disableVertexAttribArray(images.a_position);
         }
-        drawRings(back, scene, ringOpacity, geometry);
+        drawRings(back, scene, ringOpacity);
         gl.useProgram(images.handle);
         gl.bindBuffer(gl.ARRAY_BUFFER, quad);
         gl.enableVertexAttribArray(images.a_position);
@@ -248,7 +240,7 @@
           drawImage(layer.borderSprite, w, h, opacity);
         }
         gl.disableVertexAttribArray(images.a_position);
-        drawRings(front, scene, ringOpacity, geometry);
+        drawRings(front, scene, ringOpacity);
         if (checkDraw) { checkDraw = false; return gl.getError() === gl.NO_ERROR; }
         return true;
       },
