@@ -4,8 +4,7 @@
 :root {
   --layout-unit: min(calc(100vw / 393), calc(100svh / 852));
   --header-height: calc(90.44 * var(--layout-unit));
-  --layout-line-base: calc(1.5 * var(--layout-unit));
-  --layout-line: var(--layout-line-base);
+  --layout-line: 1.5px;
   --layout-content: calc(353.7 * var(--layout-unit));
   --layout-padding: calc(24 * var(--layout-unit));
   --layout-title: calc(35 * var(--layout-unit));
@@ -23,8 +22,6 @@
   :root {
     --layout-unit: min(calc(100vw / 896), calc(100svh / 414));
     --header-height: calc(104 * var(--layout-unit));
-    --layout-line-base: calc(.8 * var(--layout-unit));
-    --layout-line: calc(2 * var(--landscape-native-line, var(--layout-line-base)));
     --layout-content: calc(806.4 * var(--layout-unit));
     --layout-padding: calc(44.8 * var(--layout-unit));
     --layout-title: calc(44.8 * var(--layout-unit));
@@ -40,7 +37,7 @@
     display: block;
     width: 0;
     height: 0;
-    border-top: var(--layout-line-base) solid transparent;
+    border-top: calc(.8 * var(--layout-unit)) solid transparent;
     visibility: hidden;
     pointer-events: none;
   }
@@ -48,7 +45,7 @@
 body { min-width: 0; font-size: calc(21 * var(--layout-unit)); }
 body .site-shell *, body .site-nav, body .site-nav * {
   border-width: var(--layout-line) !important;
-  outline-width: var(--layout-line-base);
+  outline-width: var(--layout-line);
 }
 body .topbar {
   display: flex; justify-content: center; align-items: center;

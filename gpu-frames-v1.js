@@ -25,36 +25,39 @@
     void main() { gl_FragColor = texture2D(u_image, v_uv) * u_opacity; }`;
   const pointVertex = `
     attribute vec4 a_point;
-    attribute float a_row;
+    attribute float a_opacity;
     uniform vec2 u_resolution;
     uniform vec2 u_center;
     uniform float u_diameter;
     uniform float u_ratio;
-    uniform vec2 u_row_rotation[4];
-    varying mediump float v_radius;
+    uniform mediump vec2 u_rotation;
+    varying mediump vec2 v_half_size;
     varying mediump float v_size;
     varying mediump float v_opacity;
     void main() {
-      vec2 rotation = u_row_rotation[int(a_row)];
-      float c = rotation.x, s = rotation.y;
+      float c = u_rotation.x, s = u_rotation.y;
       vec2 p = vec2(c * a_point.x - s * a_point.y, s * a_point.x + c * a_point.y);
       p = p * u_diameter + u_center;
       gl_Position = vec4(p.x / u_resolution.x * 2. - 1., 1. - p.y / u_resolution.y * 2., 0., 1.);
-      v_radius = a_point.z * u_diameter * u_ratio;
-      v_size = max(1., ceil(v_radius * 2. + 2.));
+      v_half_size = a_point.zw * u_diameter * u_ratio;
+      vec2 rotatedSize = mat2(abs(c), abs(s), abs(s), abs(c)) * v_half_size;
+      v_size = max(1., ceil(2. * max(rotatedSize.x, rotatedSize.y) + 2.));
       gl_PointSize = v_size;
-      v_opacity = a_point.w;
+      v_opacity = a_opacity;
     }`;
   const pointFragment = `
     precision mediump float;
     uniform float u_opacity;
-    varying mediump float v_radius;
+    uniform mediump vec2 u_rotation;
+    varying mediump vec2 v_half_size;
     varying mediump float v_size;
     varying mediump float v_opacity;
     void main() {
       vec2 p = (gl_PointCoord - .5) * v_size;
-      float edge = clamp(v_radius + .5 - length(p), 0., 1.);
-      float alpha = edge * v_opacity * u_opacity;
+      float c = u_rotation.x, s = u_rotation.y;
+      vec2 local = vec2(c * p.x + s * p.y, -s * p.x + c * p.y);
+      vec2 edge = clamp(min(v_half_size + .5 - abs(local), 2. * v_half_size), 0., 1.);
+      float alpha = edge.x * edge.y * v_opacity * u_opacity;
       gl_FragColor = vec4(vec3(194.,181.,148.) / 255. * alpha, alpha);
     }`;
 
@@ -72,7 +75,6 @@
     if (!gl) return null;
     const programs = [], buffers = [], textures = new Map();
     const pointBuffers = new WeakMap();
-    const rowRotations = new Float32Array(8);
     let width = 1, height = 1, ratio = 1, checkDraw = true;
     function compile(type, code) {
       const shader = gl.createShader(type);
@@ -106,8 +108,8 @@
     try {
       images = program(vertex, fragment, ['a_position'],
         ['u_resolution','u_center','u_size','u_angle','u_image','u_opacity']);
-      points = program(pointVertex, pointFragment, ['a_point','a_row'],
-        ['u_resolution','u_center','u_diameter','u_ratio','u_row_rotation','u_opacity']);
+      points = program(pointVertex, pointFragment, ['a_point','a_opacity'],
+        ['u_resolution','u_center','u_diameter','u_ratio','u_rotation','u_opacity']);
       quad = buffer(new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]));
     } catch {
       for (const handle of programs) gl.deleteProgram(handle);
@@ -133,14 +135,13 @@
     function ringBuffer(group) {
       let cached = pointBuffers.get(group);
       if (cached) return cached;
-      const values = [];
-      for (const {count,phase,radius,dot,opacity,index} of group.rows) {
-        for (let point = 0; point < count; point++) {
-          const angle = (point + phase) * Math.PI * 2 / count;
-          values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, opacity, index);
-        }
+      const values = new Float32Array(group.bands.reduce((size, band) => size + band.strips.length, 0));
+      let offset = 0;
+      for (const {strips} of group.bands) {
+        values.set(strips, offset);
+        offset += strips.length;
       }
-      cached = {handle: buffer(new Float32Array(values)), count: values.length / 5};
+      cached = {handle: buffer(values), count: values.length / 5};
       pointBuffers.set(group, cached);
       return cached;
     }
@@ -162,21 +163,15 @@
         const cached = ringBuffer(group);
         gl.bindBuffer(gl.ARRAY_BUFFER, cached.handle);
         gl.enableVertexAttribArray(points.a_point);
-        gl.enableVertexAttribArray(points.a_row);
+        gl.enableVertexAttribArray(points.a_opacity);
         gl.vertexAttribPointer(points.a_point, 4, gl.FLOAT, false, 20, 0);
-        gl.vertexAttribPointer(points.a_row, 1, gl.FLOAT, false, 20, 16);
-        // One rotation per row and group. The point shader only applies it.
-        const angles = group.source.ringRowAngles;
-        for (let index = 0; index < angles.length; index++) {
-          const angle = angles[index];
-          rowRotations[index * 2] = Math.cos(angle);
-          rowRotations[index * 2 + 1] = Math.sin(angle);
-        }
-        gl.uniform2fv(points.u_row_rotation, rowRotations);
+        gl.vertexAttribPointer(points.a_opacity, 1, gl.FLOAT, false, 20, 16);
+        const angle = group.source.ringRowAngles[0];
+        gl.uniform2f(points.u_rotation, Math.cos(angle), Math.sin(angle));
         gl.drawArrays(gl.POINTS, 0, cached.count);
       }
       gl.disableVertexAttribArray(points.a_point);
-      gl.disableVertexAttribArray(points.a_row);
+      gl.disableVertexAttribArray(points.a_opacity);
     }
     function drawImage(image, sizeX, sizeY, opacity) {
       if (!image || opacity <= 0) return;
