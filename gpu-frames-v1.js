@@ -134,9 +134,10 @@
       let cached = pointBuffers.get(group);
       if (cached) return cached;
       const values = [];
-      for (const {unitPoints,radius,dot,opacity,index} of group.rows) {
-        for (const [unitX, unitY] of unitPoints) {
-          values.push(unitX * radius, unitY * radius, dot, opacity, index);
+      for (const {count,phase,radius,dot,opacity,index} of group.rows) {
+        for (let point = 0; point < count; point++) {
+          const angle = (point + phase) * Math.PI * 2 / count;
+          values.push(Math.sin(angle) * radius, -Math.cos(angle) * radius, dot, opacity, index);
         }
       }
       cached = {handle: buffer(new Float32Array(values)), count: values.length / 5};

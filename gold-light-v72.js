@@ -135,7 +135,7 @@
   engine.subscribe({
     measure() {
       if (landscape.matches) {
-        // Keep the logo's outline reference independent of the page borders.
+        // Double the native painted width after the browser's pixel rounding.
         const width = parseFloat(getComputedStyle(lineReference).borderTopWidth);
         paint(document.documentElement, '--landscape-native-line', `${Math.ceil(width * 1000) / 1000}px`);
       }
