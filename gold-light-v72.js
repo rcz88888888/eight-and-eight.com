@@ -57,11 +57,6 @@
   fieldLineLayer?.append(...fieldLines.map(({line}) => line));
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  const landscape = matchMedia('(orientation: landscape)');
-  const lineReference = document.createElement('span');
-  lineReference.className = 'landscape-line-reference';
-  lineReference.setAttribute('aria-hidden', 'true');
-  document.body.append(lineReference);
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -134,11 +129,6 @@
   if (!engine) return;
   engine.subscribe({
     measure() {
-      if (landscape.matches) {
-        // Keep the logo's outline reference independent of the page borders.
-        const width = parseFloat(getComputedStyle(lineReference).borderTopWidth);
-        paint(document.documentElement, '--landscape-native-line', `${Math.ceil(width * 1000) / 1000}px`);
-      }
       syncBrowserColor();
       cacheGeometry();
       measureFieldLines();
