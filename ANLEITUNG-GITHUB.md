@@ -24,15 +24,13 @@ Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn
 
 ## Timecode-Sichtbarkeit um 10 Prozent erhöht
 
-Alle bestehenden Timecode-Punktreihen erhalten nochmals die 1,10-fache Deckkraft. Im Querformat ergänzen 16 gleichmäßig verteilte Reihen die innere Ringfläche hinter den Hauptlogos. Sie laufen bis zur gleichen relativen Innenkante wie im Hochformat und werden zur Mitte feiner. Das Hochformat hat 104 Punktreihen, das Querformat 120. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte und dieselbe sichtbare Punktphase.
+Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
 
 ## Feste Tempoabläufe für die Timecoderinge
 
 Die erste achtsekündige Pause beginnt erst, wenn sämtliche Hauptlogo-Grafiken vorbereitet sind. Die Startsequenz kann dadurch nicht mehr während des Ladens unsichtbar über die erste langsame Phase laufen. Wiederholungen bleiben auf denselben berechneten Zyklusgrenzen verankert; verspätete Einzelbilder verschieben den nächsten Start nicht.
 
 Die Ringebenen wechseln in acht Abschnitten zwischen 8 und 33,333333 U/min. Jeder Tempoübergang dauert 0,8 Sekunden. Die Fächerzeiten betragen 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Eine veränderte Fächerzeit dehnt oder staucht die Ring-Zeitachse nicht mehr. Die bestehende Schlussbeschleunigung und der aufrechte Abschluss bleiben erhalten. Pause, App-Wechsel und Scrollunterbrechung verwenden weiterhin die gemeinsame Animationsuhr.
-
-Bei 33,333333 U/min ist der sichtbare Schritt nach einer längeren Bildlücke auf 112 Millisekunden Ringbewegung begrenzt. So behält die Rückwärtsdrift in beiden Ausrichtungen ihre Richtung. Die Zeitpunkte der Tempowechsel folgen weiterhin der gemeinsamen Uhr.
 
 Der optische Stroboskopeindruck hängt zusätzlich von den tatsächlich gezeichneten Bildern und der Display-Bildfolge ab. Exakte Drehzahlen und feste Ablaufzeiten garantieren deshalb keinen identischen scheinbaren Stillstand auf unterschiedlichen oder wechselnden Bildraten.
 
