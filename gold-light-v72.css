@@ -10,6 +10,27 @@
 .gold-light-target, .topbar, .wallpaper-end {
   --gold-surface: var(--wallpaper-sand-gold);
 }
+/* Rounded frames use a hollow mask, so neither text nor the transparent
+   field interior receives a coloured fill. No extra DOM children are added. */
+.gold-frame-relative { position: relative; }
+.gold-frame-light:not(.topbar)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  border: 0 !important;
+  border-radius: inherit;
+  padding: var(--gold-edge-top, 0px) var(--gold-edge-right, 0px)
+    var(--gold-edge-bottom, 0px) var(--gold-edge-left, 0px);
+  background: var(--gold-surface);
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
 .site-nav a.gold-light-target::after,
 .menu-toggle span.gold-light-target {
   background: var(--gold-surface) !important;
@@ -262,23 +283,13 @@ body { height: auto; min-height: 100%; overflow: visible; }
   background: var(--page-cream, #fdfcfa);
   pointer-events: none;
 }
-/* Keep field content below the cream banner mask. */
+/* Avoid enclosing text and frames in the same stacking context. Each frame
+   pseudo-element can then paint above the mask while its glyphs stay below. */
 .content-scroll > main,
 .content-scroll > .footer,
 .content-scroll .hero-copy { z-index: auto; }
-/* Paint just the native border geometry above the mask. This layer scrolls
-   with the document and needs no per-frame transforms or hollow masks. */
-.content-scroll > .field-line-layer {
-  position: absolute;
-  inset: 0;
+.content-scroll .gold-frame-light::after {
   z-index: 3;
-  pointer-events: none;
-}
-.content-scroll > .field-line-layer > div {
-  position: absolute;
-  box-sizing: border-box;
-  border-width: var(--field-line-width) !important;
-  border-color: var(--metallic-gold);
 }
 .content-scroll .section::before,
 .content-scroll .contact-box::before,
