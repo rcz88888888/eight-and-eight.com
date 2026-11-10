@@ -14,8 +14,6 @@ Die untere Linie des geöffneten Menübanners wird in allen Ausrichtungen als na
 
 ## Hauptlogo-Größe nach Bildmarkierungen
 
-Startlogo und vorderste animierte Ebene verwenden nun auch im Hochformat denselben Maßstab. Die frühere Querformat-Beschränkung dieser Angleichung entfällt. Die äußeren Startlogo-Abmessungen bleiben unverändert; alle acht animierten Ebenen werden gemeinsam daran ausgerichtet, mit unveränderten relativen Größenstufen. Die Berechnung verwendet nicht gerundete CSS-Abmessungen. Auch Tapetenmaß und Konturvorbereitung verwenden diesen gemeinsamen Faktor.
-
 Die acht separaten SVG-Kopien der Hauptlogos sind aus der sichtbaren Seite entfernt. Eine einzige gemeinsame Liste enthält die ursprünglichen acht Ebenen in der Reihenfolge 7 bis 0 mit unveränderten Größen- und Sichtbarkeitsstufen. GPU, Canvas-Ersatzdarstellung und der begrenzte Bannerausschnitt verwenden ausschließlich diese eine Folge und dieselbe Mittelachse.
 
 Im Hochformat sind die ursprünglichen Größen und Positionen des Startlogos und aller acht Hauptlogo-Ebenen wiederhergestellt. Nur im Querformat werden sie gegenüber dieser Ausgangsversion um 30 Prozent vergrößert. Die freie Fläche vor dem ersten Inhaltsfeld wächst passend mit: Die sichtbare Logokontur hat oben zur Bannerunterkante und unten zur Oberkante des ABOUT-Feldes denselben Abstand. Die Linie unter der ABOUT-Beschriftung dient nicht als Messpunkt. Bestehende Größenstufen, Timecode-Abstände und Tapetenmaß bleiben erhalten.
@@ -25,14 +23,6 @@ Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn
 ## Timecode-Sichtbarkeit um 10 Prozent erhöht
 
 Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
-
-## Feste Tempoabläufe für die Timecoderinge
-
-Die erste achtsekündige Pause beginnt erst, wenn sämtliche Hauptlogo-Grafiken vorbereitet sind. Die Startsequenz kann dadurch nicht mehr während des Ladens unsichtbar über die erste langsame Phase laufen. Wiederholungen bleiben auf denselben berechneten Zyklusgrenzen verankert; verspätete Einzelbilder verschieben den nächsten Start nicht.
-
-Die Ringebenen wechseln in acht Abschnitten zwischen 8 und 33,333333 U/min. Jeder Tempoübergang dauert 0,8 Sekunden. Die Fächerzeiten betragen 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Eine veränderte Fächerzeit dehnt oder staucht die Ring-Zeitachse nicht mehr. Die bestehende Schlussbeschleunigung und der aufrechte Abschluss bleiben erhalten. Pause, App-Wechsel und Scrollunterbrechung verwenden weiterhin die gemeinsame Animationsuhr.
-
-Der optische Stroboskopeindruck hängt zusätzlich von den tatsächlich gezeichneten Bildern und der Display-Bildfolge ab. Exakte Drehzahlen und feste Ablaufzeiten garantieren deshalb keinen identischen scheinbaren Stillstand auf unterschiedlichen oder wechselnden Bildraten.
 
 ## Flüssige Übergänge und verringerte Zeichenlast
 
@@ -104,9 +94,9 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 
 ## Aktuelle Startsequenz: acht abwechselnde Tempodurchgänge
 
-Die Hauptlogos verwenden in den acht Durchgängen abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Timecoderinge verwenden in den langsamen Phasen exakt 8 rpm. Ein virtueller Stroboskop-Takt von 26 Schritten pro Sekunde lässt die Punktreihen dabei gleichmäßig gegen den Uhrzeigersinn driften. Bei 33,333333 rpm gleicht ein eigener Takt pro Punktabstand das höhere Tempo aus, sodass jede Reihe dieselbe sichtbare Drift wie bei 8 rpm hat. Jeder Tempoabschnitt dauert acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens. Es gibt keine 45-rpm-Stufe und keine Zwischenstopps zwischen diesen acht Tempoabschnitten.
+Die acht Durchgänge verwenden abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Dauer je Tempoabschnitt beträgt wie bei den bisherigen Tempophasen acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens. Es gibt keine 45-rpm-Stufe und keine Zwischenstopps zwischen diesen acht Tempoabschnitten.
 
-Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron ohne Fächer. Die Ringe behalten dort ihren bisherigen Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang bleibt die bisherige Folge erhalten: im zweiten 0, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Die Hauptlogos verbinden die Fächerzeiten über den 0,8-Sekunden-Übergang. In der zweiten Tempophase drehen nach diesem Übergang alle Logos und Ringe mit exakt 33,333333 rpm.
+Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron ohne Fächer. Die Ringe behalten dort ihren bisherigen Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang bleibt die bisherige Folge erhalten: im zweiten 0, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Beim Wechsel werden die Fächerzeiten während des 0,8-Sekunden-Übergangs verbunden, sodass die Winkel nicht springen oder rückwärtslaufen. In der zweiten Tempophase drehen nach diesem Übergang alle Logos und Ringe exakt gemeinsam. Die Ringe behalten ihre bisherigen Phasen, auch während des ersten nun synchronen Hauptlogo-Durchgangs.
 
 Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in 1,8 Sekunden von 33,333333 auf 888 rpm, danach direkt aufrechter Stopp. Die gemeinsame achtsekündige Pause beginnt, wenn auch die letzte verzögerte Ebene aufrecht steht. Danach wiederholt sich die Sequenz. Die Scrollstaffelung und die Ringgeometrie bleiben unverändert.
 

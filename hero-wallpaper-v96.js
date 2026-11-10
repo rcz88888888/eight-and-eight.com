@@ -15,7 +15,7 @@
     const border = parseFloat(getComputedStyle(header).borderBottomWidth) ||
       (matchMedia('(orientation: landscape)').matches ? .8 : 1.5);
     logo.style.setProperty('--hero-border-width', `${border}px`);
-    const scale = engine.openingLogoScale();
+    const scale = Math.min(logo.clientWidth / 922, logo.clientHeight / 1368);
     if (!(scale > 0)) return;
     if (ring) {
       // Preserve a true circle and the vector's exact point spacing. The

@@ -50,11 +50,6 @@
   ]);
   const targets = [...lightTargets];
   const contentLayer = document.querySelector('.content-scroll');
-  const fieldLineLayer = contentLayer?.querySelector('.field-line-layer');
-  const fieldLines = fieldLineLayer ? frames.filter(element =>
-    contentLayer.contains(element) && !element.matches('.wallpaper-end')
-  ).map(element => ({element, line: document.createElement('div')})) : [];
-  fieldLineLayer?.append(...fieldLines.map(({line}) => line));
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
   const lastPaint = new WeakMap();
@@ -92,30 +87,6 @@
     }
   }
 
-  function measureFieldLines() {
-    if (!fieldLineLayer) return;
-    const origin = fieldLineLayer.getBoundingClientRect();
-    // Measure the original boxes together. Their borders still reserve the
-    // same layout space, including dividers with only one painted side.
-    const metrics = fieldLines.map(({element, line}) => {
-      const {borderWidth, borderStyle, borderRadius} = getComputedStyle(element);
-      return {element, line, borderWidth, borderStyle, borderRadius, box: element.getBoundingClientRect()};
-    });
-    for (const {element, line, borderWidth, borderStyle, borderRadius, box} of metrics) {
-      line.hidden = !box.width || !box.height;
-      paint(line, 'left', `${box.left - origin.left}px`);
-      paint(line, 'top', `${box.top - origin.top}px`);
-      paint(line, 'width', `${box.width}px`);
-      paint(line, 'height', `${box.height}px`);
-      paint(line, '--field-line-width', borderWidth);
-      paint(line, 'border-style', borderStyle);
-      paint(line, 'border-radius', borderRadius);
-      if (element.style.borderColor !== 'transparent') {
-        element.style.setProperty('border-color', 'transparent', 'important');
-      }
-    }
-  }
-
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
   textNodes.forEach(element => {
     element.classList.add('gold-text-light');
@@ -125,13 +96,13 @@
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
 
+  // Static gold edges use native CSS borders. A separate hollow composite mask
+  // per cell would duplicate those same edges and enlarge Safari's layer tree.
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
     measure() {
-      syncBrowserColor();
-      cacheGeometry();
-      measureFieldLines();
+      syncBrowserColor(); cacheGeometry();
     }
   });
   // Native lazy image loading and the light renderer prepare nearby photos.
