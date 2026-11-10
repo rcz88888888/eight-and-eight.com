@@ -83,11 +83,6 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  // The header follows the same layout unit as the type. Observe its final
-  // size so a viewport change cannot leave the filters at the previous scale.
-  if (header && 'ResizeObserver' in window) {
-    new ResizeObserver(sizeGlyphKernels).observe(header);
-  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
