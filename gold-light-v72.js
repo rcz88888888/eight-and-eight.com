@@ -57,21 +57,18 @@
   const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
     blur,
     alpha: blur.nextElementSibling.firstElementChild,
-    deviation: Number(blur.getAttribute('stdDeviation')),
-    edgeGain: Number(blur.dataset.edgeGain ?? 2.65),
-    edgeMidpoint: Number(blur.dataset.edgeMidpoint ?? .47)
+    deviation: Number(blur.getAttribute('stdDeviation'))
   }));
   function sizeGlyphKernels() {
     // The root type size is 16 times the layout unit in either orientation.
     const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
-    for (const {blur, alpha, deviation, edgeGain, edgeMidpoint} of glyphKernels) {
+    for (const {blur, alpha, deviation} of glyphKernels) {
       const radius = scale * deviation;
-      const contrast = Math.max(3.2, edgeGain * radius * window.devicePixelRatio);
+      const contrast = Math.max(3.2, 2.65 * radius * window.devicePixelRatio);
       blur.setAttribute('stdDeviation', radius.toFixed(3));
-      // Turn the smoothed coverage into a crisp contour. A midpoint of .50
-      // keeps a straight edge centered on its original position.
+      // Restore a crisp alpha edge after rounding while retaining thin strokes.
       alpha.setAttribute('slope', contrast.toFixed(3));
-      alpha.setAttribute('intercept', (.5 - edgeMidpoint * contrast).toFixed(3));
+      alpha.setAttribute('intercept', (.5 - .47 * contrast).toFixed(3));
     }
   }
   sizeGlyphKernels();
