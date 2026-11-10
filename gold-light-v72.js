@@ -57,18 +57,21 @@
   const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
     blur,
     alpha: blur.nextElementSibling.firstElementChild,
-    deviation: Number(blur.getAttribute('stdDeviation'))
+    deviation: Number(blur.getAttribute('stdDeviation')),
+    edgeGain: Number(blur.dataset.edgeGain ?? 2.65),
+    edgeMidpoint: Number(blur.dataset.edgeMidpoint ?? .47)
   }));
   function sizeGlyphKernels() {
     // The root type size is 16 times the layout unit in either orientation.
     const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
-    for (const {blur, alpha, deviation} of glyphKernels) {
+    for (const {blur, alpha, deviation, edgeGain, edgeMidpoint} of glyphKernels) {
       const radius = scale * deviation;
-      const contrast = Math.max(3.2, 2.65 * radius * window.devicePixelRatio);
+      const contrast = Math.max(3.2, edgeGain * radius * window.devicePixelRatio);
       blur.setAttribute('stdDeviation', radius.toFixed(3));
-      // Restore a crisp alpha edge after rounding while retaining thin strokes.
+      // Turn the smoothed coverage into a crisp contour. A midpoint of .50
+      // keeps a straight edge centered on its original position.
       alpha.setAttribute('slope', contrast.toFixed(3));
-      alpha.setAttribute('intercept', (.5 - .47 * contrast).toFixed(3));
+      alpha.setAttribute('intercept', (.5 - edgeMidpoint * contrast).toFixed(3));
     }
   }
   sizeGlyphKernels();
@@ -83,6 +86,11 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
+  // The header follows the same layout unit as the type. Observe its final
+  // size so a viewport change cannot leave the filters at the previous scale.
+  if (header && 'ResizeObserver' in window) {
+    new ResizeObserver(sizeGlyphKernels).observe(header);
+  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
