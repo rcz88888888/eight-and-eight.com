@@ -30,12 +30,14 @@
   // Include EVERY real text owner, not just a list of semantic tags.
   // This also captures section-label divs, process/principle spans and footer.
   const textOwners = new Set(textNodes);
+  const glyphRuns = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) {
     const node = walker.currentNode;
     const owner = node.parentElement;
     if (!node.textContent.trim() || !owner ||
         owner.closest('script, style, noscript, template, svg, .wordmark, .menu-toggle, [hidden], [aria-hidden="true"]')) continue;
+    glyphRuns.push(node);
     if (!textOwners.has(owner)) {
       // Newly covered labels keep their existing dimensions and frame geometry.
       owner.classList.add('gold-text-coverage');
@@ -43,6 +45,35 @@
       textNodes.push(owner);
     }
   }
+  // Round the ink alone. Frames, link affordances and the separate backdrop
+  // layer stay on their original elements, as do text reveal and line metrics.
+  for (const node of glyphRuns) {
+    const glyphs = document.createElement('span');
+    glyphs.className = 'rounded-glyphs';
+    node.replaceWith(glyphs);
+    glyphs.appendChild(node);
+  }
+
+  const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
+    blur,
+    alpha: blur.nextElementSibling.firstElementChild,
+    deviation: Number(blur.getAttribute('stdDeviation'))
+  }));
+  function sizeGlyphKernels() {
+    // The root type size is 16 times the layout unit in either orientation.
+    const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
+    for (const {blur, alpha, deviation} of glyphKernels) {
+      const radius = scale * deviation;
+      const contrast = Math.max(3.2, 2.65 * radius * window.devicePixelRatio);
+      blur.setAttribute('stdDeviation', radius.toFixed(3));
+      // Restore a crisp alpha edge after rounding while retaining thin strokes.
+      alpha.setAttribute('slope', contrast.toFixed(3));
+      alpha.setAttribute('intercept', (.5 - .47 * contrast).toFixed(3));
+    }
+  }
+  sizeGlyphKernels();
+  addEventListener('resize', sizeGlyphKernels, {passive: true});
+
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
   const lightTargets = new Set([
     ...frames,

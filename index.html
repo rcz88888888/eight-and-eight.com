@@ -15,6 +15,20 @@
   <link rel="stylesheet" href="design-logo-v6.css?v=20261103-desktop-font-all-modes">
   <link rel="stylesheet" href="gold-light-v72.css?v=20261029-partner-optical-eight-percent">
   <link rel="stylesheet" href="proportional-layout-v222.css?v=20261104-landscape-logo-first-field">
+  <style>
+    .glyph-rounding-filters { position: absolute; pointer-events: none; }
+    .section-label, .site-nav, .footer, .principles > div > span {
+      --glyph-rounding: url("#glyph-rounding-small");
+    }
+    h1, h2 { --glyph-rounding: url("#glyph-rounding-title"); }
+    body :is(.rounded-glyphs, .principles .rounded-glyphs) {
+      display: inline;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      filter: var(--glyph-rounding, url("#glyph-rounding-body"));
+    }
+  </style>
 </head>
 <body>
   <div class="browser-top-color" aria-hidden="true"></div>
@@ -299,11 +313,28 @@
     </div>
   </div>
 
+  <svg class="glyph-rounding-filters" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glyph-rounding-small" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation=".52"/>
+        <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.004"/></feComponentTransfer>
+      </filter>
+      <filter id="glyph-rounding-body" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation=".74"/>
+        <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.004"/></feComponentTransfer>
+      </filter>
+      <filter id="glyph-rounding-title" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="1.65"/>
+        <feComponentTransfer><feFuncA type="linear" slope="4.37" intercept="-1.554"/></feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+
   <script src="gpu-frames-v1.js?v=20261106-ring-strobe" defer></script>
   <script src="scroll-effects-v72.js?v=20261106-ring-strobe" defer></script>
   <script src="menu-overlay-v72.js?v=20261102-consistent-overlay" defer></script>
   <script src="menu-scroll-v72.js?v=20261012-187" defer></script>
-  <script src="gold-light-v72.js?v=20261103-native-gold-borders" defer></script>
+  <script src="gold-light-v72.js?v=20261110-rounded-glyphs" defer></script>
   <script src="photo-material-light-v219.js?v=20261103-nearby-photo-light" defer></script>
   <script src="hero-wallpaper-v96.js?v=20261105-shared-fractional-logo-scale" defer></script>
   <script src="logo-home-v167.js?v=20261012-187" defer></script>
