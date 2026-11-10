@@ -20,7 +20,6 @@
     .section-label, .site-nav, .footer, .principles > div > span {
       --glyph-rounding: url("#glyph-rounding-small");
     }
-    h1, h2 { --glyph-rounding: url("#glyph-rounding-title"); }
     body :is(.rounded-glyphs, .principles .rounded-glyphs) {
       display: inline;
       font: inherit;
@@ -322,10 +321,6 @@
       <filter id="glyph-rounding-body" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
         <feGaussianBlur stdDeviation=".74"/>
         <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.004"/></feComponentTransfer>
-      </filter>
-      <filter id="glyph-rounding-title" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
-        <feGaussianBlur stdDeviation="1.65"/>
-        <feComponentTransfer><feFuncA type="linear" slope="4.37" intercept="-1.554"/></feComponentTransfer>
       </filter>
     </defs>
   </svg>
