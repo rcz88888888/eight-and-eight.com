@@ -66,7 +66,7 @@
     const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
     for (const {blur, alpha, deviation, edgeGain, edgeMidpoint} of glyphKernels) {
       const radius = scale * deviation;
-      const contrast = Math.max(3.2, edgeGain * radius * window.devicePixelRatio);
+      const contrast = 1.3 * Math.max(3.2, edgeGain * radius * window.devicePixelRatio);
       blur.setAttribute('stdDeviation', radius.toFixed(3));
       // Turn the smoothed coverage into a crisp contour. A midpoint of .50
       // keeps a straight edge centered on its original position.

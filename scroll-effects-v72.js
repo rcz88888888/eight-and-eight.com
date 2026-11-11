@@ -846,8 +846,14 @@
       catchUp: 900 + (scrollRotationFinalDelay - 900) * blend
     };
   }
+  const scrollRingAngle = progress => (.5 - .5 * Math.cos(Math.PI * progress)) * Math.PI * 16;
+  const scrollRingDistance = () => Math.max(1, pageHeight - (openingViewport?.height || innerHeight));
+  const scrollRingProgress = scroll => scroll >= pageHeight - innerHeight - 1
+    ? 1 : Math.min(1, scroll / scrollRingDistance());
+  const scrollAtRingAngle = angle => scrollRingDistance() *
+    Math.acos(Math.max(-1, Math.min(1, 1 - angle / (8 * Math.PI)))) / Math.PI;
   function updateScrollRotations(progress,time,reset,inputScroll) {
-    const angle=(.5-.5*Math.cos(Math.PI*progress))*Math.PI*16;
+    const angle=scrollRingAngle(progress);
     const dt=scrollRotationFrameTime===undefined?0:Math.max(0,Math.min(64,time-scrollRotationFrameTime));
     scrollRotationFrameTime=time;
     if(reset || reduced.matches || !scrollRotationHistory.length){
@@ -915,6 +921,8 @@
   const invalidate = () => { layoutDirty = true; viewportDirty = true; schedule(); };
   window.EightEightEffects = {
     openingLogoScale,
+    ringAngleAtScroll: scroll => scrollRingAngle(scrollRingProgress(scroll)),
+    scrollAtRingAngle,
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
     // Navigation advances first, then all canvases and lights use the same
     // resulting scroll position in this frame (no second animation clock).
@@ -1116,9 +1124,7 @@
   }
   function field(width, height, scroll) {
     // Browser-toolbar height changes must not rotate otherwise stationary logos.
-    const referenceHeight = openingViewport?.height || height;
-    const progress = scroll >= pageHeight-height-1 ? 1 :
-      Math.min(1, scroll / Math.max(1, pageHeight-referenceHeight));
+    const progress = scrollRingProgress(scroll);
     const motion = reduced.matches ? 0 : progress;
     const travel = reduced.matches ? 0 : scroll / Math.max(1, height);
     return {width, height, scroll, progress, travel,
@@ -1293,9 +1299,6 @@
     const controlledScroll=frameDrivers.size>0;
     // Explicit menu navigation remains available during a partial return.
     if (controlledScroll && startScrollReturn) releaseStartScrollToNavigation();
-    for(const driver of [...frameDrivers])driver(time);
-    captureNativeStartScroll();
-    syncSurfacePosition(scrollPosition());
     const geometryDirty = layoutDirty || viewportDirty;
     // Do not force layout after the viewport-following canvas transform write.
     const width = geometryDirty || !lastWidth ? root.clientWidth : lastWidth;
@@ -1307,6 +1310,9 @@
       lastWidth = width;
       lastHeight = height;
     }
+    for (const driver of [...frameDrivers]) driver(time);
+    captureNativeStartScroll();
+    syncSurfacePosition(scrollPosition());
     const state = field(width, height, Math.max(0, scrollPosition()));
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     updateScrollRotations(easedProgress,time,resetMotion,state.scroll);
