@@ -1,6 +1,6 @@
 (() => {
   const rampSeconds = 0.88888888;
-  const maxRingSpeed = 8 * 2 * Math.PI / 60;
+  const maxRingSpeed = 33.333333 * 2 * Math.PI / 60;
   // Integral of smoothstep velocity, with zero acceleration at both ends.
   const rampTravel = t => t ** 3 * (1 - t / 2);
 
