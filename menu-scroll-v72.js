@@ -1,26 +1,45 @@
 (() => {
   const rampSeconds = 0.88888888;
   const maxRingSpeed = 33.333333 * 2 * Math.PI / 60;
+  const maxFrameSeconds = .05;
+  const rampSpeed = t => t * t * (3 - 2 * t);
   // Integral of smoothstep velocity, with zero acceleration at both ends.
   const rampTravel = t => t ** 3 * (1 - t / 2);
 
-  function createTrip(start, end) {
+  function createTrip(start, end, velocity) {
     const distance = Math.abs(end - start);
-    const speed = Math.min(maxRingSpeed, distance / rampSeconds);
-    const cruiseSeconds = Math.max(0, distance / speed - rampSeconds);
-    const duration = 2 * rampSeconds + cruiseSeconds;
     const direction = Math.sign(end - start);
+    const startSpeed = velocity * direction;
+    const speed = Math.min(maxRingSpeed, Math.max(startSpeed, distance / rampSeconds - startSpeed / 2));
+    const accelerationSeconds = speed > startSpeed ? rampSeconds : 0;
+    const accelerationDistance = (startSpeed + speed) * accelerationSeconds / 2;
+    // A moved anchor can leave less than a full ramp's stopping distance.
+    const brakeSeconds = accelerationSeconds ? rampSeconds : Math.min(rampSeconds, 2 * distance / speed);
+    const cruiseDistance = Math.max(0, distance - accelerationDistance - speed * brakeSeconds / 2);
+    const duration = accelerationSeconds + cruiseDistance / speed + brakeSeconds;
     return {
       duration,
-      angleAt(seconds) {
-        if (seconds <= rampSeconds) {
-          return start + direction * speed * rampSeconds * rampTravel(seconds / rampSeconds);
+      sample(seconds) {
+        if (seconds < accelerationSeconds) {
+          const progress = seconds / accelerationSeconds;
+          const speedChange = speed - startSpeed;
+          return {
+            angle: start + direction * (startSpeed * seconds + speedChange * accelerationSeconds * rampTravel(progress)),
+            velocity: direction * (startSpeed + speedChange * rampSpeed(progress))
+          };
         }
         const remaining = duration - seconds;
-        if (remaining <= rampSeconds) {
-          return end - direction * speed * rampSeconds * rampTravel(remaining / rampSeconds);
+        if (remaining <= brakeSeconds) {
+          const progress = Math.max(0, remaining) / brakeSeconds;
+          return {
+            angle: end - direction * speed * brakeSeconds * rampTravel(progress),
+            velocity: direction * speed * rampSpeed(progress)
+          };
         }
-        return start + direction * speed * (seconds - rampSeconds / 2);
+        return {
+          angle: start + direction * (accelerationDistance + speed * (seconds - accelerationSeconds)),
+          velocity: direction * speed
+        };
       }
     };
   }
@@ -91,37 +110,52 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       const session = active;
-      let startTime = null;
+      let lastFrameTime;
+      let elapsed = 0;
+      let velocity = 0;
       let destination;
       let trip;
       const engine = window.EightEightEffects;
-      const angleAtScroll = engine?.ringAngleAtScroll ?? (scroll =>
-        scroll / Math.max(1, root.scrollHeight - window.innerHeight) * 16 * Math.PI);
-      const scrollAtAngle = engine?.scrollAtRingAngle ?? (angle =>
-        angle / (16 * Math.PI) * Math.max(1, root.scrollHeight - window.innerHeight));
+      let mapping;
       const step = now => {
         if (active !== session) return;
-        if (startTime === null || destinationDirty) {
-          startTime = now;
-          destination = destinationFor(target);
+        // After a delayed frame, continue with a short step so the page
+        // cannot skip a visible part of the route to catch up with the clock.
+        const frameSeconds = lastFrameTime === undefined ? 0 :
+          Math.min(maxFrameSeconds, Math.max(0, (now - lastFrameTime) / 1000));
+        lastFrameTime = now;
+        if (!trip || destinationDirty) {
+          const nextDestination = destinationFor(target);
           destinationDirty = false;
-          const start = scrollPosition();
-          const startAngle = angleAtScroll(start);
-          const endAngle = angleAtScroll(destination);
-          if (Math.abs(destination - start) < 1 || Math.abs(endAngle - startAngle) < 1e-9 ||
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            scrollTo({top: destination, behavior: 'auto'});
-            finish(target, hash);
-            return;
+          if (!trip || Math.abs(nextDestination - destination) > 1) {
+            destination = nextDestination;
+            const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
+            mapping = engine?.createRingScrollMapping?.() ?? {
+              angleAtScroll: scroll => scroll / scrollRange * 16 * Math.PI,
+              scrollAtAngle: angle => angle / (16 * Math.PI) * scrollRange
+            };
+            const start = scrollPosition();
+            const startAngle = mapping.angleAtScroll(start);
+            const endAngle = mapping.angleAtScroll(destination);
+            if (Math.abs(destination - start) < 1 || Math.abs(endAngle - startAngle) < 1e-9 ||
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+              scrollTo({top: destination, behavior: 'auto'});
+              finish(target, hash);
+              return;
+            }
+            // Use the current speed when a layout change moves the anchor.
+            trip = createTrip(startAngle, endAngle, velocity);
+            elapsed = 0;
           }
-          trip = createTrip(startAngle, endAngle);
         }
-        const elapsed = Math.max(0, (now - startTime) / 1000);
+        elapsed += frameSeconds;
         if (elapsed >= trip.duration) {
-          scrollTo({top: destination, behavior: 'auto'});
+          scrollTo({top: destinationFor(target), behavior: 'instant'});
           finish(target, hash);
         } else {
-          scrollTo({top: scrollAtAngle(trip.angleAt(elapsed)), behavior: 'auto'});
+          const sample = trip.sample(elapsed);
+          velocity = sample.velocity;
+          scrollTo({top: mapping.scrollAtAngle(sample.angle), behavior: 'instant'});
           if (!session.stopDriver) session.frame = requestAnimationFrame(step);
         }
       };

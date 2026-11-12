@@ -236,6 +236,7 @@
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
+  let wallpaperRefreshPending = false;
   let mainBox;
   let openingScaleFactor=1;
   const rainViewport = document.createElement('span');
@@ -690,6 +691,12 @@
     const key = [pixels, scale, inkRatio, borderWidth / openingScale, border.getAttribute('stroke'),
       ...layers.map(layer => layer.scale)].join(':');
     if (key === mainWallpaperKey) return;
+    // Keep drawing with the existing sprites during menu navigation. Encoding
+    // eight wallpaper SVGs at once can block a scroll frame on mobile.
+    if (frameDrivers.size && mainSprites.length) {
+      wallpaperRefreshPending = true;
+      return;
+    }
     mainWallpaperKey = key;
     const copy = openingLogo.cloneNode(true);
     copy.querySelector('.hero-strobe-ring')?.remove();
@@ -850,8 +857,15 @@
   const scrollRingDistance = () => Math.max(1, pageHeight - (openingViewport?.height || innerHeight));
   const scrollRingProgress = scroll => scroll >= pageHeight - innerHeight - 1
     ? 1 : Math.min(1, scroll / scrollRingDistance());
-  const scrollAtRingAngle = angle => scrollRingDistance() *
-    Math.acos(Math.max(-1, Math.min(1, 1 - angle / (8 * Math.PI)))) / Math.PI;
+  function createRingScrollMapping() {
+    const distance = scrollRingDistance();
+    const bottom = pageHeight - innerHeight - 1;
+    return {
+      angleAtScroll: scroll => scrollRingAngle(scroll >= bottom ? 1 : Math.min(1, scroll / distance)),
+      scrollAtAngle: angle => distance *
+        Math.acos(Math.max(-1, Math.min(1, 1 - angle / (8 * Math.PI)))) / Math.PI
+    };
+  }
   function updateScrollRotations(progress,time,reset,inputScroll) {
     const angle=scrollRingAngle(progress);
     const dt=scrollRotationFrameTime===undefined?0:Math.max(0,Math.min(64,time-scrollRotationFrameTime));
@@ -921,14 +935,19 @@
   const invalidate = () => { layoutDirty = true; viewportDirty = true; schedule(); };
   window.EightEightEffects = {
     openingLogoScale,
-    ringAngleAtScroll: scroll => scrollRingAngle(scrollRingProgress(scroll)),
-    scrollAtRingAngle,
+    createRingScrollMapping,
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
     // Navigation advances first, then all canvases and lights use the same
     // resulting scroll position in this frame (no second animation clock).
     addFrameDriver(callback) {
       frameDrivers.add(callback);schedule();
-      return () => frameDrivers.delete(callback);
+      return () => {
+        frameDrivers.delete(callback);
+        if (!frameDrivers.size && wallpaperRefreshPending) {
+          wallpaperRefreshPending = false;
+          invalidate();
+        }
+      };
     },
     invalidate,
     schedule,
