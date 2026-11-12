@@ -1,30 +1,11 @@
 (() => {
-  const rampSeconds = 0.88888888;
-  const maxRingSpeed = 8 * 2 * Math.PI / 60;
-  // Integral of smoothstep velocity, with zero acceleration at both ends.
-  const rampTravel = t => t ** 3 * (1 - t / 2);
-
-  function createTrip(start, end) {
-    const distance = Math.abs(end - start);
-    const speed = Math.min(maxRingSpeed, distance / rampSeconds);
-    const cruiseSeconds = Math.max(0, distance / speed - rampSeconds);
-    const duration = 2 * rampSeconds + cruiseSeconds;
-    const direction = Math.sign(end - start);
-    return {
-      duration,
-      angleAt(seconds) {
-        if (seconds <= rampSeconds) {
-          return start + direction * speed * rampSeconds * rampTravel(seconds / rampSeconds);
-        }
-        const remaining = duration - seconds;
-        if (remaining <= rampSeconds) {
-          return end - direction * speed * rampSeconds * rampTravel(remaining / rampSeconds);
-        }
-        return start + direction * speed * (seconds - rampSeconds / 2);
-      }
-    };
-  }
-
+  // Velocity starts at 18% of its peak, rises smoothly, then reaches zero.
+  // Integrating that curve gives the normalized position used for scrolling.
+  const startSpeed = 0.18;
+  const acceleration = 2 - startSpeed + 2 * Math.sqrt(1 - startSpeed);
+  const area = startSpeed / 2 + acceleration / 6;
+  const ease = t => (startSpeed * t + (acceleration - startSpeed) * t * t / 2
+    - acceleration * t * t * t / 3) / area;
   const root = document.scrollingElement || document.documentElement;
   const scrollPosition = () => window.scrollY;
   const scrollTo = options => window.scrollTo(options);
@@ -91,39 +72,24 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       const session = active;
-      let startTime = null;
-      let destination;
-      let trip;
-      const engine = window.EightEightEffects;
-      const angleAtScroll = engine?.ringAngleAtScroll ?? (scroll =>
-        scroll / Math.max(1, root.scrollHeight - window.innerHeight) * 16 * Math.PI);
-      const scrollAtAngle = engine?.scrollAtRingAngle ?? (angle =>
-        angle / (16 * Math.PI) * Math.max(1, root.scrollHeight - window.innerHeight));
-      const step = now => {
-        if (active !== session) return;
-        if (startTime === null || destinationDirty) {
-          startTime = now;
-          destination = destinationFor(target);
-          destinationDirty = false;
-          const start = scrollPosition();
-          const startAngle = angleAtScroll(start);
-          const endAngle = angleAtScroll(destination);
-          if (Math.abs(destination - start) < 1 || Math.abs(endAngle - startAngle) < 1e-9 ||
-              window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            scrollTo({top: destination, behavior: 'auto'});
-            finish(target, hash);
-            return;
+      let startTime=null,start=0,destination=0,duration=0;
+      const engine=window.EightEightEffects;
+      const step=now=>{
+        if(active!==session)return;
+        if(startTime===null){
+          startTime=now;start=scrollPosition();destination=destinationFor(target);
+          destinationDirty=false;
+          const distance=destination-start;
+          if(Math.abs(distance)<1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+            scrollTo({top:destination,behavior:'auto'});finish(target,hash);return;
           }
-          trip = createTrip(startAngle, endAngle);
+          duration=Math.min(8000,2400+Math.abs(distance)*.45);
         }
-        const elapsed = Math.max(0, (now - startTime) / 1000);
-        if (elapsed >= trip.duration) {
-          scrollTo({top: destination, behavior: 'auto'});
-          finish(target, hash);
-        } else {
-          scrollTo({top: scrollAtAngle(trip.angleAt(elapsed)), behavior: 'auto'});
-          if (!session.stopDriver) session.frame = requestAnimationFrame(step);
-        }
+        const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
+        if(destinationDirty){destination=destinationFor(target);destinationDirty=false;}
+        scrollTo({top:start+(destination-start)*ease(progress),behavior:'auto'});
+        if(progress===1)finish(target,hash);
+        else if(!session.stopDriver)session.frame=requestAnimationFrame(step);
       };
       if(engine?.addFrameDriver)session.stopDriver=engine.addFrameDriver(step);
       else session.frame=requestAnimationFrame(step);
