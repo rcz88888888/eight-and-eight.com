@@ -236,6 +236,7 @@
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
   let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
+  let wallpaperRefreshPending = false;
   let mainBox;
   let openingScaleFactor=1;
   const rainViewport = document.createElement('span');
@@ -690,6 +691,12 @@
     const key = [pixels, scale, inkRatio, borderWidth / openingScale, border.getAttribute('stroke'),
       ...layers.map(layer => layer.scale)].join(':');
     if (key === mainWallpaperKey) return;
+    // Keep drawing with the existing sprites during menu navigation. Encoding
+    // eight wallpaper SVGs at once can block a scroll frame on mobile.
+    if (frameDrivers.size && mainSprites.length) {
+      wallpaperRefreshPending = true;
+      return;
+    }
     mainWallpaperKey = key;
     const copy = openingLogo.cloneNode(true);
     copy.querySelector('.hero-strobe-ring')?.remove();
@@ -846,8 +853,21 @@
       catchUp: 900 + (scrollRotationFinalDelay - 900) * blend
     };
   }
+  const scrollRingAngle = progress => (.5 - .5 * Math.cos(Math.PI * progress)) * Math.PI * 16;
+  const scrollRingDistance = () => Math.max(1, pageHeight - (openingViewport?.height || innerHeight));
+  const scrollRingProgress = scroll => scroll >= pageHeight - innerHeight - 1
+    ? 1 : Math.min(1, scroll / scrollRingDistance());
+  function createRingScrollMapping() {
+    const distance = scrollRingDistance();
+    const bottom = pageHeight - innerHeight - 1;
+    return {
+      angleAtScroll: scroll => scrollRingAngle(scroll >= bottom ? 1 : Math.min(1, scroll / distance)),
+      scrollAtAngle: angle => distance *
+        Math.acos(Math.max(-1, Math.min(1, 1 - angle / (8 * Math.PI)))) / Math.PI
+    };
+  }
   function updateScrollRotations(progress,time,reset,inputScroll) {
-    const angle=(.5-.5*Math.cos(Math.PI*progress))*Math.PI*16;
+    const angle=scrollRingAngle(progress);
     const dt=scrollRotationFrameTime===undefined?0:Math.max(0,Math.min(64,time-scrollRotationFrameTime));
     scrollRotationFrameTime=time;
     if(reset || reduced.matches || !scrollRotationHistory.length){
@@ -915,12 +935,19 @@
   const invalidate = () => { layoutDirty = true; viewportDirty = true; schedule(); };
   window.EightEightEffects = {
     openingLogoScale,
+    createRingScrollMapping,
     subscribe(callbacks) { subscribers.push(callbacks); invalidate(); },
     // Navigation advances first, then all canvases and lights use the same
     // resulting scroll position in this frame (no second animation clock).
     addFrameDriver(callback) {
       frameDrivers.add(callback);schedule();
-      return () => frameDrivers.delete(callback);
+      return () => {
+        frameDrivers.delete(callback);
+        if (!frameDrivers.size && wallpaperRefreshPending) {
+          wallpaperRefreshPending = false;
+          invalidate();
+        }
+      };
     },
     invalidate,
     schedule,
@@ -1116,9 +1143,7 @@
   }
   function field(width, height, scroll) {
     // Browser-toolbar height changes must not rotate otherwise stationary logos.
-    const referenceHeight = openingViewport?.height || height;
-    const progress = scroll >= pageHeight-height-1 ? 1 :
-      Math.min(1, scroll / Math.max(1, pageHeight-referenceHeight));
+    const progress = scrollRingProgress(scroll);
     const motion = reduced.matches ? 0 : progress;
     const travel = reduced.matches ? 0 : scroll / Math.max(1, height);
     return {width, height, scroll, progress, travel,
@@ -1293,9 +1318,6 @@
     const controlledScroll=frameDrivers.size>0;
     // Explicit menu navigation remains available during a partial return.
     if (controlledScroll && startScrollReturn) releaseStartScrollToNavigation();
-    for(const driver of [...frameDrivers])driver(time);
-    captureNativeStartScroll();
-    syncSurfacePosition(scrollPosition());
     const geometryDirty = layoutDirty || viewportDirty;
     // Do not force layout after the viewport-following canvas transform write.
     const width = geometryDirty || !lastWidth ? root.clientWidth : lastWidth;
@@ -1307,6 +1329,9 @@
       lastWidth = width;
       lastHeight = height;
     }
+    for (const driver of [...frameDrivers]) driver(time);
+    captureNativeStartScroll();
+    syncSurfacePosition(scrollPosition());
     const state = field(width, height, Math.max(0, scrollPosition()));
     const easedProgress = easeLogoProgress(state.motionProgress, time, resetMotion || controlledScroll);
     updateScrollRotations(easedProgress,time,resetMotion,state.scroll);

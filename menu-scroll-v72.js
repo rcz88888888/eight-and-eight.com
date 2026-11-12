@@ -1,11 +1,49 @@
 (() => {
-  // Velocity starts at 18% of its peak, rises smoothly, then reaches zero.
-  // Integrating that curve gives the normalized position used for scrolling.
-  const startSpeed = 0.18;
-  const acceleration = 2 - startSpeed + 2 * Math.sqrt(1 - startSpeed);
-  const area = startSpeed / 2 + acceleration / 6;
-  const ease = t => (startSpeed * t + (acceleration - startSpeed) * t * t / 2
-    - acceleration * t * t * t / 3) / area;
+  const rampSeconds = 0.88888888;
+  const maxRingSpeed = 33.333333 * 2 * Math.PI / 60;
+  const maxFrameSeconds = .05;
+  const rampSpeed = t => t * t * (3 - 2 * t);
+  // Integral of smoothstep velocity, with zero acceleration at both ends.
+  const rampTravel = t => t ** 3 * (1 - t / 2);
+
+  function createTrip(start, end, velocity) {
+    const distance = Math.abs(end - start);
+    const direction = Math.sign(end - start);
+    const startSpeed = velocity * direction;
+    const speed = Math.min(maxRingSpeed, Math.max(startSpeed, distance / rampSeconds - startSpeed / 2));
+    const accelerationSeconds = speed > startSpeed ? rampSeconds : 0;
+    const accelerationDistance = (startSpeed + speed) * accelerationSeconds / 2;
+    // A moved anchor can leave less than a full ramp's stopping distance.
+    const brakeSeconds = accelerationSeconds ? rampSeconds : Math.min(rampSeconds, 2 * distance / speed);
+    const cruiseDistance = Math.max(0, distance - accelerationDistance - speed * brakeSeconds / 2);
+    const duration = accelerationSeconds + cruiseDistance / speed + brakeSeconds;
+    return {
+      duration,
+      sample(seconds) {
+        if (seconds < accelerationSeconds) {
+          const progress = seconds / accelerationSeconds;
+          const speedChange = speed - startSpeed;
+          return {
+            angle: start + direction * (startSpeed * seconds + speedChange * accelerationSeconds * rampTravel(progress)),
+            velocity: direction * (startSpeed + speedChange * rampSpeed(progress))
+          };
+        }
+        const remaining = duration - seconds;
+        if (remaining <= brakeSeconds) {
+          const progress = Math.max(0, remaining) / brakeSeconds;
+          return {
+            angle: end - direction * speed * brakeSeconds * rampTravel(progress),
+            velocity: direction * speed * rampSpeed(progress)
+          };
+        }
+        return {
+          angle: start + direction * (accelerationDistance + speed * (seconds - accelerationSeconds)),
+          velocity: direction * speed
+        };
+      }
+    };
+  }
+
   const root = document.scrollingElement || document.documentElement;
   const scrollPosition = () => window.scrollY;
   const scrollTo = options => window.scrollTo(options);
@@ -72,24 +110,54 @@
       // Avoid the browser applying a second easing to every animation frame.
       root.style.setProperty('scroll-behavior', 'auto', 'important');
       const session = active;
-      let startTime=null,start=0,destination=0,duration=0;
-      const engine=window.EightEightEffects;
-      const step=now=>{
-        if(active!==session)return;
-        if(startTime===null){
-          startTime=now;start=scrollPosition();destination=destinationFor(target);
-          destinationDirty=false;
-          const distance=destination-start;
-          if(Math.abs(distance)<1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-            scrollTo({top:destination,behavior:'auto'});finish(target,hash);return;
+      let lastFrameTime;
+      let elapsed = 0;
+      let velocity = 0;
+      let destination;
+      let trip;
+      const engine = window.EightEightEffects;
+      let mapping;
+      const step = now => {
+        if (active !== session) return;
+        // After a delayed frame, continue with a short step so the page
+        // cannot skip a visible part of the route to catch up with the clock.
+        const frameSeconds = lastFrameTime === undefined ? 0 :
+          Math.min(maxFrameSeconds, Math.max(0, (now - lastFrameTime) / 1000));
+        lastFrameTime = now;
+        if (!trip || destinationDirty) {
+          const nextDestination = destinationFor(target);
+          destinationDirty = false;
+          if (!trip || Math.abs(nextDestination - destination) > 1) {
+            destination = nextDestination;
+            const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
+            mapping = engine?.createRingScrollMapping?.() ?? {
+              angleAtScroll: scroll => scroll / scrollRange * 16 * Math.PI,
+              scrollAtAngle: angle => angle / (16 * Math.PI) * scrollRange
+            };
+            const start = scrollPosition();
+            const startAngle = mapping.angleAtScroll(start);
+            const endAngle = mapping.angleAtScroll(destination);
+            if (Math.abs(destination - start) < 1 || Math.abs(endAngle - startAngle) < 1e-9 ||
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+              scrollTo({top: destination, behavior: 'auto'});
+              finish(target, hash);
+              return;
+            }
+            // Use the current speed when a layout change moves the anchor.
+            trip = createTrip(startAngle, endAngle, velocity);
+            elapsed = 0;
           }
-          duration=Math.min(8000,2400+Math.abs(distance)*.45);
         }
-        const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
-        if(destinationDirty){destination=destinationFor(target);destinationDirty=false;}
-        scrollTo({top:start+(destination-start)*ease(progress),behavior:'auto'});
-        if(progress===1)finish(target,hash);
-        else if(!session.stopDriver)session.frame=requestAnimationFrame(step);
+        elapsed += frameSeconds;
+        if (elapsed >= trip.duration) {
+          scrollTo({top: destinationFor(target), behavior: 'instant'});
+          finish(target, hash);
+        } else {
+          const sample = trip.sample(elapsed);
+          velocity = sample.velocity;
+          scrollTo({top: mapping.scrollAtAngle(sample.angle), behavior: 'instant'});
+          if (!session.stopDriver) session.frame = requestAnimationFrame(step);
+        }
       };
       if(engine?.addFrameDriver)session.stopDriver=engine.addFrameDriver(step);
       else session.frame=requestAnimationFrame(step);
