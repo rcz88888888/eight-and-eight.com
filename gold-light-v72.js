@@ -30,12 +30,14 @@
   // Include EVERY real text owner, not just a list of semantic tags.
   // This also captures section-label divs, process/principle spans and footer.
   const textOwners = new Set(textNodes);
+  const glyphRuns = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) {
     const node = walker.currentNode;
     const owner = node.parentElement;
     if (!node.textContent.trim() || !owner ||
         owner.closest('script, style, noscript, template, svg, .wordmark, .menu-toggle, [hidden], [aria-hidden="true"]')) continue;
+    glyphRuns.push(node);
     if (!textOwners.has(owner)) {
       // Newly covered labels keep their existing dimensions and frame geometry.
       owner.classList.add('gold-text-coverage');
@@ -43,6 +45,38 @@
       textNodes.push(owner);
     }
   }
+  // Round the ink alone. Frames, link affordances and the separate backdrop
+  // layer stay on their original elements, as do text reveal and line metrics.
+  for (const node of glyphRuns) {
+    const glyphs = document.createElement('span');
+    glyphs.className = 'rounded-glyphs';
+    node.replaceWith(glyphs);
+    glyphs.appendChild(node);
+  }
+
+  const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
+    blur,
+    alpha: blur.nextElementSibling.firstElementChild,
+    deviation: Number(blur.getAttribute('stdDeviation')),
+    edgeGain: Number(blur.dataset.edgeGain ?? 2.65),
+    edgeMidpoint: Number(blur.dataset.edgeMidpoint ?? .47)
+  }));
+  function sizeGlyphKernels() {
+    // The root type size is 16 times the layout unit in either orientation.
+    const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
+    for (const {blur, alpha, deviation, edgeGain, edgeMidpoint} of glyphKernels) {
+      const radius = scale * deviation;
+      const contrast = 1.3 * Math.max(3.2, edgeGain * radius * window.devicePixelRatio);
+      blur.setAttribute('stdDeviation', radius.toFixed(3));
+      // Turn the smoothed coverage into a crisp contour. A midpoint of .50
+      // keeps a straight edge centered on its original position.
+      alpha.setAttribute('slope', contrast.toFixed(3));
+      alpha.setAttribute('intercept', (.5 - edgeMidpoint * contrast).toFixed(3));
+    }
+  }
+  sizeGlyphKernels();
+  addEventListener('resize', sizeGlyphKernels, {passive: true});
+
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
   const lightTargets = new Set([
     ...frames,
@@ -50,18 +84,13 @@
   ]);
   const targets = [...lightTargets];
   const contentLayer = document.querySelector('.content-scroll');
-  const fieldLineLayer = contentLayer?.querySelector('.field-line-layer');
-  const fieldLines = fieldLineLayer ? frames.filter(element =>
-    contentLayer.contains(element) && !element.matches('.wallpaper-end')
-  ).map(element => ({element, line: document.createElement('div')})) : [];
-  fieldLineLayer?.append(...fieldLines.map(({line}) => line));
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  const landscape = matchMedia('(orientation: landscape)');
-  const lineReference = document.createElement('span');
-  lineReference.className = 'landscape-line-reference';
-  lineReference.setAttribute('aria-hidden', 'true');
-  document.body.append(lineReference);
+  // The header follows the same layout unit as the type. Observe its final
+  // size so a viewport change cannot leave the filters at the previous scale.
+  if (header && 'ResizeObserver' in window) {
+    new ResizeObserver(sizeGlyphKernels).observe(header);
+  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
@@ -97,30 +126,6 @@
     }
   }
 
-  function measureFieldLines() {
-    if (!fieldLineLayer) return;
-    const origin = fieldLineLayer.getBoundingClientRect();
-    // Measure the original boxes together. Their borders still reserve the
-    // same layout space, including dividers with only one painted side.
-    const metrics = fieldLines.map(({element, line}) => {
-      const {borderWidth, borderStyle, borderRadius} = getComputedStyle(element);
-      return {element, line, borderWidth, borderStyle, borderRadius, box: element.getBoundingClientRect()};
-    });
-    for (const {element, line, borderWidth, borderStyle, borderRadius, box} of metrics) {
-      line.hidden = !box.width || !box.height;
-      paint(line, 'left', `${box.left - origin.left}px`);
-      paint(line, 'top', `${box.top - origin.top}px`);
-      paint(line, 'width', `${box.width}px`);
-      paint(line, 'height', `${box.height}px`);
-      paint(line, '--field-line-width', borderWidth);
-      paint(line, 'border-style', borderStyle);
-      paint(line, 'border-radius', borderRadius);
-      if (element.style.borderColor !== 'transparent') {
-        element.style.setProperty('border-color', 'transparent', 'important');
-      }
-    }
-  }
-
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
   textNodes.forEach(element => {
     element.classList.add('gold-text-light');
@@ -130,18 +135,13 @@
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
 
+  // Static gold edges use native CSS borders. A separate hollow composite mask
+  // per cell would duplicate those same edges and enlarge Safari's layer tree.
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
     measure() {
-      if (landscape.matches) {
-        // Keep the logo's outline reference independent of the page borders.
-        const width = parseFloat(getComputedStyle(lineReference).borderTopWidth);
-        paint(document.documentElement, '--landscape-native-line', `${Math.ceil(width * 1000) / 1000}px`);
-      }
-      syncBrowserColor();
-      cacheGeometry();
-      measureFieldLines();
+      syncBrowserColor(); cacheGeometry();
     }
   });
   // Native lazy image loading and the light renderer prepare nearby photos.

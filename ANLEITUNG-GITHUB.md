@@ -1,16 +1,10 @@
-## Technics-SL-1210MK2-Timecode
-
-`technics-sl1210mk2-strobe-source.jpg` ist das ursprüngliche Foto aus der bereitgestellten Website. Die Website lädt die im selben Archiv enthaltenen, vom Foto abgezeichneten Punktsilhouetten aus `technics-sl1210-small-point-pattern.svg`. Canvas und WebGL zeichnen diese Silhouetten mit der Goldfarbe der Vorlage. Die fotografisch bedingten Unterschiede in Form und Winkelabständen bleiben erhalten. Die Animation dreht das vollständige Muster kontinuierlich mit einer aus der zugeordneten Hauptlogo-Ebene abgeleiteten Phase.
-
-Die Ringanordnung im Hochformat folgt dem hochgeladenen Stand mit 26 Bändern. Im Querformat gelten die 30 Bänder der aktuellen Version. Jedes Band enthält das vollständige Originalmotiv.
-
 ## Waldfoto im Abschnitt Strategy
 
 Das Waldfoto steht direkt nach „Common Ground — We establish the strategic foundations of brands, products and ventures.“ und vor der ersten Feldlinie des anschließenden Leistungsrasters. Es verwendet die bestehenden Fotoabstände und abgerundeten Ecken. Die Originaldatei bleibt mit 1536 × 1147 Pixeln unverändert und wird vollständig im ursprünglichen Seitenverhältnis dargestellt.
 
 ## Durchgehend gleichmäßige Timecoderinge, vollständige Logoreihen und einheitliche Schrift
 
-Die Timecodebänder folgen von der Mitte nach außen derselben additiven Skalierung. Jeder Schritt beträgt 0,092, entsprechend dem Größenunterschied der beiden vordersten Hauptlogos. Ringbreiten und Punktdurchmesser wachsen über sämtliche Innenringe, den Übergang zur vordersten Logoebene und alle äußeren Fortsetzungen mit gleich bleibendem Zuwachs. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Jedes Band folgt dem Winkel seiner zugeordneten Logoebene.
+Alle 22 Timecodebänder folgen von der Mitte nach außen derselben additiven Skalierung: 0,506; 0,598; 0,690; …; 1,150 am vordersten Hauptlogo; …; 2,438. Jeder Schritt beträgt 0,092, entsprechend dem Größenunterschied der beiden vordersten Hauptlogos. Ringbreiten und Punktdurchmesser wachsen über sämtliche Innenringe, den Übergang zur vordersten Logoebene und alle äußeren Fortsetzungen mit gleich bleibendem Zuwachs. Die bisherigen schmalen Zwischenräume bleiben exakt gleich und skalieren weiterhin gemeinsam mit der Ringgruppe. Winkel, Fächerzeiten und Sichtbarkeit folgen unverändert den bisherigen Logoebenen.
 
 Die Referenzfläche endet direkt mit der letzten Logoreihe an der abgerundeten Außenkante. Die zusätzliche Abschlusslinie, der untere Innenabstand und alle Füllzellen entfallen. Bei ungerader Logoanzahl nimmt das letzte Logo im Querformat die gesamte letzte Reihe ein.
 
@@ -28,29 +22,29 @@ Im Hochformat sind die ursprünglichen Größen und Positionen des Startlogos un
 
 Der Logoregen läuft während der Startanimation wieder zeitgesteuert, auch wenn zuvor gescrollt wurde. Bei jedem erneuten Start wird seine vorherige Scrollbindung ohne Positionssprung gelöst. Nach der scrollgesteuerten Rückkehr der Hauptlogos wird er wie bisher wieder an die Scrollposition gebunden.
 
-## Timecode-Punktreihen bis in die seitlichen Logoflächen
+## Timecode-Sichtbarkeit um 10 Prozent erhöht
 
-Das Hochformat verwendet die Ringanordnung aus der hochgeladenen Website. Die Animation lädt die fotografisch abgeleiteten Originalsilhouetten direkt aus der Technics-SVG. Das Ringmuster verwendet dieselben schmalen Zwischenräume und Größenstufen von 0,092. Die Deckkraft fällt je Vierergruppe nach innen um 8 Prozent, gleichmäßig auf die vier Punktreihen verteilt. Die Deckkraft richtet sich nach der jeweiligen Ansicht. Die Punktreihen werden hinter sämtlichen Hauptlogos gezeichnet. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselbe Geometrie und sichtbare Punktphase.
+Alle 104 Timecode-Punktreihen erhalten die 1,10-fache bisherige Deckkraft. Die gleichmäßigen Sichtbarkeitsabstände von innen nach außen bleiben erhalten. GPU, Canvas-Ersatzdarstellung und Bannerausschnitt verwenden dieselben Werte.
 
 ## Feste Tempoabläufe für die Timecoderinge
 
 Die erste achtsekündige Pause beginnt erst, wenn sämtliche Hauptlogo-Grafiken vorbereitet sind. Die Startsequenz kann dadurch nicht mehr während des Ladens unsichtbar über die erste langsame Phase laufen. Wiederholungen bleiben auf denselben berechneten Zyklusgrenzen verankert; verspätete Einzelbilder verschieben den nächsten Start nicht.
 
-Die Hauptlogos und die zugeordneten Timecoderinge wechseln in acht Abschnitten zwischen 8 und 33,333333 U/min. Jede Ebene liefert ihren Ringen denselben Drehwinkel und dieselbe weiche Tempokurve von 0,8 Sekunden. Der erste Durchgang startet gemeinsam. Die folgenden Fächerzeiten betragen 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden je Ebene. Schlussbeschleunigung und Scrollrückkehr enden aufrecht.
+Jede Ringebene erhält vorab berechnete Übergangszeitpunkte: acht abwechselnde Abschnitte mit 8,8888888 und 33,333333 U/min, jeweils 0,8 Sekunden Tempoübergang und den bestehenden Fächerzeiten 0,18 / 0 / 0,08 / 0,16 / 0,24 / 0,32 / 0,40 / 0,48 Sekunden pro Ebene. Die Winkel werden aus den tatsächlichen Tempoabschnitten integriert. Eine veränderte Fächerzeit dehnt oder staucht die Ring-Zeitachse nicht mehr. Die bestehende Schlussbeschleunigung und der aufrechte Abschluss bleiben erhalten. Pause, App-Wechsel und Scrollunterbrechung verwenden weiterhin die gemeinsame Animationsuhr.
 
-Die sichtbare Punktphase folgt dem virtuellen Stroboskoptakt und driftet bei beiden Tempi gegen den Uhrzeigersinn. Die Phase und ihre Geschwindigkeit gehen bei jedem Tempowechsel kontinuierlich ineinander über. Bei ausgelassenen Bildern wird der sichtbare Schritt im Schwebeabschnitt auf 40 Prozent eines Punktabstands begrenzt. Die Ausrichtung auf ganze Umdrehungen erfolgt bei der Schlussbeschleunigung.
+Der optische Stroboskopeindruck hängt zusätzlich von den tatsächlich gezeichneten Bildern und der Display-Bildfolge ab. Exakte Drehzahlen und feste Ablaufzeiten garantieren deshalb keinen identischen scheinbaren Stillstand auf unterschiedlichen oder wechselnden Bildraten.
 
 ## Flüssige Übergänge und verringerte Zeichenlast
 
 Scrollimpulse geben der Startrückkehr ein Ziel; die acht Logos laufen kontinuierlich darauf zu. Ein Menüklick übernimmt die gerade sichtbaren Winkel und Sichtbarkeiten, statt sie auf null zu setzen. Auch der Wechsel zurück zum Seitenanfang, die Bewegung der gemeinsamen Mitte und größere Scrollsprünge werden geglättet. Die acht Größenstufen, Fächerzeiten, Startgeschwindigkeiten und Punktreihen bleiben erhalten. Beim Ausblenden der Seite pausiert die gemeinsame Animationsuhr und setzt dieselbe Phase fort.
 
-Auf Geräten mit WebGL wird auch der flache Bannerausschnitt über GPU-Punktpuffer und dieselben Logoebenen gezeichnet. Dort entfallen die parallel gezeichneten CPU-Logos und die großen vorberechneten Ringbilder vollständig. Ringgruppen außerhalb des sichtbaren Ausschnitts werden übersprungen. Ohne WebGL werden die Punktsilhouetten als wiederverwendete Vektorpfade gezeichnet. Diese entsprechen Punkt für Punkt den GPU-Puffern; nur sichtbare Reihen werden gefüllt. Große transparente Ringbilder und deren laufende Überblendung entfallen auch in dieser Ersatzdarstellung. Originalfotos und ihre scrollabhängigen Lichteffekte bleiben unverändert. Eine feste Bildrate auf jedem Endgerät kann ohne Messung auf dem jeweiligen Gerät nicht zugesichert werden.
+Auf Geräten mit WebGL wird auch der flache Bannerausschnitt über GPU-Punktpuffer und dieselben Logoebenen gezeichnet. Dort entfallen die parallel gezeichneten CPU-Logos und die großen vorberechneten Ringbilder vollständig. Ringgruppen außerhalb des sichtbaren Ausschnitts werden übersprungen. Ohne WebGL werden die 104 Punktreihen als wiederverwendete Vektorpfade gezeichnet. Diese entsprechen Punkt für Punkt den GPU-Puffern; nur sichtbare Reihen werden gefüllt. Große transparente Ringbilder und deren laufende Überblendung entfallen auch in dieser Ersatzdarstellung. Originalfotos und ihre scrollabhängigen Lichteffekte bleiben unverändert. Eine feste Bildrate auf jedem Endgerät kann ohne Messung auf dem jeweiligen Gerät nicht zugesichert werden.
 
 ## Optimierte Animationen
 
-Hauptlogo-Konturen werden einmal in der benötigten Darstellungsauflösung vorbereitet und anschließend als Grafiken wiederverwendet. Die GPU zeichnet die Timecode-Silhouetten aus dauerhaft wiederverwendeten Geometriepuffern und übernimmt auch die acht Hauptlogos. Bei fehlendem WebGL oder Kontextverlust greift automatisch die vorberechnete Canvas-Darstellung. Dort werden gemeinsam rotierende Punktreihen aus vorbereiteten Vektorpfaden gezeichnet und vor dem Zeichnen auf Sichtbarkeit geprüft. Unbenutzte Ringtexturen entfallen. Die statischen goldenen Feldlinien verwenden native Rahmen statt zusätzlicher Maskenflächen. Textmasken entstehen nur in Bildschirmnähe und in freien Browserzeiten; entfernte Textfilter werden ausgeblendet. Foto-Beleuchtungskarten werden vor Erreichen des Fotos vorbereitet. Die Originalfotos, Beleuchtungskarten und ihre Scrolleffekte bleiben erhalten.
+Hauptlogo-Konturen werden einmal in der benötigten Darstellungsauflösung vorbereitet und anschließend als Grafiken wiederverwendet. Die GPU zeichnet alle 18.668 Timecode-Punkte aus kleinen, dauerhaft wiederverwendeten Geometriepuffern und übernimmt auch die acht Hauptlogos. Bei fehlendem WebGL oder Kontextverlust greift automatisch die vorberechnete Canvas-Darstellung. Dort werden gemeinsam rotierende Punktreihen aus vorbereiteten Vektorpfaden gezeichnet und vor dem Zeichnen auf Sichtbarkeit geprüft. Unbenutzte Ringtexturen entfallen. Die statischen goldenen Feldlinien verwenden native Rahmen statt zusätzlicher Maskenflächen. Textmasken entstehen nur in Bildschirmnähe und in freien Browserzeiten; entfernte Textfilter werden ausgeblendet. Foto-Beleuchtungskarten werden vor Erreichen des Fotos vorbereitet. Die Originalfotos, Beleuchtungskarten und ihre Scrolleffekte bleiben erhalten.
 
-Während des normalen Scrollens sind keine blockierenden Touch- oder Mausrad-Listener aktiv. Sie werden nur für die bestehende Startrückkehr vorübergehend eingeschaltet. Bewegungskurven, acht Logoebenen, Timecode-Punktreihen, gleichmäßige Sichtbarkeitsschritte und scrollgebundener Regen bleiben erhalten.
+Während des normalen Scrollens sind keine blockierenden Touch- oder Mausrad-Listener aktiv. Sie werden nur für die bestehende Startrückkehr vorübergehend eingeschaltet. Bewegungskurven, acht Logoebenen, 104 Timecode-Punktreihen, gleichmäßige Sichtbarkeitsschritte und scrollgebundener Regen bleiben erhalten.
 
 Trebuchet MS steht nun für sämtliche Ansichten an erster Stelle. Die bisherigen geräteabhängigen Rundschrift-Alternativen entfallen; die vorhandenen Schriftgrößen und Schriftschnitte bleiben erhalten.
 
@@ -110,9 +104,9 @@ Die zehn zusätzlichen Referenzen BMW, Porsche, Microsoft, Hilton, Siemens, ZDF,
 
 ## Aktuelle Startsequenz: acht abwechselnde Tempodurchgänge
 
-Die Hauptlogos verwenden in den acht Durchgängen abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Timecoderinge verwenden in den langsamen Phasen exakt 8 rpm. Ein virtueller Stroboskop-Takt von 26 Schritten pro Sekunde lässt die Punktreihen dabei gleichmäßig gegen den Uhrzeigersinn driften. Bei 33,333333 rpm gleicht ein eigener Takt pro Punktreihe das höhere Tempo aus und verstärkt die sichtbare Rückwärtsdrift um zwei Punktabstände pro Sekunde. Jeder Durchgang hat einen Grundtakt von acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens.
+Die Hauptlogos verwenden in den acht Durchgängen abwechselnd 8,8888888 rpm (1, 3, 5, 7) und 33,333333 rpm (2, 4, 6, 8). Die Timecoderinge verwenden in den langsamen Phasen exakt 8 rpm. Ein virtueller Stroboskop-Takt von 26 Schritten pro Sekunde lässt die Punktreihen dabei gleichmäßig gegen den Uhrzeigersinn driften. Jeder Tempoabschnitt dauert acht Sekunden. Jeder Tempoübergang dauert 0,8 Sekunden, einschließlich des anfänglichen Anlaufens. Es gibt keine 45-rpm-Stufe und keine Zwischenstopps zwischen diesen acht Tempoabschnitten.
 
-Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron. Die Ringe behalten dort ihren Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang verwenden beide dieselben Fächerzeiten je Ebene, von 0 Sekunden im zweiten Durchgang bis 0,48 Sekunden im achten. In allen schnellen Phasen drehen Logos und Ringe nach dem Übergang mit exakt 33,333333 rpm.
+Die Hauptlogos starten im ersten Durchgang wie das Startlogo synchron ohne Fächer. Die Ringe behalten dort ihren bisherigen Versatz von 0,18 Sekunden pro Ebene. Ab dem zweiten Durchgang bleibt die bisherige Folge erhalten: im zweiten 0, im dritten 0,08, im vierten 0,16, im fünften 0,24, im sechsten 0,32, im siebten 0,40 und im achten 0,48 Sekunden. Die Hauptlogos verbinden die Fächerzeiten über den 0,8-Sekunden-Übergang. In der zweiten Tempophase drehen nach diesem Übergang alle Logos und Ringe mit exakt 33,333333 rpm.
 
 Nur am Ende des achten Durchgangs erfolgt die schnelle Schlussbeschleunigung: in 1,8 Sekunden von 33,333333 auf 888 rpm, danach direkt aufrechter Stopp. Die gemeinsame achtsekündige Pause beginnt, wenn auch die letzte verzögerte Ebene aufrecht steht. Danach wiederholt sich die Sequenz. Die Scrollstaffelung und die Ringgeometrie bleiben unverändert.
 
@@ -124,19 +118,19 @@ Für zusätzliche Ringe, die vollständig jenseits aller sichtbaren Ecken liegen
 
 ## Zuordnung der Timecoderinge zu den Hauptlogos
 
-Alle Bänder behalten ihre Zuordnung zu den acht Hauptlogo-Ebenen. Die Bänder verwenden die jeweilige Scrollrotation und wechseln bei der Startanimation gemeinsam mit ihrer Logoebene das Tempo. Die inneren und äußeren Erweiterungen folgen der hintersten Ebene. Die Bänder liegen hinter dem gesamten Logostapel.
+Alle Bänder behalten ihre bisherigen Logoebenen. Die vorderste äußere Ringkante wird weiter an derselben Hauptlogogeometrie verankert. Von dort werden die Bänder anhand ihrer gleichmäßig steigenden Breite und des gemeinsamen Kantenabstands nach innen und außen positioniert. Ihre Mittenradien ergeben sich daraus. Jeder Ring übernimmt Winkel, Sichtbarkeit und Fächerzeiten seiner ursprünglichen Logoebene; auch die sieben Erweiterungen bleiben an die hinterste Ebene gekoppelt.
 
 ## Exakte gemeinsame Mitte und gestaffelte Timecode-Phase
 
 Die Hauptlogos und alle Ringbänder verwenden in jedem Bild exakt denselben Drehpunkt. Nach dem anfänglichen Tapetenübergang liegt er unmittelbar in der Mitte des sichtbaren Bereichs zwischen Bannerunterkante und sichtbarem unteren Viewportrand, ohne nachlaufende Mittelpunktglättung. Die Startgrafik behält ihren zentrierten, unveränderten SVG-Drehpunkt.
 
-Die Fächerstaffelung verwendet für die Logo-Ebene und ihre Timecoderinge dieselben Wechselzeitpunkte. Beim Scrollen folgen die Ringe direkt den zeitversetzten Winkeln ihrer Logo-Ebene. Der Scrollfächer beginnt mit 80 Millisekunden Abstand je Ebene und wird zum Ende zurückgeführt.
+Die zeitliche Fächerstaffelung ist wiederhergestellt: Im ersten Durchgang laufen Startlogo und Hauptlogos gemeinsam; nur die Ringe behalten ihre 0,18 Sekunden Abstand je Ebene. Die sieben späteren Durchgänge verwenden die oben aufgeführten Versätze. Jede Ebene durchläuft dieselbe analytisch berechnete Tempokurve zu ihrem versetzten Zeitpunkt. Ab dem zweiten Durchgang dreht jeder äußere und innere Timecodering wieder exakt mit seiner zugehörigen Logoebene, sodass der Fächer auch beim Scrollen wieder sichtbar bleibt. Die bestehende Scrollstaffelung mit 80 Millisekunden Abstand je Ebene und ihrer späteren Rückführung bleibt erhalten. Aufrechte Stopps und scrollgesteuerte Startrückkehr bleiben erhalten.
 
 ## Banner und Animation
 
-Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation. Beide Tapetenbanner besitzen waagerechte Randlinien oben und unten. Die Bannerränder und Feldlinien verwenden in allen Ansichten die Strichstärke des Hochformats von 1,5 CSS-Pixeln. Das Tapetenmuster schließt direkt an die Randlinien an.
+Die Abdeckung für Text und Referenzlogos endet exakt am gemessenen unteren Außenrand des Banners beziehungsweise der geöffneten Navigation, einschließlich gebrochener CSS-Pixel. Beide Tapetenbanner besitzen ihre Randlinien an allen vier Seiten und schließen bündig mit den Außenkanten ab. Der untere Banner bleibt das letzte Seitenelement. Der Browserfarbton bleibt Cremeweiß #fdfcfa.
 
-Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wiederverwendete Konturen und Ringtexturen, gemeinsamer Szenenzustand für Banner und Hauptfläche sowie eine gemeinsame Mitte unter dem oberen Banner. Die Ringanordnung im Hochformat folgt der hochgeladenen Referenz.
+Die flüssigere Logoanimation bleibt enthalten: kontinuierliche Scrollwinkel, wiederverwendete Konturen und Ringtexturen, gemeinsamer Szenenzustand für Banner und Hauptfläche sowie eine gemeinsame Mitte unter dem oberen Banner. Sieben zusätzliche Ringbänder laufen nach innen weiter. Größen, Sichtbarkeiten, Staffelung und die bisherige Querformat-Skalierung bleiben erhalten.
 
 Der Logoregen behält die halbierte Maximalgröße, die halbierte maximale Geschwindigkeit (mindestens zwei bis acht Sekunden pro Fall) sowie die Erhöhung der maximalen Anzahl um 10 Prozent in allen Modi.
 

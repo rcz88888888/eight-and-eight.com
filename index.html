@@ -10,11 +10,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="Eight&Eight. Strategy, concept development and structural thinking for brands, platforms, products and ideas">
   <title>Eight&Eight</title>
-  <meta name="eight-and-eight-version" content="v20261103-no-extra-fields-cached-animation">
+  <meta name="eight-and-eight-version" content="v20261112-sharp-text-menu-8rpm">
   <link rel="stylesheet" href="styles.css?v=20261017-cream-fan-0008s">
   <link rel="stylesheet" href="design-logo-v6.css?v=20261103-desktop-font-all-modes">
-  <link rel="stylesheet" href="gold-light-v72.css?v=20261107-portrait-line-width">
-  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261107-portrait-line-width">
+  <link rel="stylesheet" href="gold-light-v72.css?v=20261029-partner-optical-eight-percent">
+  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261104-landscape-logo-first-field">
+  <style>
+    .glyph-rounding-filters { position: absolute; pointer-events: none; }
+    .section-label, .site-nav, .footer, .principles > div > span {
+      --glyph-rounding: url("#glyph-rounding-small");
+    }
+    :is(h1, h2, h3, h4, h5, h6) { --glyph-rounding: url("#glyph-rounding-heading"); }
+    body :is(.rounded-glyphs, .principles .rounded-glyphs) {
+      display: inline;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      filter: var(--glyph-rounding, url("#glyph-rounding-body"));
+    }
+  </style>
 </head>
 <body>
   <div class="browser-top-color" aria-hidden="true"></div>
@@ -31,10 +45,7 @@
         <img class="wordmark-logo" src="eight-and-eight-banner-logo-transparent-v35.png" alt="Eight&amp;Eight" width="1774" height="887" decoding="async" fetchpriority="high">
       </a>
       <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation">
-        <svg width="25" height="18.75" viewBox="0 0 25 18.75" aria-hidden="true" focusable="false">
-          <path d="M 1.125 1.125 H 23.875 M 1.125 9.375 H 23.875 M 1.125 17.625 H 23.875"
-            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
-        </svg>
+        <span></span><span></span><span></span>
       </button>
       <nav id="site-nav" class="site-nav">
         <a href="#about">ABOUT</a>
@@ -48,7 +59,6 @@
 
     <div class="content-scroll" role="region" aria-label="Website content">
     <div class="banner-content-mask" aria-hidden="true"><canvas class="banner-logo-feed" aria-hidden="true"></canvas></div>
-    <div class="field-line-layer" aria-hidden="true"></div>
     <main id="top">
       <div class="logo-stage" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" class="hero-static-logo hero-wallpaper-logo" aria-hidden="true" focusable="false" width="922" height="1368" viewBox="0 0 922 1368">
@@ -93,7 +103,7 @@
 
 </defs>
 <!-- Hidden geometry source: only the eight background layers paint this ring. -->
-<image class="hero-strobe-ring" visibility="hidden" href="technics-sl1210-small-point-pattern.svg?v=20261108-photo-silhouettes"
+<image class="hero-strobe-ring" visibility="hidden" href="stroboskopring-sandgold.svg?v=20261017-points-gap16"
   x="-251.70422937719786" y="-28.704229377197862"
   width="1425.4084587543957" height="1425.4084587543957"
   data-logo-radius="554.4956949782672" data-logo-extent="1086.191929621444"
@@ -303,13 +313,30 @@
     </div>
   </div>
 
-  <script src="gpu-frames-v1.js?v=20261108-photo-silhouettes" defer></script>
-  <script src="scroll-effects-v72.js?v=20261108-photo-silhouettes" defer></script>
+  <svg class="glyph-rounding-filters" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glyph-rounding-small" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation=".52"/>
+        <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.004"/></feComponentTransfer>
+      </filter>
+      <filter id="glyph-rounding-body" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation=".74"/>
+        <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.004"/></feComponentTransfer>
+      </filter>
+      <filter id="glyph-rounding-heading" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation=".90" data-edge-gain="3.35" data-edge-midpoint=".50"/>
+        <feComponentTransfer><feFuncA type="linear" slope="3.2" intercept="-1.1"/></feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+
+  <script src="gpu-frames-v1.js?v=20261106-ring-strobe" defer></script>
+  <script src="scroll-effects-v72.js?v=20261112-sharp-text-menu-8rpm" defer></script>
   <script src="menu-overlay-v72.js?v=20261102-consistent-overlay" defer></script>
-  <script src="menu-scroll-v72.js?v=20261012-187" defer></script>
-  <script src="gold-light-v72.js?v=20261107-portrait-line-width" defer></script>
+  <script src="menu-scroll-v72.js?v=20261112-sharp-text-menu-8rpm" defer></script>
+  <script src="gold-light-v72.js?v=20261112-sharp-text-menu-8rpm" defer></script>
   <script src="photo-material-light-v219.js?v=20261103-nearby-photo-light" defer></script>
-  <script src="hero-wallpaper-v96.js?v=20261107-logo-outline-reference" defer></script>
+  <script src="hero-wallpaper-v96.js?v=20261105-shared-fractional-logo-scale" defer></script>
   <script src="logo-home-v167.js?v=20261012-187" defer></script>
   <script src="text-scroll-reveal-v220.js?v=20261103-cached-layout-scale" defer></script>
   <script src="text-backdrop-v210.js?v=20261103-visible-idle-masks" defer></script>
