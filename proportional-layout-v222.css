@@ -4,7 +4,7 @@
 :root {
   --layout-unit: min(calc(100vw / 393), calc(100svh / 852));
   --header-height: calc(90.44 * var(--layout-unit));
-  --layout-line: calc(1.5 * var(--layout-unit));
+  --layout-line: 1.5px;
   --layout-content: calc(353.7 * var(--layout-unit));
   --layout-padding: calc(24 * var(--layout-unit));
   --layout-title: calc(35 * var(--layout-unit));
@@ -15,14 +15,13 @@
   --layout-photo-margin: calc(28 * var(--layout-unit));
   --layout-photo-radius: calc(12 * var(--layout-unit));
   --wallpaper-tile-size: calc(220 * var(--layout-unit));
-  --banner-edge-width: var(--layout-line);
   font-size: calc(16 * var(--layout-unit));
 }
+.landscape-line-reference { display: none; }
 @media (orientation: landscape) {
   :root {
     --layout-unit: min(calc(100vw / 896), calc(100svh / 414));
     --header-height: calc(104 * var(--layout-unit));
-    --layout-line: calc(.8 * var(--layout-unit));
     --layout-content: calc(806.4 * var(--layout-unit));
     --layout-padding: calc(44.8 * var(--layout-unit));
     --layout-title: calc(44.8 * var(--layout-unit));
@@ -32,6 +31,15 @@
     --layout-radius: calc(28 * var(--layout-unit));
     --layout-photo-margin: calc(35.84 * var(--layout-unit));
     --layout-photo-radius: calc(17.92 * var(--layout-unit));
+  }
+  .landscape-line-reference {
+    position: fixed;
+    display: block;
+    width: 0;
+    height: 0;
+    border-top: calc(.8 * var(--layout-unit)) solid transparent;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 body { min-width: 0; font-size: calc(21 * var(--layout-unit)); }
@@ -53,10 +61,13 @@ body .topbar .menu-toggle {
   display: block; position: absolute; right: 5%; top: 50% !important;
   transform: translateY(-50%); margin: 0; padding: calc(5 * var(--layout-unit));
 }
-body .topbar .menu-toggle > span {
-  width: calc(25 * var(--layout-unit)); height: calc(2.25 * var(--layout-unit)) !important;
-  min-height: calc(2.25 * var(--layout-unit)) !important;
+body .topbar .menu-toggle > svg {
+  display: block;
+  width: calc(25 * var(--layout-unit));
+  height: auto;
   margin: calc(6 * var(--layout-unit)) 0;
+  color: var(--banner-logo-metal);
+  overflow: visible;
 }
 body .site-nav {
   display: none; position: fixed !important; z-index: 1000;

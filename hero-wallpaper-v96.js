@@ -11,9 +11,12 @@
   const tileImage = pattern.querySelector('image');
   const header = document.querySelector('.topbar');
   const ring = logo.querySelector('.hero-strobe-ring');
+  const landscape = matchMedia('(orientation: landscape)');
   engine.subscribe({measure() {
-    const border = parseFloat(getComputedStyle(header).borderBottomWidth) ||
-      (matchMedia('(orientation: landscape)').matches ? .8 : 1.5);
+    const style = getComputedStyle(header);
+    const referenceBorder = landscape.matches
+      ? style.getPropertyValue('--landscape-native-line') : style.borderBottomWidth;
+    const border = parseFloat(referenceBorder) || (landscape.matches ? .8 : 1.5);
     logo.style.setProperty('--hero-border-width', `${border}px`);
     const scale = engine.openingLogoScale();
     if (!(scale > 0)) return;
