@@ -57,20 +57,18 @@
   const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
     blur,
     alpha: blur.nextElementSibling.firstElementChild,
-    deviation: Number(blur.getAttribute('stdDeviation')),
-    edgeGain: Number(blur.dataset.edgeGain ?? 2.65)
+    deviation: Number(blur.getAttribute('stdDeviation'))
   }));
   function sizeGlyphKernels() {
     // The root type size is 16 times the layout unit in either orientation.
     const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
-    for (const {blur, alpha, deviation, edgeGain} of glyphKernels) {
+    for (const {blur, alpha, deviation} of glyphKernels) {
       const radius = scale * deviation;
-      // Match the gain to the blur so very small radii retain native
-      // antialiasing. Center the transfer on 50% to keep straight edges in place.
-      const contrast = Math.hypot(1, 1.3 * edgeGain * radius * window.devicePixelRatio);
-      blur.setAttribute('stdDeviation', radius.toFixed(4));
-      alpha.setAttribute('slope', contrast.toFixed(4));
-      alpha.setAttribute('intercept', ((1 - contrast) / 2).toFixed(4));
+      const contrast = Math.max(3.2, 2.65 * radius * window.devicePixelRatio);
+      blur.setAttribute('stdDeviation', radius.toFixed(3));
+      // Restore a crisp alpha edge after rounding while retaining thin strokes.
+      alpha.setAttribute('slope', contrast.toFixed(3));
+      alpha.setAttribute('intercept', (.5 - .47 * contrast).toFixed(3));
     }
   }
   sizeGlyphKernels();
@@ -85,11 +83,6 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  // The header follows the same layout unit as the type. Observe its final
-  // size so a viewport change cannot leave the filters at the previous scale.
-  if (header && 'ResizeObserver' in window) {
-    new ResizeObserver(sizeGlyphKernels).observe(header);
-  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
