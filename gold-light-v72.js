@@ -54,24 +54,18 @@
     glyphs.appendChild(node);
   }
 
-  const glyphKernels = [...document.querySelectorAll('.glyph-rounding-filters feGaussianBlur')].map(blur => ({
-    blur,
-    alpha: blur.nextElementSibling.firstElementChild,
-    deviation: Number(blur.getAttribute('stdDeviation')),
-    edgeGain: Number(blur.dataset.edgeGain ?? 2.65)
-  }));
+  // Use the body reference radius for all text: .74px × 0.008.
+  const blur = document.querySelector('#glyph-rounding feGaussianBlur');
+  const alpha = document.querySelector('#glyph-rounding feFuncA');
+  const deviation = Number(blur.getAttribute('stdDeviation'));
   function sizeGlyphKernels() {
-    // The root type size is 16 times the layout unit in either orientation.
     const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
-    for (const {blur, alpha, deviation, edgeGain} of glyphKernels) {
-      const radius = scale * deviation;
-      // Match the gain to the blur so very small radii retain native
-      // antialiasing. Center the transfer on 50% to keep straight edges in place.
-      const contrast = Math.hypot(1, 1.3 * edgeGain * radius * window.devicePixelRatio);
-      blur.setAttribute('stdDeviation', radius.toFixed(4));
-      alpha.setAttribute('slope', contrast.toFixed(4));
-      alpha.setAttribute('intercept', ((1 - contrast) / 2).toFixed(4));
-    }
+    const radius = scale * deviation;
+    // Center the transfer on 50% to keep straight edges in place.
+    const contrast = Math.hypot(1, 1.3 * 2.65 * radius * window.devicePixelRatio);
+    blur.setAttribute('stdDeviation', radius.toFixed(6));
+    alpha.setAttribute('slope', contrast.toFixed(4));
+    alpha.setAttribute('intercept', ((1 - contrast) / 2).toFixed(4));
   }
   sizeGlyphKernels();
   addEventListener('resize', sizeGlyphKernels, {passive: true});
@@ -79,7 +73,7 @@
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
   const lightTargets = new Set([
     ...frames,
-    ...document.querySelectorAll('.site-nav a, .menu-toggle span, .wordmark-logo, .wordmark')
+    ...document.querySelectorAll('.site-nav a, .wordmark-logo, .wordmark')
   ]);
   const targets = [...lightTargets];
   const contentLayer = document.querySelector('.content-scroll');
@@ -134,13 +128,59 @@
   });
   portfolioLogos.forEach(element => element.classList.add('banner-occluded-logo'));
 
-  // Static gold edges use native CSS borders. A separate hollow composite mask
-  // per cell would duplicate those same edges and enlarge Safari's layer tree.
+  const mobilePortrait = matchMedia('(orientation: portrait) and (max-width: 600px)');
+  let bannerStroke;
+  function syncPortraitStrokes() {
+    const sides = ['Top', 'Right', 'Bottom', 'Left'];
+    const devicePixel = 1 / (window.devicePixelRatio || 1);
+    const measurements = frames.map(frame => {
+      if (mobilePortrait.matches) return {frame};
+      const style = getComputedStyle(frame);
+      const widths = sides.map(side => parseFloat(style['border' + side + 'Width']) || 0);
+      const missing = Math.max(0, 4 / 3 - Math.max(...widths));
+      if (!widths.some(Boolean) || missing <= .02) return {frame};
+      // One device pixel with partial coverage avoids a second width rounding.
+      const padding = widths.map(width => width ? devicePixel + 'px' : '0px').join(' ');
+      const radius = [
+        ['TopLeft', 0, 3], ['TopRight', 0, 1], ['BottomRight', 2, 1], ['BottomLeft', 2, 3]
+      ].map(([corner, vertical, horizontal]) => {
+        const outer = parseFloat(style['border' + corner + 'Radius']) || 0;
+        return Math.max(0, outer - Math.max(widths[vertical], widths[horizontal])) + 'px';
+      }).join(' ');
+      return {frame, padding, radius, opacity: String(Math.min(1, missing / devicePixel)),
+        color: style['border' + sides[widths.findIndex(Boolean)] + 'Color'],
+        needsPosition: style.position === 'static'};
+    });
+    for (const {frame, padding, radius, opacity, color, needsPosition} of measurements) {
+      if (!padding) {
+        frame.classList.remove('portrait-stroke-edge', 'portrait-stroke-host');
+        if (frame === header && bannerStroke) {
+          bannerStroke.remove();
+          bannerStroke = undefined;
+        }
+        continue;
+      }
+      paint(frame, '--portrait-stroke-padding', padding);
+      paint(frame, '--portrait-inner-radius', radius);
+      paint(frame, '--portrait-stroke-opacity', opacity);
+      paint(frame, '--portrait-stroke-color', color);
+      if (needsPosition) frame.classList.add('portrait-stroke-host');
+      if (frame !== header) {
+        frame.classList.add('portrait-stroke-edge');
+      } else if (!bannerStroke) {
+        bannerStroke = document.createElement('span');
+        bannerStroke.className = 'portrait-stroke-banner';
+        bannerStroke.setAttribute('aria-hidden', 'true');
+        header.append(bannerStroke);
+      }
+    }
+  }
+
   const engine = window.EightEightEffects;
   if (!engine) return;
   engine.subscribe({
     measure() {
-      syncBrowserColor(); cacheGeometry();
+      syncBrowserColor(); cacheGeometry(); syncPortraitStrokes();
     }
   });
   // Native lazy image loading and the light renderer prepare nearby photos.

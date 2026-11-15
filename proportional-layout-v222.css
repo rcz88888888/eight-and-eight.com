@@ -4,7 +4,9 @@
 :root {
   --layout-unit: min(calc(100vw / 393), calc(100svh / 852));
   --header-height: calc(90.44 * var(--layout-unit));
-  --layout-line: calc(1.5 * var(--layout-unit));
+  /* Four device pixels at the mobile portrait reference density of 3×. */
+  --portrait-stroke: calc(4px / 3);
+  --layout-line: var(--portrait-stroke);
   --layout-content: calc(353.7 * var(--layout-unit));
   --layout-padding: calc(24 * var(--layout-unit));
   --layout-title: calc(35 * var(--layout-unit));
@@ -15,14 +17,15 @@
   --layout-photo-margin: calc(28 * var(--layout-unit));
   --layout-photo-radius: calc(12 * var(--layout-unit));
   --wallpaper-tile-size: calc(220 * var(--layout-unit));
-  --banner-edge-width: var(--layout-line);
   font-size: calc(16 * var(--layout-unit));
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  :root { --layout-line: 1.5px; }
 }
 @media (orientation: landscape) {
   :root {
     --layout-unit: min(calc(100vw / 896), calc(100svh / 414));
     --header-height: calc(104 * var(--layout-unit));
-    --layout-line: calc(.8 * var(--layout-unit));
     --layout-content: calc(806.4 * var(--layout-unit));
     --layout-padding: calc(44.8 * var(--layout-unit));
     --layout-title: calc(44.8 * var(--layout-unit));
@@ -37,7 +40,29 @@
 body { min-width: 0; font-size: calc(21 * var(--layout-unit)); }
 body .site-shell *, body .site-nav, body .site-nav * {
   border-width: var(--layout-line) !important;
-  outline-width: var(--layout-line);
+  outline-width: calc(1.5 * var(--layout-unit));
+}
+
+/* Complete the fraction that native borders round away on lower-density
+   displays. Paint inside the padding edge, including in clipped grids. */
+.portrait-stroke-host { position: relative; }
+body :is(.site-nav.portrait-stroke-edge, .portrait-stroke-edge)::after,
+.topbar > .portrait-stroke-banner {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  box-sizing: border-box;
+  border-radius: var(--portrait-inner-radius, 0px);
+  padding: var(--portrait-stroke-padding);
+  background: var(--portrait-stroke-color, var(--metallic-gold));
+  opacity: var(--portrait-stroke-opacity);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 body .topbar {
   display: flex; justify-content: center; align-items: center;
@@ -53,10 +78,12 @@ body .topbar .menu-toggle {
   display: block; position: absolute; right: 5%; top: 50% !important;
   transform: translateY(-50%); margin: 0; padding: calc(5 * var(--layout-unit));
 }
-body .topbar .menu-toggle > span {
-  width: calc(25 * var(--layout-unit)); height: calc(2.25 * var(--layout-unit)) !important;
-  min-height: calc(2.25 * var(--layout-unit)) !important;
+body .topbar .menu-toggle > .menu-icon {
+  display: block;
+  width: calc(25 * var(--layout-unit));
+  height: auto;
   margin: calc(6 * var(--layout-unit)) 0;
+  color: var(--banner-logo-metal);
 }
 body .site-nav {
   display: none; position: fixed !important; z-index: 1000;

@@ -1,6 +1,7 @@
 (() => {
-  const rampSeconds = 0.88888888;
-  const maxRingSpeed = 33.333333 * 2 * Math.PI / 60;
+  const startRampSeconds = 1.8;
+  const stopRampSeconds = 2.8;
+  const maxRingSpeed = 45 * 2 * Math.PI / 60;
   const maxFrameSeconds = .05;
   const rampSpeed = t => t * t * (3 - 2 * t);
   // Integral of smoothstep velocity, with zero acceleration at both ends.
@@ -10,11 +11,13 @@
     const distance = Math.abs(end - start);
     const direction = Math.sign(end - start);
     const startSpeed = velocity * direction;
-    const speed = Math.min(maxRingSpeed, Math.max(startSpeed, distance / rampSeconds - startSpeed / 2));
-    const accelerationSeconds = speed > startSpeed ? rampSeconds : 0;
+    const speedForDistance = (2 * distance - startSpeed * startRampSeconds) /
+      (startRampSeconds + stopRampSeconds);
+    const speed = Math.min(maxRingSpeed, Math.max(startSpeed, speedForDistance));
+    const accelerationSeconds = speed > startSpeed ? startRampSeconds : 0;
     const accelerationDistance = (startSpeed + speed) * accelerationSeconds / 2;
     // A moved anchor can leave less than a full ramp's stopping distance.
-    const brakeSeconds = accelerationSeconds ? rampSeconds : Math.min(rampSeconds, 2 * distance / speed);
+    const brakeSeconds = accelerationSeconds ? stopRampSeconds : Math.min(stopRampSeconds, 2 * distance / speed);
     const cruiseDistance = Math.max(0, distance - accelerationDistance - speed * brakeSeconds / 2);
     const duration = accelerationSeconds + cruiseDistance / speed + brakeSeconds;
     return {

@@ -10,23 +10,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="Eight&Eight. Strategy, concept development and structural thinking for brands, platforms, products and ideas">
   <title>Eight&Eight</title>
-  <meta name="eight-and-eight-version" content="v20261112-subtle-type">
+  <meta name="eight-and-eight-version" content="v20261115-uniform-menu-type">
   <link rel="stylesheet" href="styles.css?v=20261017-cream-fan-0008s">
   <link rel="stylesheet" href="design-logo-v6.css?v=20261103-desktop-font-all-modes">
-  <link rel="stylesheet" href="gold-light-v72.css?v=20261029-partner-optical-eight-percent">
-  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261104-landscape-logo-first-field">
+  <link rel="stylesheet" href="gold-light-v72.css?v=20261112-portrait-lines">
+  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261115-uniform-menu">
   <style>
     .glyph-rounding-filters { position: absolute; pointer-events: none; }
-    .section-label, .site-nav, .footer, .principles > div > span {
-      --glyph-rounding: url("#glyph-rounding-small");
-    }
-    :is(h1, h2, h3, h4, h5, h6) { --glyph-rounding: url("#glyph-rounding-heading"); }
     body :is(.rounded-glyphs, .principles .rounded-glyphs) {
       display: inline;
       font: inherit;
       letter-spacing: inherit;
       text-transform: inherit;
-      filter: var(--glyph-rounding, url("#glyph-rounding-body"));
+      filter: url("#glyph-rounding");
     }
   </style>
 </head>
@@ -45,7 +41,10 @@
         <img class="wordmark-logo" src="eight-and-eight-banner-logo-transparent-v35.png" alt="Eight&amp;Eight" width="1774" height="887" decoding="async" fetchpriority="high">
       </a>
       <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation">
-        <span></span><span></span><span></span>
+        <svg class="menu-icon" viewBox="0 0 25 18.75" aria-hidden="true" focusable="false">
+          <path d="M1.125 1.125H23.875 M1.125 9.375H23.875 M1.125 17.625H23.875"
+            fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
+        </svg>
       </button>
       <nav id="site-nav" class="site-nav">
         <a href="#about">ABOUT</a>
@@ -262,7 +261,7 @@
           <h2>Different strategic approach?</h2>
           <p class="lead">Are you building a brand, platform, product or system that requires a different strategic approach?</p>
           <p>We would like to hear about it.</p>
-          <p class="contact-tags">Music · Media · Event · Technology · Concept &amp; Business Development · Strategy · Branding</p>
+          <p class="contact-tags">Music · Media · Event · Technology · Concept &amp; Business Development · Strategy · Branding · Product Design</p>
 
           <div class="contact-box">
             <div class="contact-links contact-details">
@@ -309,16 +308,8 @@
 
   <svg class="glyph-rounding-filters" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <filter id="glyph-rounding-small" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
-        <feGaussianBlur stdDeviation=".0936"/>
-        <feComponentTransfer><feFuncA type="linear" slope="1" intercept="0"/></feComponentTransfer>
-      </filter>
-      <filter id="glyph-rounding-body" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
-        <feGaussianBlur stdDeviation=".1332"/>
-        <feComponentTransfer><feFuncA type="linear" slope="1" intercept="0"/></feComponentTransfer>
-      </filter>
-      <filter id="glyph-rounding-heading" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
-        <feGaussianBlur stdDeviation=".162" data-edge-gain="3.35"/>
+      <filter id="glyph-rounding" x="-15%" y="-25%" width="130%" height="150%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="0.00592"/>
         <feComponentTransfer><feFuncA type="linear" slope="1" intercept="0"/></feComponentTransfer>
       </filter>
     </defs>
@@ -327,8 +318,8 @@
   <script src="gpu-frames-v1.js?v=20261106-ring-strobe" defer></script>
   <script src="scroll-effects-v72.js?v=20261112-continuous-menu" defer></script>
   <script src="menu-overlay-v72.js?v=20261102-consistent-overlay" defer></script>
-  <script src="menu-scroll-v72.js?v=20261112-continuous-menu" defer></script>
-  <script src="gold-light-v72.js?v=20261112-subtle-type" defer></script>
+  <script src="menu-scroll-v72.js?v=20261115-menu-45" defer></script>
+  <script src="gold-light-v72.js?v=20261115-uniform-type" defer></script>
   <script src="photo-material-light-v219.js?v=20261103-nearby-photo-light" defer></script>
   <script src="hero-wallpaper-v96.js?v=20261105-shared-fractional-logo-scale" defer></script>
   <script src="logo-home-v167.js?v=20261012-187" defer></script>
