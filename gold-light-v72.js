@@ -30,14 +30,12 @@
   // Include EVERY real text owner, not just a list of semantic tags.
   // This also captures section-label divs, process/principle spans and footer.
   const textOwners = new Set(textNodes);
-  const glyphRuns = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (walker.nextNode()) {
     const node = walker.currentNode;
     const owner = node.parentElement;
     if (!node.textContent.trim() || !owner ||
         owner.closest('script, style, noscript, template, svg, .wordmark, .menu-toggle, [hidden], [aria-hidden="true"]')) continue;
-    glyphRuns.push(node);
     if (!textOwners.has(owner)) {
       // Newly covered labels keep their existing dimensions and frame geometry.
       owner.classList.add('gold-text-coverage');
@@ -45,31 +43,6 @@
       textNodes.push(owner);
     }
   }
-  // Round the ink alone. Frames, link affordances and the separate backdrop
-  // layer stay on their original elements, as do text reveal and line metrics.
-  for (const node of glyphRuns) {
-    const glyphs = document.createElement('span');
-    glyphs.className = 'rounded-glyphs';
-    node.replaceWith(glyphs);
-    glyphs.appendChild(node);
-  }
-
-  // Use the body reference radius for all text: .74px × 0.008.
-  const blur = document.querySelector('#glyph-rounding feGaussianBlur');
-  const alpha = document.querySelector('#glyph-rounding feFuncA');
-  const deviation = Number(blur.getAttribute('stdDeviation'));
-  function sizeGlyphKernels() {
-    const scale = parseFloat(getComputedStyle(document.documentElement).fontSize) / 16 || 1;
-    const radius = scale * deviation;
-    // Center the transfer on 50% to keep straight edges in place.
-    const contrast = Math.hypot(1, 1.3 * 2.65 * radius * window.devicePixelRatio);
-    blur.setAttribute('stdDeviation', radius.toFixed(6));
-    alpha.setAttribute('slope', contrast.toFixed(4));
-    alpha.setAttribute('intercept', ((1 - contrast) / 2).toFixed(4));
-  }
-  sizeGlyphKernels();
-  addEventListener('resize', sizeGlyphKernels, {passive: true});
-
   const portfolioLogos = [...document.querySelectorAll('.partner-slot img')];
   const lightTargets = new Set([
     ...frames,
@@ -79,11 +52,6 @@
   const contentLayer = document.querySelector('.content-scroll');
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
-  // The header follows the same layout unit as the type. Observe its final
-  // size so a viewport change cannot leave the filters at the previous scale.
-  if (header && 'ResizeObserver' in window) {
-    new ResizeObserver(sizeGlyphKernels).observe(header);
-  }
   const lastPaint = new WeakMap();
   function paint(element, name, value) {
     let previous = lastPaint.get(element);
