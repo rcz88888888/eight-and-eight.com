@@ -234,6 +234,7 @@
   let mainSprites = [], mainBorderSprites = [], mainSolidSprites = [];
   let mainRingWidth = 0;
   let mainPatternFadeEnd = 1, mainFillStart = Infinity, mainFillEnd = Infinity;
+  let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let wallpaperRefreshPending = false;
   let mainBox;
@@ -261,7 +262,8 @@
   let logoProgress;
   let logoAnimating = false;
   const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
-  const scrollRotationDelay = 80; // Milliseconds per layer, fixed at the wallpaper fade endpoint.
+  const scrollRotationDelay = 80;
+  const scrollRotationFinalDelay = .8; // milliseconds: 0.0008 seconds per layer
   const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
   const scrollRotationHistory = [];
   let scrollRotationStart = 0, scrollRotationFrameTime;
@@ -832,6 +834,25 @@
     if (!visualLogoMoving) visualLogoScroll = target;
     return visualLogoScroll;
   }
+  function scrollFanTiming(scroll) {
+    // First screenshot: About's top edge just below the banner.
+    // Second screenshot: Concept Architecture reaches its measured endpoint.
+    const span = mainFillEnd - mainPatternFadeEnd;
+    const closing = Number.isFinite(span) && span > 0
+      ? Math.max(0, Math.min(1, (scroll - mainPatternFadeEnd) / span)) : 0;
+    // From Contact's photographed position, restore the original fan timing
+    // linearly with scroll distance; reach it exactly at the bottom of the page.
+    const returnSpan = scrollFanReturnEnd - scrollFanReturnStart;
+    const returning = Number.isFinite(returnSpan) && returnSpan > 0
+      ? Math.max(0, Math.min(1, (scroll - scrollFanReturnStart) / returnSpan)) : 0;
+    const blend = closing * (1 - returning);
+    return {
+      blend,
+      delay: scrollRotationDelay + (scrollRotationFinalDelay - scrollRotationDelay) * blend,
+      response: 42 + (scrollRotationFinalDelay - 42) * blend,
+      catchUp: 900 + (scrollRotationFinalDelay - 900) * blend
+    };
+  }
   const scrollRingAngle = progress => (.5 - .5 * Math.cos(Math.PI * progress)) * Math.PI * 16;
   const scrollRingDistance = () => Math.max(1, pageHeight - (openingViewport?.height || innerHeight));
   const scrollRingProgress = scroll => scroll >= pageHeight - innerHeight - 1
@@ -875,12 +896,18 @@
     // Use one continuous delayed follower during movement AND after release.
     // There is no stop detector, new easing phase or extra wait on release.
     let cursor=scrollRotationStart;
-    const response=1-Math.exp(-dt/42);
-    const catchUp=1-Math.exp(-dt/900);
+    const fan = scrollFanTiming(inputScroll);
+    // Contract both the delay and the older follower lag, so the visible fan
+    // actually closes as the per-layer interval reaches 0.8 milliseconds.
+    const response=1-Math.exp(-dt/fan.response);
+    const catchUp=1-Math.exp(-dt/fan.catchUp);
+    const activeMaxDelay=Math.max(0,...layers.map(layer=>layer.depth))*fan.delay;
     const settleTolerance = .1 / Math.max(1, rainWidth, rainHeight);
-    let unsettled=time-scrollLastInputTime<scrollRotationMaxDelay || logoAnimating;
+    let unsettled=time-scrollLastInputTime<activeMaxDelay || logoAnimating;
     for(const layer of scrollRotationOrder){
-      const delayed=Math.max(layer.scrollSampleTime ?? -Infinity,time-layer.depth*scrollRotationDelay);
+      // Expanding the fan may increase its delay. Freeze a sample briefly
+      // rather than moving backwards through the history of a forward scroll.
+      const delayed=Math.max(layer.scrollSampleTime ?? -Infinity,time-layer.depth*fan.delay);
       layer.scrollSampleTime=delayed;
       while(cursor+1<scrollRotationHistory.length &&
         scrollRotationHistory[cursor+1].time<=delayed)cursor++;
@@ -888,7 +915,8 @@
       const to=scrollRotationHistory[Math.min(cursor+1,scrollRotationHistory.length-1)];
       const blend=to.time===from.time?0:Math.max(0,Math.min(1,(delayed-from.time)/(to.time-from.time)));
       const delayedAngle=from.angle+(to.angle-from.angle)*blend;
-      layer.scrollTarget+=(delayedAngle-layer.scrollDelayedAngle)*layer.speed;
+      const speed=layer.speed+(1-layer.speed)*fan.blend;
+      layer.scrollTarget+=(delayedAngle-layer.scrollDelayedAngle)*speed;
       layer.scrollDelayedAngle=delayedAngle;
       // Keep scroll phases unwrapped. Choosing a shortest-angle branch here
       // reverses a follower abruptly whenever its lag crosses half a turn.
@@ -1020,6 +1048,14 @@
       const conceptGap=Math.max(28,Math.min(48,width*70/706));
       mainFillEnd=Math.max(mainFillStart+1,concept.getBoundingClientRect().top+
         scrollPosition()-header.getBoundingClientRect().bottom-conceptGap);
+    }
+    const contact = document.querySelector('#contact');
+    if (contact && header) {
+      // Screenshot: Contact's upper border is 56px below the banner at 706px width.
+      const contactGap = Math.max(16, Math.min(48, width * 56 / 706));
+      scrollFanReturnStart = Math.max(mainFillEnd, contact.getBoundingClientRect().top +
+        scrollPosition() - header.getBoundingClientRect().bottom - contactGap);
+      scrollFanReturnEnd = Math.max(scrollFanReturnStart + 1, pageHeight - height);
     }
     if (layoutDirty) subscribers.forEach(item => item.measure?.());
     if (openingLogo) {
