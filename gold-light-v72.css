@@ -309,6 +309,12 @@ body { height: auto; min-height: 100%; overflow: visible; }
   background: transparent;
   pointer-events: none;
 }
+/* Repaint only the native field borders in the clipped banner area. */
+.banner-field-lines {
+  position: absolute;
+  inset: 0;
+}
+.banner-field-lines > span { position: absolute; }
 
 /* Landscape-only text decorations and icon details. */
 @media (orientation: landscape) {

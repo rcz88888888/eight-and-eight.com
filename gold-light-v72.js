@@ -50,6 +50,12 @@
   ]);
   const targets = [...lightTargets];
   const contentLayer = document.querySelector('.content-scroll');
+  const bannerMask = contentLayer?.querySelector('.banner-content-mask');
+  const bannerFieldLines = bannerMask?.appendChild(document.createElement('div'));
+  if (bannerFieldLines) bannerFieldLines.className = 'banner-field-lines';
+  const bannerFrames = frames.filter(frame =>
+    contentLayer?.contains(frame) && !frame.matches('a, .wallpaper-end'));
+  const borderSides = ['Top', 'Right', 'Bottom', 'Left'];
   const nav = document.querySelector('.site-nav');
   const header = document.querySelector('.topbar');
   const lastPaint = new WeakMap();
@@ -86,6 +92,24 @@
       paint(contentLayer, '--content-cut', `${Math.max(0, cut)}px`);
     }
   }
+  function measureBannerFieldLines() {
+    if (!bannerFieldLines) return;
+    const scroll = window.scrollY;
+    const outlines = [];
+    for (const frame of bannerFrames) {
+      const style = getComputedStyle(frame);
+      if (!borderSides.some(side => parseFloat(style[`border${side}Width`]) > 0)) continue;
+      const {left, top, width, height} = frame.getBoundingClientRect();
+      if (!width || !height) continue;
+      const outline = document.createElement('span');
+      Object.assign(outline.style, {
+        left: `${left}px`, top: `${top + scroll}px`, width: `${width}px`, height: `${height}px`,
+        borderStyle: style.borderStyle, borderColor: style.borderColor, borderRadius: style.borderRadius
+      });
+      outlines.push(outline);
+    }
+    bannerFieldLines.replaceChildren(...outlines);
+  }
 
   lightTargets.forEach(element => element.classList.add('gold-light-target'));
   textNodes.forEach(element => {
@@ -99,12 +123,11 @@
   const mobilePortrait = matchMedia('(orientation: portrait) and (max-width: 600px)');
   let bannerStroke;
   function syncPortraitStrokes() {
-    const sides = ['Top', 'Right', 'Bottom', 'Left'];
     const devicePixel = 1 / (window.devicePixelRatio || 1);
     const measurements = frames.map(frame => {
       if (mobilePortrait.matches) return {frame};
       const style = getComputedStyle(frame);
-      const widths = sides.map(side => parseFloat(style['border' + side + 'Width']) || 0);
+      const widths = borderSides.map(side => parseFloat(style['border' + side + 'Width']) || 0);
       const missing = Math.max(0, 4 / 3 - Math.max(...widths));
       if (!widths.some(Boolean) || missing <= .02) return {frame};
       // One device pixel with partial coverage avoids a second width rounding.
@@ -116,7 +139,7 @@
         return Math.max(0, outer - Math.max(widths[vertical], widths[horizontal])) + 'px';
       }).join(' ');
       return {frame, padding, radius, opacity: String(Math.min(1, missing / devicePixel)),
-        color: style['border' + sides[widths.findIndex(Boolean)] + 'Color'],
+        color: style['border' + borderSides[widths.findIndex(Boolean)] + 'Color'],
         needsPosition: style.position === 'static'};
     });
     for (const {frame, padding, radius, opacity, color, needsPosition} of measurements) {
@@ -149,6 +172,10 @@
   engine.subscribe({
     measure() {
       syncBrowserColor(); cacheGeometry(); syncPortraitStrokes();
+      measureBannerFieldLines();
+    },
+    paint(state) {
+      if (bannerFieldLines) paint(bannerFieldLines, 'transform', `translateY(${-state.scroll}px)`);
     }
   });
   // Native lazy image loading and the light renderer prepare nearby photos.
