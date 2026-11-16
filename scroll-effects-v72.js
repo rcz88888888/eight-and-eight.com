@@ -262,12 +262,14 @@
   let logoProgress;
   let logoAnimating = false;
   const scrollRotationOrder = [...layers].sort((a,b)=>b.depth-a.depth);
-  const scrollRotationDelay = 80;
+  const initialScrollFanTiming = {blend: 0, delay: 80, response: 42, catchUp: 900};
   const scrollRotationFinalDelay = .8; // milliseconds: 0.0008 seconds per layer
-  const scrollRotationMaxDelay = Math.max(0,...layers.map(layer=>layer.depth))*scrollRotationDelay;
+  const scrollRotationMaxDepth = Math.max(0,...layers.map(layer=>layer.depth));
+  const scrollRotationMaxDelay = scrollRotationMaxDepth * initialScrollFanTiming.delay;
   const scrollRotationHistory = [];
   let scrollRotationStart = 0, scrollRotationFrameTime;
   let scrollInput = NaN, scrollLastInputTime = -Infinity;
+  let upwardScrollSince;
   let scrollStackBlend = 1;
   let scrollRotationPending = false;
   let lastLogoTime;
@@ -834,7 +836,7 @@
     if (!visualLogoMoving) visualLogoScroll = target;
     return visualLogoScroll;
   }
-  function scrollFanTiming(scroll) {
+  function upwardScrollFanTiming(scroll, transition) {
     // First screenshot: About's top edge just below the banner.
     // Second screenshot: Concept Architecture reaches its measured endpoint.
     const span = mainFillEnd - mainPatternFadeEnd;
@@ -845,12 +847,13 @@
     const returnSpan = scrollFanReturnEnd - scrollFanReturnStart;
     const returning = Number.isFinite(returnSpan) && returnSpan > 0
       ? Math.max(0, Math.min(1, (scroll - scrollFanReturnStart) / returnSpan)) : 0;
-    const blend = closing * (1 - returning);
+    const blend = closing * (1 - returning) * transition;
+    const {delay, response, catchUp} = initialScrollFanTiming;
     return {
       blend,
-      delay: scrollRotationDelay + (scrollRotationFinalDelay - scrollRotationDelay) * blend,
-      response: 42 + (scrollRotationFinalDelay - 42) * blend,
-      catchUp: 900 + (scrollRotationFinalDelay - 900) * blend
+      delay: delay + (scrollRotationFinalDelay - delay) * blend,
+      response: response + (scrollRotationFinalDelay - response) * blend,
+      catchUp: catchUp + (scrollRotationFinalDelay - catchUp) * blend
     };
   }
   const scrollRingAngle = progress => (.5 - .5 * Math.cos(Math.PI * progress)) * Math.PI * 16;
@@ -874,14 +877,21 @@
       scrollRotationHistory.length=0;
       scrollRotationHistory.push({time:time-scrollRotationMaxDelay-64,angle},{time,angle});
       scrollRotationStart=0;scrollLastInputTime=time;scrollInput=inputScroll;
+      upwardScrollSince = undefined;
       scrollStackBlend=1;scrollRotationPending=false;
       layers.forEach(layer=>{
         layer.scrollAngle=layer.scrollTarget=layer.scrollDelayedAngle=angle;
-        layer.scrollSampleTime=time-layer.depth*scrollRotationDelay;
+        layer.scrollSampleTime=time-layer.depth*initialScrollFanTiming.delay;
       });
       return;
     }
     if(Math.abs(inputScroll-scrollInput)>.01){
+      if (inputScroll < scrollInput) {
+        // Let delayed layers catch up smoothly if the direction changes mid-motion.
+        upwardScrollSince ??= scrollRotationPending ? time : time - scrollRotationMaxDelay;
+      } else {
+        upwardScrollSince = undefined;
+      }
       scrollInput=inputScroll;scrollLastInputTime=time;
     }
     const last=scrollRotationHistory[scrollRotationHistory.length-1];
@@ -896,12 +906,15 @@
     // Use one continuous delayed follower during movement AND after release.
     // There is no stop detector, new easing phase or extra wait on release.
     let cursor=scrollRotationStart;
-    const fan = scrollFanTiming(inputScroll);
-    // Contract both the delay and the older follower lag, so the visible fan
-    // actually closes as the per-layer interval reaches 0.8 milliseconds.
+    // Use the timing at the end of the wallpaper fade throughout the descent.
+    let fan = initialScrollFanTiming;
+    if (upwardScrollSince !== undefined) {
+      const transition = Math.min(1, (time - upwardScrollSince) / Math.max(1, scrollRotationMaxDelay));
+      fan = upwardScrollFanTiming(inputScroll, smoothEnd(transition));
+    }
     const response=1-Math.exp(-dt/fan.response);
     const catchUp=1-Math.exp(-dt/fan.catchUp);
-    const activeMaxDelay=Math.max(0,...layers.map(layer=>layer.depth))*fan.delay;
+    const activeMaxDelay=scrollRotationMaxDepth*fan.delay;
     const settleTolerance = .1 / Math.max(1, rainWidth, rainHeight);
     let unsettled=time-scrollLastInputTime<activeMaxDelay || logoAnimating;
     for(const layer of scrollRotationOrder){
