@@ -102,13 +102,16 @@ em.gold-text-light {
 
 /* The banner wordmark sits on an opaque ellipse in the page's cream colour. */
 .topbar .wordmark::after {
+  --wordmark-image-unit: min(calc(var(--layout-wordmark) / 1774),
+    calc((var(--header-height) - 2 * var(--layout-line)) / 887));
   content: "";
   position: absolute;
   z-index: -1;
-  left: 50%;
-  top: 50%;
-  width: calc(100% + 24 * var(--layout-unit, 1px));
-  height: calc(72 * var(--layout-unit, 1px));
+  left: calc(50% - 2 * var(--wordmark-image-unit));
+  top: calc(50% - 3 * var(--wordmark-image-unit));
+  width: calc(1746 * var(--wordmark-image-unit));
+  height: calc(569 * var(--wordmark-image-unit));
+  box-sizing: content-box;
   transform: translate(-50%, -50%);
   border: var(--layout-line, 1.5px) solid var(--metallic-gold) !important;
   border-radius: 50%;
