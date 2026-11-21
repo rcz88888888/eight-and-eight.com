@@ -100,6 +100,22 @@ em.gold-text-light {
   transition: none !important;
 }
 
+/* The banner wordmark sits on an opaque ellipse in the page's cream colour. */
+.topbar .wordmark::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: calc(100% + 24 * var(--layout-unit, 1px));
+  height: calc(72 * var(--layout-unit, 1px));
+  transform: translate(-50%, -50%);
+  border: var(--layout-line, 1.5px) solid var(--metallic-gold) !important;
+  border-radius: 50%;
+  background: var(--page-cream, #fdfcfa);
+  pointer-events: none;
+}
+
 .topbar .wordmark.gold-light-target::before {
   content: "";
   position: absolute;
@@ -357,7 +373,6 @@ body { height: auto; min-height: 100%; overflow: visible; }
   overflow: hidden;
 }
 .hero-paper-border { stroke-width: var(--hero-border-width, 1.5px); }
-.topbar .wordmark::after,
 .topbar .menu-toggle > span::after,
 .section::before, .contact-box::before,
 .service-grid article::before, .partner-slot::before { content: none !important; }
