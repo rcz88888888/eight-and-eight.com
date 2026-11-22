@@ -288,7 +288,8 @@
   const smoothEnd = x => x*x*x*(10+x*(-15+6*x));
   const smoothDerivative = x => 30*x*x*(1-x)*(1-x);
   const smoothIntegral = x => x*x*x*x*(2.5+x*(-3+x));
-  const spinTransitionDuration = .8;
+  const spinTransitionDuration = 2.4;
+  const spinFinalAccelerationDuration = 5.4;
   const spinStageDuration = 8;
   const startPassStaggers = [.18, 0, .08, .16, .24, .32, .40, .48];
   const lastStartLayer = Math.max(0, ...layers.map(layer => layer.depth + 1));
@@ -303,19 +304,19 @@
     return segment;
   }
   // Eight continuous eight-second passes alternate the two exact plateaus.
-  // The fast 1.8-second finish appears only at the end of pass eight.
+  // The final acceleration appears only at the end of pass eight.
   const slowRpm = 8.8888888, fastRpm = 33.333333;
   for (let pass = 0; pass < startPassStaggers.length; pass++) {
     const start = spinCursor;
     const rpm = pass % 2 === 0 ? slowRpm : fastRpm;
     const previousRpm = pass === 0 ? 0 : pass % 2 === 0 ? fastRpm : slowRpm;
     appendSpin(spinTransitionDuration, previousRpm, rpm);
-    appendSpin(spinStageDuration - spinTransitionDuration - (pass === 7 ? 1.8 : 0), rpm);
+    appendSpin(spinStageDuration - spinTransitionDuration - (pass === 7 ? spinFinalAccelerationDuration : 0), rpm);
     if (pass === 7) {
       // Keep exact endpoint speeds and end on a whole turn. The phase
       // correction and its derivative vanish at the acceleration endpoints.
-      const finalTurns = spinTotalTurns + 1.8 * (rpm + 888) / 120;
-      appendSpin(1.8, rpm, 888, 'linear', Math.round(finalTurns) - finalTurns);
+      const finalTurns = spinTotalTurns + spinFinalAccelerationDuration * (rpm + 888) / 120;
+      appendSpin(spinFinalAccelerationDuration, rpm, 888, 'linear', Math.round(finalTurns) - finalTurns);
     }
     spinMotionWindows.push({start, end: spinCursor, stagger: startPassStaggers[pass], rpm});
   }
@@ -348,10 +349,10 @@
         strobeWindows.push({start,release,correction:Math.round(steps)-steps});
       }
     }
-    const finalStart=spinMotionEnd-1.8+(depth+1)*startPassStaggers[7];
+    const finalStart=spinMotionEnd-spinFinalAccelerationDuration+(depth+1)*startPassStaggers[7];
     append(finalStart-cursor,previousRpm);
-    const finalTurns=turns+1.8*(previousRpm+888)/120;
-    append(1.8,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
+    const finalTurns=turns+spinFinalAccelerationDuration*(previousRpm+888)/120;
+    append(spinFinalAccelerationDuration,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
     return {segments,strobeWindows,start:(depth+1)*startPassStaggers[0],end:cursor,turns};
   }
   const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildRingTimeline(layer.depth)]));
@@ -403,9 +404,9 @@
     const previousStagger = passIndex
       ? (!forRing && passIndex === 1 ? 0 : spinMotionWindows[passIndex - 1].stagger)
       : ownStagger;
-    // Join changed fan intervals without snapping phases. A linear delay
-    // ramp keeps sample time monotonic even for the deepest 0.64s change.
-    const blend = Math.max(0, Math.min(1, (seconds - pass.start) / spinTransitionDuration));
+    // Ease the delay with zero slope at both ends, keeping angular velocity
+    // continuous as each new fan interval begins and ends.
+    const blend = smoothEnd(Math.max(0, Math.min(1, (seconds - pass.start) / spinTransitionDuration)));
     const stagger = previousStagger + (ownStagger - previousStagger) * blend;
     return Math.max(0, Math.min(spinMotionEnd, seconds - (depth + 1) * stagger));
   }

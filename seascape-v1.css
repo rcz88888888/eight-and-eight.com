@@ -1,0 +1,104 @@
+:root {
+  --seascape-silver: #d4d6d8;
+  --seascape-horizon: 85svh;
+}
+
+html.seascape-on,
+html.seascape-on body {
+  background: var(--seascape-silver) !important;
+}
+
+.seascape-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  contain: strict;
+  background: var(--seascape-silver);
+}
+
+.seascape-background > canvas,
+.seascape-fallback {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  pointer-events: none;
+}
+
+.seascape-fallback {
+  background: var(--seascape-silver) url("seascape-silver-source.png") center / cover no-repeat;
+}
+
+.seascape-fallback.sea-only {
+  background-size: auto 200%;
+  background-position: center bottom;
+}
+
+.seascape-background > canvas {
+  opacity: 0;
+}
+
+.seascape-sky-video,
+.seascape-sea-video {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 100%;
+  border: 0 !important;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.seascape-sky-video {
+  top: var(--seascape-sky-offset, 0px);
+  height: var(--seascape-horizon);
+}
+
+.seascape-sea-video {
+  inset: 0;
+  height: 100%;
+  clip-path: inset(var(--seascape-sea-clip, 100vh) 0 0 0);
+}
+
+.seascape-horizon-haze {
+  position: absolute;
+  top: var(--seascape-haze-top, 100vh);
+  width: 100%;
+  height: 74px;
+  background: linear-gradient(transparent, rgba(222, 226, 229, .68) 53%, rgba(236, 237, 236, .80) 56%, transparent);
+  pointer-events: none;
+}
+
+.seascape-ready :is(.seascape-sky-video, .seascape-sea-video, .seascape-horizon-haze) {
+  visibility: hidden;
+}
+
+.seascape-ready .seascape-background > canvas {
+  opacity: 1;
+}
+
+.seascape-on .page-cream-ground {
+  display: none;
+}
+
+.seascape-on body::before {
+  background: transparent !important;
+}
+
+/* Keep the established logo, banner, frame, and text layers above the sea. */
+.seascape-on body > .site-shell {
+  z-index: 3;
+}
+
+.seascape-on body > :is(.background-layers, .main-logo-canvas, .parallax-logo, .logo-rain-fallback) {
+  z-index: 1;
+}
+
+@media print {
+  .seascape-background { display: none; }
+}
