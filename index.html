@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="styles.css?v=20261017-cream-fan-0008s">
   <link rel="stylesheet" href="design-logo-v6.css?v=20261103-desktop-font-all-modes">
   <link rel="stylesheet" href="gold-light-v72.css?v=20261121-banner-wordmark-contour">
-  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261121-banner-logo-plus8">
+  <link rel="stylesheet" href="proportional-layout-v222.css?v=20261122-banner-logo-scale136048896">
 </head>
 <body>
   <div class="browser-top-color" aria-hidden="true"></div>
@@ -34,16 +34,19 @@
         <svg class="menu-icon" viewBox="0 0 25 18.75" aria-hidden="true" focusable="false">
           <defs>
             <filter id="banner-wordmark-contour" x="-10%" y="-20%" width="120%" height="140%" color-interpolation-filters="sRGB">
-              <feMorphology in="SourceAlpha" operator="dilate" radius="1.35" result="outer-contour"/>
+              <feMorphology in="SourceAlpha" operator="dilate" radius="0.6" result="bold-alpha"/>
+              <feFlood flood-color="var(--banner-logo-metal, #4b3a1f)" result="bold-ink"/>
+              <feComposite in="bold-ink" in2="bold-alpha" operator="in" result="bold-logo"/>
+              <feMorphology in="bold-alpha" operator="dilate" radius="1.35" result="outer-contour"/>
               <feFlood flood-color="var(--metallic-gold, #c2b594)" result="contour-gold"/>
               <feComposite in="contour-gold" in2="outer-contour" operator="in" result="gold-edge"/>
-              <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="inner-contour"/>
+              <feMorphology in="bold-alpha" operator="dilate" radius="1" result="inner-contour"/>
               <feFlood flood-color="var(--page-cream, #fdfcfa)" result="contour-cream"/>
               <feComposite in="contour-cream" in2="inner-contour" operator="in" result="cream-edge"/>
               <feMerge>
                 <feMergeNode in="gold-edge"/>
                 <feMergeNode in="cream-edge"/>
-                <feMergeNode in="SourceGraphic"/>
+                <feMergeNode in="bold-logo"/>
               </feMerge>
             </filter>
           </defs>
