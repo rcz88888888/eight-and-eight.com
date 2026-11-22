@@ -70,7 +70,7 @@ body .topbar {
   padding: calc(16 * var(--layout-unit)) 5%;
 }
 body .topbar .wordmark {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%) scale(1.259712);
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%) scale(1.36048896);
   transform-origin: center;
   width: var(--layout-wordmark); height: 100%; max-width: calc(100% - 54 * var(--layout-unit));
   margin: 0; flex: none;
