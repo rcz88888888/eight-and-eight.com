@@ -71,6 +71,8 @@
       });
     } catch { return null; }
     if (!gl) return null;
+    const maximumTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    const maximumSurface = Math.min(maximumTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
     const programs = [], buffers = [], textures = new Map();
     const pointBuffers = new WeakMap();
     let width = 1, height = 1, ratio = 1, checkDraw = true;
@@ -194,8 +196,11 @@
     original.replaceWith(canvas);
     return {
       canvas,
+      maxTextureSize: maximumTextureSize,
       resize(nextWidth, nextHeight, nextRatio) {
-        width = nextWidth; height = nextHeight; ratio = nextRatio;
+        width = Math.max(1,nextWidth); height = Math.max(1,nextHeight);
+        ratio = Math.min(nextRatio,maximumSurface / width,maximumSurface / height,
+          Math.sqrt(8000000 / (width * height)));
         const w = Math.round(width * ratio), h = Math.round(height * ratio);
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w; canvas.height = h;
