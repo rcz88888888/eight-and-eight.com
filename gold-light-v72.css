@@ -94,22 +94,10 @@ em.gold-text-light {
 }
 
 .wordmark-logo.gold-light-target {
-  /* Retain layout; the mask below paints the exact black-gold silhouette. */
-  visibility: hidden;
+  /* The SVG paints the wordmark and its contours directly as vector paths. */
+  visibility: visible;
   filter: none;
   transition: none !important;
-}
-
-.topbar .wordmark.gold-light-target::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: var(--banner-logo-metal);
-  opacity: 1;
-  -webkit-mask: url("eight-and-eight-banner-logo-transparent-v35.png") center / contain no-repeat;
-  mask: url("eight-and-eight-banner-logo-transparent-v35.png") center / contain no-repeat;
 }
 
 /* Recolour only the ornament; the banner paper is fully transparent.

@@ -13,7 +13,7 @@
   <meta name="eight-and-eight-version" content="v20261115-native-type">
   <link rel="stylesheet" href="styles.css?v=20261017-cream-fan-0008s">
   <link rel="stylesheet" href="design-logo-v6.css?v=20261103-desktop-font-all-modes">
-  <link rel="stylesheet" href="gold-light-v72.css?v=20261121-banner-wordmark-contour">
+  <link rel="stylesheet" href="gold-light-v72.css?v=20261123-vector-banner-logo">
   <link rel="stylesheet" href="proportional-layout-v222.css?v=20261122-banner-logo-scale136048896">
 </head>
 <body>
@@ -27,29 +27,11 @@
   <div class="site-shell">
     <header class="topbar">
       <span class="banner-blur" aria-hidden="true"></span>
-      <a class="wordmark" href="#top" aria-label="Eight and Eight home" style="filter: url(#banner-wordmark-contour)">
-        <img class="wordmark-logo" src="eight-and-eight-banner-logo-transparent-v35.png" alt="Eight&amp;Eight" width="1774" height="887" decoding="async" fetchpriority="high">
+      <a class="wordmark" href="#top" aria-label="Eight and Eight home">
+        <img class="wordmark-logo" src="eight-and-eight-banner-logo-vector.svg" alt="Eight&amp;Eight" width="1774" height="887" decoding="async" fetchpriority="high">
       </a>
       <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation">
         <svg class="menu-icon" viewBox="0 0 25 18.75" aria-hidden="true" focusable="false">
-          <defs>
-            <filter id="banner-wordmark-contour" x="-10%" y="-20%" width="120%" height="140%" color-interpolation-filters="sRGB">
-              <feMorphology in="SourceAlpha" operator="dilate" radius="0.6" result="bold-alpha"/>
-              <feFlood flood-color="var(--banner-logo-metal, #4b3a1f)" result="bold-ink"/>
-              <feComposite in="bold-ink" in2="bold-alpha" operator="in" result="bold-logo"/>
-              <feMorphology in="bold-alpha" operator="dilate" radius="1.35" result="outer-contour"/>
-              <feFlood flood-color="var(--metallic-gold, #c2b594)" result="contour-gold"/>
-              <feComposite in="contour-gold" in2="outer-contour" operator="in" result="gold-edge"/>
-              <feMorphology in="bold-alpha" operator="dilate" radius="1" result="inner-contour"/>
-              <feFlood flood-color="var(--page-cream, #fdfcfa)" result="contour-cream"/>
-              <feComposite in="contour-cream" in2="inner-contour" operator="in" result="cream-edge"/>
-              <feMerge>
-                <feMergeNode in="gold-edge"/>
-                <feMergeNode in="cream-edge"/>
-                <feMergeNode in="bold-logo"/>
-              </feMerge>
-            </filter>
-          </defs>
           <path d="M1.125 1.125H23.875 M1.125 9.375H23.875 M1.125 17.625H23.875"
             fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"/>
         </svg>
