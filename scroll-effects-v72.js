@@ -118,7 +118,7 @@
   const ringBands = [...innerRings].reverse().concat(outerRings);
   // Keep the previous visibility range, with one equal increase per point row
   // all the way from the innermost row to the outermost extension.
-  const ringVisibilityGain = 1.10 * 1.15;
+  const ringVisibilityGain = 1.10;
   const ringOpacityMin = lastOuterSource.opacity * .82 ** (outerRings.length - innerRingOrder.length) * ringVisibilityGain;
   const ringOpacityMax = frontRingLayer.opacity * ringVisibilityGain;
   const ringOpacityStep = (ringOpacityMax - ringOpacityMin) / (ringBands.length * ringRows.length - 1);
@@ -174,15 +174,9 @@
   const backRingPaintOrder = groupRingBands(innerRings.filter(ring => ring.inwardExtension));
   const ringPaintOrder = groupRingBands([...outerRings].reverse().concat(innerRings.filter(ring => !ring.inwardExtension)));
   const ringSpriteGroups = backRingPaintOrder.concat(ringPaintOrder);
-  async function immutableSprite(canvas) {
-    if (typeof createImageBitmap !== 'function') return canvas;
-    try {
-      const sprite = await createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'});
-      canvas.width = canvas.height = 1;
-      return sprite;
-    } catch { return canvas; }
-  }
-  function releaseSprites(items) { for (const sprite of new Set(items)) sprite?.close?.(); }
+  const immutableSprite = canvas => typeof createImageBitmap === 'function'
+    ? createImageBitmap(canvas, {premultiplyAlpha: 'premultiply'}).catch(() => canvas) : Promise.resolve(canvas);
+  function releaseSprites(items) { for (const sprite of items) sprite?.close?.(); }
   function cacheInnerRingPaths() {
     for (const group of ringSpriteGroups) {
       if (group.rowPaths) continue;
@@ -243,7 +237,6 @@
   let scrollFanReturnStart = Infinity, scrollFanReturnEnd = Infinity;
   let wallpaperData = '', mainWallpaperKey = '', mainWallpaperRequest = 0;
   let wallpaperRefreshPending = false;
-  let mainWallpaperLoading = false;
   let mainBox;
   let openingScaleFactor=1;
   const rainViewport = document.createElement('span');
@@ -334,7 +327,7 @@
   // One pitch per beat leaves a small counterclockwise drift at 8 RPM.
   const slowRingRpm = 8;
   const ringStrobeRate = Math.floor(slowRingRpm * Math.max(...ringRows.map(row => row.count)) / 60) + 1;
-  function buildLayerTimeline(depth, forRing) {
+  function buildRingTimeline(depth) {
     const segments=[], strobeWindows=[];
     let cursor=0,turns=0,previousRpm=0;
     function append(duration,fromRpm,toRpm=fromRpm,curve='smooth',correction=0) {
@@ -344,13 +337,12 @@
       cursor+=duration;turns+=duration*(from+to)/2+correction;
     }
     for (const [index, pass] of spinMotionWindows.entries()) {
-      const stagger = !forRing && index === 0 ? 0 : pass.stagger;
-      const start=pass.start+(depth+1)*stagger;
-      const rpm=forRing && pass.rpm===slowRpm ? slowRingRpm : pass.rpm;
+      const start=pass.start+(depth+1)*pass.stagger;
+      const rpm=pass.rpm===slowRpm ? slowRingRpm : pass.rpm;
       append(start-cursor,previousRpm);
       append(spinTransitionDuration,previousRpm,rpm);
       previousRpm=rpm;
-      if (forRing && rpm===slowRingRpm) {
+      if (rpm===slowRingRpm) {
         const next=spinMotionWindows[index+1];
         const release=next.start+(depth+1)*next.stagger;
         const steps=ringStrobeRate*(release-start);
@@ -361,11 +353,11 @@
     append(finalStart-cursor,previousRpm);
     const finalTurns=turns+spinFinalAccelerationDuration*(previousRpm+888)/120;
     append(spinFinalAccelerationDuration,previousRpm,888,'linear',Math.round(finalTurns)-finalTurns);
-    return {segments,strobeWindows,start:forRing ? (depth+1)*startPassStaggers[0] : 0,end:cursor,turns};
+    return {segments,strobeWindows,start:(depth+1)*startPassStaggers[0],end:cursor,turns};
   }
-  const logoTimelines=new Map(layers.map(layer=>[layer.depth,buildLayerTimeline(layer.depth,false)]));
-  const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildLayerTimeline(layer.depth,true)]));
-  function layerPhase(seconds,timeline) {
+  const ringTimelines=new Map(layers.map(layer=>[layer.depth,buildRingTimeline(layer.depth)]));
+  function ringPhase(seconds,depth) {
+    const timeline=ringTimelines.get(depth);
     if(seconds<=0)return 0;
     if(seconds>=timeline.end)return TAU*timeline.turns;
     for(const segment of timeline.segments){
@@ -401,6 +393,22 @@
     if(seconds<timeline.start || seconds>=timeline.end)return .7;
     return .7+.3*smoothEnd(Math.min(1,(seconds-timeline.start)/1.8))*
       smoothEnd(Math.min(1,(timeline.end-seconds)/1.8));
+  }
+  function spinTimeForLayer(seconds, depth, forRing = false) {
+    let passIndex = 0;
+    while (passIndex + 1 < spinMotionWindows.length &&
+      seconds >= spinMotionWindows[passIndex + 1].start) passIndex++;
+    const pass = spinMotionWindows[passIndex];
+    // Only first-pass logos lose their fan; rings retain the old timeline.
+    const ownStagger = !forRing && passIndex === 0 ? 0 : pass.stagger;
+    const previousStagger = passIndex
+      ? (!forRing && passIndex === 1 ? 0 : spinMotionWindows[passIndex - 1].stagger)
+      : ownStagger;
+    // Ease the delay with zero slope at both ends, keeping angular velocity
+    // continuous as each new fan interval begins and ends.
+    const blend = smoothEnd(Math.max(0, Math.min(1, (seconds - pass.start) / spinTransitionDuration)));
+    const stagger = previousStagger + (ownStagger - previousStagger) * blend;
+    return Math.max(0, Math.min(spinMotionEnd, seconds - (depth + 1) * stagger));
   }
   function spinPhase(seconds) {
     if(seconds<=0)return 0;
@@ -612,14 +620,14 @@
         heroSpeed=spinSpeed(elapsed);
         mainIdleAngle=heroIdleAngle=spinPhase(elapsed);
         layers.forEach(layer => {
-          layer.idleAngle = layerPhase(elapsed,logoTimelines.get(layer.depth));
-          layer.ringIdleAngle = layerPhase(elapsed,ringTimelines.get(layer.depth));
+          layer.idleAngle = spinPhase(spinTimeForLayer(elapsed, layer.depth));
+          layer.ringIdleAngle = ringPhase(elapsed,layer.depth);
           layer.ringStrobeSteps = ringStrobePhase(elapsed,layer.depth);
         });
       }
     }
     for(const layer of layers){
-      const elapsed=idleMode==='running'?(time-spinSince)/1000:-1;
+      const elapsed=idleMode==='running'?spinTimeForLayer((time-spinSince)/1000,layer.depth):-1;
       layer.idleVisibility=startScrollReturn
         ? layer.returnVisibility+(.7-layer.returnVisibility)*smoothEnd(startScrollReturn.progress)
         : transitionVisibility(layer,idleRotationVisibility(elapsed),time);
@@ -688,12 +696,11 @@
     if (key === mainWallpaperKey) return;
     // Keep drawing with the existing sprites during menu navigation. Encoding
     // eight wallpaper SVGs at once can block a scroll frame on mobile.
-    if (mainWallpaperLoading || (frameDrivers.size && mainSprites.length)) {
+    if (frameDrivers.size && mainSprites.length) {
       wallpaperRefreshPending = true;
       return;
     }
     mainWallpaperKey = key;
-    mainWallpaperLoading = true;
     const copy = openingLogo.cloneNode(true);
     copy.querySelector('.hero-strobe-ring')?.remove();
     copy.removeAttribute('class'); copy.removeAttribute('style');
@@ -730,57 +737,36 @@
     const rasterise = (image, width, height) => {
       const canvas = document.createElement('canvas');
       canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Logo surface unavailable');
-      ctx.imageSmoothingQuality = 'high';
+      const ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(image, 0, 0, width, height);
       return canvas;
     };
-    const finish = () => {
-      mainWallpaperLoading = false;
-      if (wallpaperRefreshPending && !frameDrivers.size) {
-        wallpaperRefreshPending = false;
-        schedule();
-        layoutDirty = true;
-      }
-    };
-    const ready = async () => {
+    const ready = () => {
       if (request !== mainWallpaperRequest || ++loaded !== images.length) return;
-      const prepared = [];
-      try {
-        const textureLimit = Math.min(gpu?.maxTextureSize || 4096, bannerGpu?.maxTextureSize || 4096);
-        const limit = Math.min(1536, Math.floor(textureLimit * 922 / 1368));
-        const widths = layers.map(layer => Math.max(8,
-          Math.min(limit, Math.ceil(922 * scale * layer.scale * inkRatio))));
-        const largest = Math.max(...widths);
-        const pixels = (widths.reduce((sum,width) => sum + width * width,0) + 2 * largest * largest) * 1368 / 922;
-        const sizeFactor = Math.min(1, Math.sqrt(12000000 / pixels));
-        for (const [index, image] of wallpapers.entries()) {
-          const width = Math.max(8, Math.floor(widths[index] * sizeFactor));
-          prepared.push(await immutableSprite(rasterise(image,width,Math.round(width * 1368 / 922))));
-        }
-        const width = Math.max(...prepared.map(sprite => sprite.width));
-        const height = Math.round(width * 1368 / 922);
-        prepared.push(await immutableSprite(rasterise(outline,width,height)));
-        prepared.push(await immutableSprite(rasterise(solid,width,height)));
+      // Cache one correctly sized pattern per layer, only on resize/load.
+      // Bound raster sizes and reuse them in every scroll/animation frame.
+      const patterns = wallpapers.map((image, index) => {
+        const width = Math.max(8, Math.min(1536, Math.ceil(922 * scale * layers[index].scale * inkRatio)));
+        return rasterise(image, width, Math.round(width * 1368 / 922));
+      });
+      const borders = patterns.map(source => rasterise(outline, source.width, source.height));
+      const solids = patterns.map(source => rasterise(solid, source.width, source.height));
+      Promise.all([...patterns, ...borders, ...solids].map(immutableSprite)).then(prepared => {
         if (request !== mainWallpaperRequest) { releaseSprites(prepared); return; }
         const previous = [...mainSprites, ...mainBorderSprites, ...mainSolidSprites];
         mainSprites = prepared.slice(0, layers.length);
-        mainBorderSprites = layers.map(() => prepared[layers.length]);
-        mainSolidSprites = layers.map(() => prepared[layers.length + 1]);
+        mainBorderSprites = prepared.slice(layers.length, layers.length * 2);
+        mainSolidSprites = prepared.slice(layers.length * 2);
         gpu?.retainSprites(prepared);
         bannerGpu?.retainSprites([...prepared, ...sprites]);
         lastMainPaint = lastFeedPaint = ''; cacheSpriteChoices(); schedule();
         releaseSprites(previous);
-      } catch {
-        releaseSprites(prepared);
-        mainWallpaperKey = '';
-      } finally { finish(); }
+      });
     };
     for (const image of images) {
       image.addEventListener('load', ready, {once: true});
       image.addEventListener('error', () => {
-        if (request === mainWallpaperRequest) { mainWallpaperKey = ''; finish(); }
+        if (request === mainWallpaperRequest) mainWallpaperKey = '';
       }, {once: true});
     }
     wallpapers.forEach((image, index) => { image.src = wallpaperSources[index]; });
@@ -983,8 +969,6 @@
     scrollPosition
   };
   function resizeSurface(canvas, context, width, height, ratio) {
-    ratio = Math.min(ratio,4096 / Math.max(1,width),4096 / Math.max(1,height),
-      Math.sqrt(8000000 / Math.max(1,width * height)));
     const w = Math.round(width * ratio);
     const h = Math.round(height * ratio);
     if (canvas.width !== w || canvas.height !== h) {
@@ -1453,8 +1437,6 @@
     if (consumeStartScroll(distances[event.key], event)) event.stopImmediatePropagation();
   }, {capture: true});
   const resize = () => {
-    if (Math.abs((window.visualViewport?.scale || 1)-1) > .01 &&
-        root.clientWidth === lastWidth && innerHeight === lastHeight) return;
     if (root.clientWidth !== lastWidth) layoutDirty = true;
     viewportDirty = true;
     schedule();

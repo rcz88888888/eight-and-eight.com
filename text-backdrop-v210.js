@@ -26,7 +26,6 @@
     canvas.width = Math.ceil(width * ratio);
     canvas.height = Math.ceil(height * ratio);
     const context = canvas.getContext('2d');
-    if (!context) throw new Error('Text mask surface unavailable');
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.textBaseline = 'alphabetic';
     context.fillStyle = context.strokeStyle = '#fff';
@@ -77,10 +76,7 @@
     outline.context.globalCompositeOperation = 'destination-out';
     outline.context.setTransform(1, 0, 0, 1, 0, 0);
     outline.context.drawImage(core.canvas, 0, 0);
-    const url = `url("${outline.canvas.toDataURL('image/png')}")`;
-    core.canvas.width = core.canvas.height = 1;
-    outline.canvas.width = outline.canvas.height = 1;
-    return url;
+    return `url("${outline.canvas.toDataURL('image/png')}")`;
   }
   const nearbyOwners = new Set();
   const pendingOwners = new Set();
@@ -94,17 +90,13 @@
       pendingTask = false;
       const owner = pendingOwners.values().next().value;
       pendingOwners.delete(owner);
-      try {
-        if (nearbyOwners.has(owner)) prepare(owner);
-      } catch {
-        const layer = cache.get(owner)?.layer;
-        if (layer) layer.style.display = 'none';
-      }
+      if (nearbyOwners.has(owner)) prepare(owner);
       pump();
     });
   }
   function queue(owner) { pendingOwners.add(owner); pump(); }
   function prepare(owner) {
+    const ratio = Math.min(3, Math.max(1, devicePixelRatio || 1));
     const box = owner.getBoundingClientRect();
     if (!(box.width > 0 && box.height > 0)) return;
     const style = getComputedStyle(owner);
@@ -112,9 +104,6 @@
     const scale = scaleFor(owner);
     const width = box.width / scale.x + padding * 2;
     const height = box.height / scale.y + padding * 2;
-    if (!Number.isFinite(width + height) || width <= 0 || height <= 0) return;
-    const ratio = Math.min(3, Math.max(1, devicePixelRatio || 1),
-      4096 / width,4096 / height,Math.sqrt(2000000 / (width * height)));
     const key = [width.toFixed(3), height.toFixed(3), ratio, style.font,
       style.letterSpacing, style.lineHeight, style.textTransform, owner.textContent].join('|');
     const previous = cache.get(owner);
